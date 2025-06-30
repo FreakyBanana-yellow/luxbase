@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  @apply bg-luxblack text-white font-sans;
+}
+
+html {
+  scroll-behavior: smooth;
+}

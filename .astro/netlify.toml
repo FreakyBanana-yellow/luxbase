@@ -1,9 +1,10 @@
+# netlify.toml
 [build]
   command = "npm run build"
-  command = "npm install @rollup/rollup-linux-x64-gnu"
   publish = "dist"
 
 [build.environment]
   NODE_OPTIONS = "--no-experimental-fetch"
   NODE_ENV = "production"
   NPM_CONFIG_OPTIONAL = "false"
+  NPM_FLAGS = "--omit=optional"

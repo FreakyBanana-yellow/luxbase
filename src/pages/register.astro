@@ -1,0 +1,40 @@
+<!-- src/pages/register.astro -->
+---
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY)
+---
+
+<form on:submit|preventDefault={async (e) => {
+  const form = e.target;
+  const email = form.email.value;
+  const password = form.password.value;
+  const name = form.name.value;
+  const role = form.role.value;
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        name,
+        role,
+      }
+    }
+  });
+
+  if (error) {
+    alert(error.message);
+  } else {
+    window.location.href = '/login';
+  }
+}}>
+  <input type="text" name="name" placeholder="Dein Name" required />
+  <input type="email" name="email" placeholder="E-Mail" required />
+  <input type="password" name="password" placeholder="Passwort" required />
+  <select name="role" required>
+    <option value="creator">Creator / Model</option>
+    <option value="agentur">Agentur</option>
+  </select>
+  <button type="submit">Registrieren</button>
+</form>

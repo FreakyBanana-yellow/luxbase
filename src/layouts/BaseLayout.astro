@@ -10,6 +10,15 @@ import "../styles/global.css";
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
     <meta name="theme-color" content="#0d0d0d" />
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      window.supabase = createClient(
+        import.meta.env.PUBLIC_SUPABASE_URL,
+        import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+      );
+    </script>
   </head>
   <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans">
     <!-- Header -->
@@ -20,20 +29,46 @@ import "../styles/global.css";
       </button>
     </header>
 
-    <!-- Login Modal -->
-    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50">
+    <!-- Login / Register Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black/70 flex items-center justify-center hidden z-50">
       <div class="bg-luxgray p-8 rounded-2xl shadow-xl w-full max-w-md relative text-white">
         <button id="closeLogin" class="absolute top-4 right-4 text-white text-xl">&times;</button>
-        <h2 class="text-2xl font-serif text-luxgold mb-4 text-center">Login</h2>
-        <form class="space-y-5">
-          <input type="email" placeholder="E-Mail" class="w-full px-4 py-3 rounded bg-black text-white placeholder-gray-400 border border-luxgold focus:outline-none" />
-          <input type="password" placeholder="Passwort" class="w-full px-4 py-3 rounded bg-black text-white placeholder-gray-400 border border-luxgold focus:outline-none" />
-          <button type="submit" class="w-full bg-luxgold text-luxblack font-semibold px-4 py-3 rounded hover:bg-yellow-400 transition">Einloggen</button>
-        </form>
-        <p class="text-center text-gray-400 text-sm mt-4">
-          Noch kein Account?
-          <a href="/register" class="text-yellow-400 hover:underline">Jetzt registrieren</a>
-        </p>
+
+        <!-- Login Box -->
+        <div id="loginBox" class="flex flex-col gap-4">
+          <h2 class="text-2xl font-serif text-luxgold text-center mb-2">Login</h2>
+          <input id="loginEmail" type="email" placeholder="E‑Mail" class="w-full px-4 py-3 rounded bg-black border border-gray-600" />
+          <input id="loginPassword" type="password" placeholder="Passwort" class="w-full px-4 py-3 rounded bg-black border border-gray-600" />
+          <button id="btnLogin" class="w-full bg-luxgold text-luxblack font-semibold py-3 rounded hover:bg-yellow-400 transition">Einloggen</button>
+          <p id="loginMsg" class="text-red-400 text-sm min-h-[1rem]"></p>
+          <p class="text-sm text-center">Noch kein Konto? <a id="linkToRegister" class="text-yellow-400 hover:underline cursor-pointer">Registrieren</a></p>
+          <p class="text-sm text-center"><a id="linkToReset" class="text-yellow-400 hover:underline cursor-pointer">Passwort vergessen?</a></p>
+        </div>
+
+        <!-- Register Box -->
+        <div id="registerBox" class="flex flex-col gap-4 hidden">
+          <h2 class="text-2xl font-serif text-luxgold text-center mb-2">Registrieren</h2>
+          <input id="signupName" type="text" placeholder="Name" class="w-full px-4 py-3 rounded bg-black border border-gray-600" />
+          <select id="signupRole" class="w-full px-4 py-3 rounded bg-black border border-gray-600 text-white">
+            <option value="creator">Creator / Model</option>
+            <option value="agentur">Agentur</option>
+          </select>
+          <input id="signupEmail" type="email" placeholder="E‑Mail" class="w-full px-4 py-3 rounded bg-black border border-gray-600" />
+          <input id="signupPassword" type="password" placeholder="Passwort" class="w-full px-4 py-3 rounded bg-black border border-gray-600" />
+          <input id="signupConfirm" type="password" placeholder="Passwort bestätigen" class="w-full px-4 py-3 rounded bg-black border border-gray-600" />
+          <button id="btnSignup" class="w-full bg-luxgold text-luxblack font-semibold py-3 rounded hover:bg-yellow-400 transition">Registrieren</button>
+          <p id="signupMsg" class="text-red-400 text-sm min-h-[1rem]"></p>
+          <p class="text-sm text-center">Bereits registriert? <a id="linkToLogin" class="text-yellow-400 hover:underline cursor-pointer">Login</a></p>
+        </div>
+
+        <!-- Reset Box -->
+        <div id="resetBox" class="flex flex-col gap-4 hidden">
+          <h2 class="text-2xl font-serif text-luxgold text-center mb-2">Passwort zurücksetzen</h2>
+          <input id="resetEmail" type="email" placeholder="E‑Mail" class="w-full px-4 py-3 rounded bg-black border border-gray-600" />
+          <button id="btnReset" class="w-full bg-luxgold text-luxblack font-semibold py-3 rounded hover:bg-yellow-400 transition">Link senden</button>
+          <p id="resetMsg" class="text-yellow-400 text-sm min-h-[1rem]"></p>
+          <p class="text-sm text-center"><a id="backToLogin" class="text-yellow-400 hover:underline cursor-pointer">Zurück zum Login</a></p>
+        </div>
       </div>
     </div>
 
@@ -47,18 +82,54 @@ import "../styles/global.css";
       © {new Date().getFullYear()} Luxbase – Automation with Style.
     </footer>
 
-    <!-- Modal Script -->
+    <!-- Modal + Auth Script -->
     <script>
       const openBtn = document.getElementById('openLogin');
       const closeBtn = document.getElementById('closeLogin');
       const modal = document.getElementById('loginModal');
-      if (openBtn && closeBtn && modal) {
-        openBtn.addEventListener('click', () => modal.classList.remove('hidden'));
-        closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) modal.classList.add('hidden');
-        });
+      const loginBox = document.getElementById('loginBox');
+      const registerBox = document.getElementById('registerBox');
+      const resetBox = document.getElementById('resetBox');
+
+      function show(box) {
+        loginBox.classList.add('hidden');
+        registerBox.classList.add('hidden');
+        resetBox.classList.add('hidden');
+        box.classList.remove('hidden');
       }
-    </script>
-  </body>
-</html>
+
+      openBtn.addEventListener('click', () => { modal.classList.remove('hidden'); show(loginBox); });
+      closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
+
+      // Toggle links
+      document.getElementById('linkToRegister').onclick = () => show(registerBox);
+      document.getElementById('linkToLogin').onclick = () => show(loginBox);
+      document.getElementById('linkToReset').onclick = () => show(resetBox);
+      document.getElementById('backToLogin').onclick = () => show(loginBox);
+
+      // Login
+      document.getElementById('btnLogin').onclick = async () => {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const msg = document.getElementById('loginMsg');
+        msg.textContent = '';
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) msg.textContent = error.message;
+        else window.location.href = '/dashboard';
+      };
+
+      // Signup
+      document.getElementById('btnSignup').onclick = async () => {
+        const name = document.getElementById('signupName').value.trim();
+        const email = document.getElementById('signupEmail').value.trim();
+        const role = document.getElementById('signupRole').value;
+        const password = document.getElementById('signupPassword').value;
+        const confirm = document.getElementById('signupConfirm').value;
+        const msg = document.getElementById('signupMsg');
+        msg.textContent = '';
+        if (password !== confirm) { msg.textContent = 'Passwörter stimmen nicht überein'; return; }
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) { msg.textContent = error.message; return; }
+        // Insert profile
+        await sup

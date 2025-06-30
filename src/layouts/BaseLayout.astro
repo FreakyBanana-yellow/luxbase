@@ -1,35 +1,43 @@
 ---
 import "../styles/global.css";
-const { title = "Luxbase – Smart Creator Tools" } = Astro.props;
 ---
-
 <html lang="de" class="scroll-smooth">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
+    <title>Luxbase</title>
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
     <meta name="theme-color" content="#0d0d0d" />
   </head>
-
   <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans">
     <!-- Header -->
-    <header class="sticky top-0 z-50 flex items-center justify-between px-6 py-4
-                    bg-black/70 backdrop-blur shadow-md">
-      <h1 class="text-2xl md:text-3xl font-serif font-bold text-luxgold">
-        Luxbase
-      </h1>
-
-      <a href="/login"
-         class="px-4 py-2 text-sm border border-luxgold text-luxgold rounded
-                hover:bg-luxgold hover:text-luxblack transition">
+    <header class="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-black/70 backdrop-blur shadow-md">
+      <h1 class="text-2xl md:text-3xl font-serif font-bold text-luxgold">Luxbase</h1>
+      <button id="openLogin" class="text-sm px-4 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-luxblack transition">
         Login
-      </a>
+      </button>
     </header>
 
-    <!-- Page Content -->
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center hidden z-50">
+      <div class="bg-luxgray p-8 rounded-2xl shadow-xl w-full max-w-md relative text-white">
+        <button id="closeLogin" class="absolute top-4 right-4 text-white text-xl">&times;</button>
+        <h2 class="text-2xl font-serif text-luxgold mb-4 text-center">Login</h2>
+        <form class="space-y-5">
+          <input type="email" placeholder="E-Mail" class="w-full px-4 py-3 rounded bg-black text-white placeholder-gray-400 border border-luxgold focus:outline-none" />
+          <input type="password" placeholder="Passwort" class="w-full px-4 py-3 rounded bg-black text-white placeholder-gray-400 border border-luxgold focus:outline-none" />
+          <button type="submit" class="w-full bg-luxgold text-luxblack font-semibold px-4 py-3 rounded hover:bg-yellow-400 transition">Einloggen</button>
+        </form>
+        <p class="text-center text-gray-400 text-sm mt-4">
+          Noch kein Account?
+          <a href="/register" class="text-yellow-400 hover:underline">Jetzt registrieren</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Hauptinhalt -->
     <main class="flex-1">
       <slot />
     </main>
@@ -38,5 +46,19 @@ const { title = "Luxbase – Smart Creator Tools" } = Astro.props;
     <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
       © {new Date().getFullYear()} Luxbase – Automation with Style.
     </footer>
+
+    <!-- Modal Script -->
+    <script>
+      const openBtn = document.getElementById('openLogin');
+      const closeBtn = document.getElementById('closeLogin');
+      const modal = document.getElementById('loginModal');
+      if (openBtn && closeBtn && modal) {
+        openBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+        closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) modal.classList.add('hidden');
+        });
+      }
+    </script>
   </body>
 </html>

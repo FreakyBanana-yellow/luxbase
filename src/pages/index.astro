@@ -1,0 +1,47 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import LoginModal from '../components/LoginModal.astro';
+---
+<BaseLayout>
+  <Header />
+  <LoginModal />
+
+  <main class="flex flex-col items-center text-center py-16 px-4">
+    <!-- Hero -->
+    <section class="max-w-3xl">
+      <h1 class="text-4xl md:text-6xl font-bold mb-6 text-indigo-600">
+        Luxbase – Dein Toolset für smarte Creator-Automation
+      </h1>
+      <p class="text-lg md:text-xl text-gray-600 mb-8">
+        Alles an einem Ort: VIP Bot, Vault & Multiplattform-Posting.
+      </p>
+      <a href="#tools" class="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow">
+        Tools entdecken
+      </a>
+    </section>
+
+    <!-- Tool-Cards -->
+    <section id="tools" class="mt-20 grid gap-8 md:grid-cols-3">
+      <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-xl font-bold mb-2">VIP Bot</h3>
+        <p class="text-gray-600">Telegram-VIP-Bots mit Altersprüfung & Zugangskontrolle.</p>
+        <a href="/vipbot" class="mt-4 inline-block text-indigo-600 font-semibold">Mehr erfahren →</a>
+      </div>
+      <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-xl font-bold mb-2">Vault</h3>
+        <p class="text-gray-600">Content-Upload, Caption-Hilfe, Performance-Analyse.</p>
+        <a href="/vault" class="mt-4 inline-block text-indigo-600 font-semibold">Mehr erfahren →</a>
+      </div>
+      <div class="bg-white rounded-xl shadow p-6">
+        <h3 class="text-xl font-bold mb-2">Multiplattform-Posting</h3>
+        <p class="text-gray-600">Poste Inhalte gleichzeitig auf OnlyFans, Fansly & mehr.</p>
+        <a href="/cpplattform" class="mt-4 inline-block text-indigo-600 font-semibold">Mehr erfahren →</a>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
+

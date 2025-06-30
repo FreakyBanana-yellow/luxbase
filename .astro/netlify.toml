@@ -1,5 +1,6 @@
 [build]
   command = "npm run build"
+  command = "npm install @rollup/rollup-linux-x64-gnu"
   publish = "dist"
 
 [build.environment]

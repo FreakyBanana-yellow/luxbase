@@ -23,7 +23,7 @@ import "../styles/global.css";
       <button id="openLogin" class="text-sm px-4 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-luxblack transition">Login</button>
     </header>
 
-    <!-- Login / Register Modal -->
+    <!-- Login / Register Modal (kompletter Code) -->
     <div id="loginModal" class="fixed inset-0 bg-black/70 hidden flex items-center justify-center z-50">
       <div class="bg-luxgray p-8 rounded-2xl shadow-xl w-full max-w-md relative text-white">
         <button id="closeLogin" class="absolute top-4 right-4 text-white text-xl">&times;</button>
@@ -43,7 +43,7 @@ import "../styles/global.css";
         </div>
 
         <!-- Register Box -->
-        <div id="registerBox" class="hidden flex flex-col gap-4">
+        <div id="registerBox" class="hidden flex-col gap-4">
           <h2 class="text-2xl font-serif text-luxgold text-center mb-2">Registrieren</h2>
           <input id="signupName" type="text" placeholder="Name" class="w-full px-4 py-3 rounded bg-black border border-gray-600" />
           <select id="signupRole" class="w-full px-4 py-3 rounded bg-black border border-gray-600 text-white">
@@ -87,10 +87,10 @@ import "../styles/global.css";
       $('openLogin').onclick = () => { modal.classList.remove('hidden'); show('loginBox'); };
       $('closeLogin').onclick = () => modal.classList.add('hidden');
       modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
-      $('linkToRegister').onclick = () => show('registerBox');
-      $('linkToLogin').onclick = () => show('loginBox');
-      $('linkToReset').onclick = () => show('resetBox');
-      $('backToLogin').onclick = () => show('loginBox');
+      $('linkToRegister').addEventListener('click', () => show('registerBox'));
+      $('linkToLogin').addEventListener('click', () => show('loginBox'));
+      $('linkToReset').addEventListener('click', () => show('resetBox'));
+      $('backToLogin').addEventListener('click', () => show('loginBox'));
       const togglePw = (id) => { const el=$(id); el.type = el.type==='password'?'text':'password'; };
       $('toggleLoginPw').onclick = () => togglePw('loginPassword');
       $('toggleSignupPw').onclick = () => togglePw('signupPassword');
@@ -103,12 +103,9 @@ import "../styles/global.css";
           {t:'Mind. ein Sonderzeichen',ok:/[^A-Za-z0-9]/.test(v)}];
         $('pwHints').innerHTML=rules.map(r=>`<p class="${r.ok?'text-green-400':'text-gray-400'}">• ${r.t}</p>`).join('');
       });
-      $('btnLogin').onclick = async () => {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: $('loginEmail').value.trim(),
-          password: $('loginPassword').value
-        });
-        $('loginMsg').textContent = error ? error.message : '';
+      $('btnLogin').onclick = async ()=>{
+        const { error }=await supabase.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});
+        $('loginMsg').textContent=error?error.message:'';
         if (!error) window.location.href = '/dashboard';
       };
     </script>

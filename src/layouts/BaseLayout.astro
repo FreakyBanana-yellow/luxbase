@@ -14,7 +14,7 @@ import "../styles/global.css";
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-      window.supabase = createClient(
+      window.supabase = supabase.createClient(
         import.meta.env.PUBLIC_SUPABASE_URL,
         import.meta.env.PUBLIC_SUPABASE_ANON_KEY
       );
@@ -24,9 +24,7 @@ import "../styles/global.css";
     <!-- Header -->
     <header class="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-black/70 backdrop-blur shadow-md">
       <h1 class="text-2xl md:text-3xl font-serif font-bold text-luxgold">Luxbase</h1>
-      <button id="openLogin" class="text-sm px-4 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-luxblack transition">
-        Login
-      </button>
+      <button id="openLogin" class="text-sm px-4 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-luxblack transition">Login</button>
     </header>
 
     <!-- Login / Register Modal -->
@@ -73,14 +71,10 @@ import "../styles/global.css";
     </div>
 
     <!-- Hauptinhalt -->
-    <main class="flex-1">
-      <slot />
-    </main>
+    <main class="flex-1"> <slot /> </main>
 
     <!-- Footer -->
-    <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
-      © {new Date().getFullYear()} Luxbase – Automation with Style.
-    </footer>
+    <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">© {new Date().getFullYear()} Luxbase – Automation with Style.</footer>
 
     <!-- Modal + Auth Script -->
     <script>
@@ -98,17 +92,16 @@ import "../styles/global.css";
         box.classList.remove('hidden');
       }
 
-      openBtn.addEventListener('click', () => { modal.classList.remove('hidden'); show(loginBox); });
-      closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
-      modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
+      openBtn.onclick = () => { modal.classList.remove('hidden'); show(loginBox); };
+      closeBtn.onclick = () => modal.classList.add('hidden');
+      modal.onclick = (e) => { if (e.target === modal) modal.classList.add('hidden'); };
 
-      // Toggle links
       document.getElementById('linkToRegister').onclick = () => show(registerBox);
       document.getElementById('linkToLogin').onclick = () => show(loginBox);
       document.getElementById('linkToReset').onclick = () => show(resetBox);
       document.getElementById('backToLogin').onclick = () => show(loginBox);
 
-      // Login
+      // LOGIN
       document.getElementById('btnLogin').onclick = async () => {
         const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
@@ -119,7 +112,7 @@ import "../styles/global.css";
         else window.location.href = '/dashboard';
       };
 
-      // Signup
+      // SIGNUP
       document.getElementById('btnSignup').onclick = async () => {
         const name = document.getElementById('signupName').value.trim();
         const email = document.getElementById('signupEmail').value.trim();
@@ -131,5 +124,10 @@ import "../styles/global.css";
         if (password !== confirm) { msg.textContent = 'Passwörter stimmen nicht überein'; return; }
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) { msg.textContent = error.message; return; }
-        // Insert profile
-        await sup
+        await supabase.from('profiles').insert({ id: data.user.id, name, role });
+        msg.textContent = 'Registrierung erfolgreich – Weiterleitung...';
+        setTimeout(() => window.location.href = '/dashboard', 1200);
+      };
+
+      // RESET
+      document

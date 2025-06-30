@@ -1,56 +1,75 @@
 ---
-import Layout from '../layouts/BaseLayout.astro';
+import Layout from "../layouts/BaseLayout.astro";
 ---
 
-<Layout title="Luxbase – Dein Toolkit für smarte Creator-Automation">
-  <!-- Hero ------------------------------------------------------>
-  <section class="max-w-3xl mx-auto text-center py-24 px-6">
-    <h2 class="text-4xl md:text-6xl font-serif font-bold text-luxgold mb-6">
-      Luxbase – Dein Toolset für smarte&nbsp;Creator-Automation
-    </h2>
+<Layout>
+  <!-- HERO ---------------------------------------------------- -->
+  <section class="relative flex flex-col items-center justify-center min-h-[80vh] text-center">
+    <img src="/Logo.png" alt="Luxbase Logo & Claim"
+         class="w-full max-w-xs mx-auto" loading="eager" />
 
-    <p class="text-lg md:text-xl text-gray-300 mb-10">
-      Alles an einem Ort: VIP Bot, Vault &amp; Multiplattform-Posting.
-    </p>
-
+    <!-- (Optional) CTA-Button -->
     <a href="#tools"
-       class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold
-              rounded-lg shadow-lux hover:bg-yellow-400 transition">
+       class="mt-10 inline-block px-10 py-3 bg-luxgold text-luxblack font-semibold rounded-lg shadow-lux hover:bg-yellow-400 transition">
       Tools entdecken
     </a>
   </section>
 
-  <!-- Tools ----------------------------------------------------->
-  <section id="tools"
-           class="grid gap-10 md:grid-cols-3 max-w-6xl mx-auto px-6 pb-24">
-    <!-- Karte -->
-    <div class="bg-luxgray p-6 rounded-2xl shadow-lux hover:shadow-yellow-500/20 transition">
-      <h3 class="text-2xl font-bold text-luxgold mb-2">VIP Bot</h3>
-      <p class="text-gray-400">
-        Telegram-VIP-Bots mit Altersprüfung &amp; Zugangskontrolle.
-      </p>
-      <a href="/vipbot"
-         class="inline-block mt-4 text-yellow-400 font-semibold hover:underline">
-        Mehr erfahren →
-      </a>
+  <!-- TOOLS GRID ---------------------------------------------- -->
+  <section id="tools" class="max-w-6xl mx-auto grid gap-20 md:gap-32 py-24 px-6">
+    <!-- BaaS / VIP-Bot -->
+    <div class="grid md:grid-cols-2 gap-10 items-center">
+      <img src="/BaaS.png" alt="BaaS – Automatisiere deine VIP-Gruppe" class="mx-auto max-w-md" />
+      <div class="text-center md:text-left">
+        <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">BaaS – Dein VIP-Bot</h2>
+        <p class="text-lg leading-relaxed mb-8">
+          Nutze unseren VIP-Bot, um deine Telegram-Gruppe vollautomatisiert zu verwalten,
+          Altersabfragen durchzuführen und zahlende Member freizuschalten.
+        </p>
+        <a href="/vipbot"
+           class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition">
+          Mehr erfahren
+        </a>
+      </div>
     </div>
 
-    <div class="bg-luxgray p-6 rounded-2xl shadow-lux hover:shadow-yellow-500/20 transition">
-      <h3 class="text-2xl font-bold text-luxgold mb-2">Vault</h3>
-      <p class="text-gray-400">Content-Upload, Caption-Hilfe, Performance-Analyse.</p>
-      <a href="/vault"
-         class="inline-block mt-4 text-yellow-400 font-semibold hover:underline">
-        Mehr erfahren →
-      </a>
+    <!-- VaultRoom -->
+    <div class="grid md:grid-cols-2 gap-10 items-center md:flex-row-reverse">
+      <img src="/VaultRoom.png" alt="VaultRoom – Content-Safe" class="mx-auto max-w-md" />
+      <div class="text-center md:text-left">
+        <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">VaultRoom – Content-Safe</h2>
+        <p class="text-lg leading-relaxed mb-8">
+          Ordne, plane und archiviere dein Roh-Material sicher an einem Ort. Schluss mit Chaos –
+          nutze KI-gestützte Tags, Versionierung und Bulk-Uploads.
+        </p>
+        <a href="/vault"
+           class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition">
+          Mehr erfahren
+        </a>
+      </div>
     </div>
 
-    <div class="bg-luxgray p-6 rounded-2xl shadow-lux hover:shadow-yellow-500/20 transition">
-      <h3 class="text-2xl font-bold text-luxgold mb-2">Multiplattform-Posting</h3>
-      <p class="text-gray-400">Poste Inhalte gleichzeitig auf OnlyFans, Fansly &amp; mehr.</p>
-      <a href="/cpplattform"
-         class="inline-block mt-4 text-yellow-400 font-semibold hover:underline">
-        Mehr erfahren →
-      </a>
+    <!-- StageOne -->
+    <div class="grid md:grid-cols-2 gap-10 items-center">
+      <img src="/StageOne.png" alt="StageOne – Multi-Platform Scheduling" class="mx-auto max-w-md" />
+      <div class="text-center md:text-left">
+        <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">StageOne – Multi-Posting</h2>
+        <p class="text-lg leading-relaxed mb-8">
+          Plane Posts, Re-Use Captions und veröffentliche parallel auf OnlyFans, Fansly & Co.
+          Spare Zeit und steigere Reichweite mit einem Klick.
+        </p>
+        <a href="/cpplattform"
+           class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition">
+          Mehr erfahren
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHAOS vs VAULT (Info-Banner) ----------------------------- -->
+  <section class="bg-luxgray py-24">
+    <div class="max-w-3xl mx-auto px-6">
+      <img src="/Vaultroom2.png" alt="Chaos vs Vaultroom Vergleich" class="w-full rounded-lg shadow-lux" />
     </div>
   </section>
 </Layout>

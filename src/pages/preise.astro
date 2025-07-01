@@ -1,51 +1,60 @@
 ---
-import Layout from '../layouts/BaseLayout.astro';
+import Layout from "../layouts/BaseLayout.astro";
 ---
 
-<Layout title="Preise – Deine Tools. Dein Tempo.">
-  <section class="max-w-6xl mx-auto px-6 py-20 text-center">
-    <h1 class="text-4xl md:text-5xl font-serif font-bold text-luxgold mb-6">
-      Wähle deinen Stil – Luxbase passt sich an.
-    </h1>
-    <p class="text-lg text-gray-300 mb-14">
-      Monatlich kündbar. Keine versteckten Kosten. Creator-first.
-    </p>
+<Layout>
+  <section class="max-w-6xl mx-auto py-24 px-6 text-center">
+    <h1 class="text-5xl font-serif font-bold text-luxgold mb-12">Unsere Preise</h1>
 
-    <div class="grid gap-10 md:grid-cols-3 text-left">
-      <!-- Starter -->
-      <div class="bg-luxgray rounded-2xl shadow-lux p-8 border border-luxgold">
-        <h2 class="text-2xl font-bold text-luxgold mb-2">Starter</h2>
-        <p class="text-gray-400 mb-6">Ideal für Einsteiger:innen</p>
-        <ul class="text-gray-300 space-y-2 mb-6">
-          <li>✅ 1 Plattform</li>
-          <li>✅ Basis-VIP-Bot</li>
-          <li>✅ Zugang zu Helpcenter</li>
-        </ul>
-        <p class="text-2xl font-semibold text-luxgold mb-4">19 € / Monat</p>
+    <!-- VIP-Bot -->
+    <div class="mb-20">
+      <h2 class="text-3xl font-bold mb-4">VIP-Bot</h2>
+      <p class="text-lg mb-2">49 €/Monat</p>
+      <p class="text-sm text-luxgold/80">Optional: Persönliche Einrichtung für 159 € (einmalig)</p>
+    </div>
+
+    <!-- VaultRoom -->
+    <div class="mb-20">
+      <h2 class="text-3xl font-bold mb-4">VaultRoom</h2>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="border border-luxgray rounded-lg p-6">
+          <h3 class="text-xl font-semibold mb-2">Basis</h3>
+          <p class="mb-2">Mehr Speicher</p>
+          <p class="text-lg font-bold">49 €/Monat</p>
+        </div>
+        <div class="border border-luxgray rounded-lg p-6">
+          <h3 class="text-xl font-semibold mb-2">Instagram-Check</h3>
+          <p class="mb-2">Zusätzlich: Analyse der Bilder</p>
+          <p class="text-lg font-bold">59 €/Monat</p>
+        </div>
+        <div class="border border-luxgray rounded-lg p-6">
+          <h3 class="text-xl font-semibold mb-2">Mit KI-Vorschlägen</h3>
+          <p class="mb-2">Zusätzlich: KI-gestützte Empfehlungen basierend auf Performance</p>
+          <p class="text-lg font-bold">99 €/Monat</p>
+        </div>
       </div>
+      <p class="text-sm text-luxgold/80 mt-4">Einmalige Einrichtung: 259 €</p>
+    </div>
 
-      <!-- Pro -->
-      <div class="bg-luxgray rounded-2xl shadow-lux p-8 border-2 border-yellow-400">
-        <h2 class="text-2xl font-bold text-yellow-400 mb-2">Pro</h2>
-        <p class="text-gray-400 mb-6">Für ambitionierte Creator:innen</p>
-        <ul class="text-gray-300 space-y-2 mb-6">
-          <li>✅ Bis zu 3 Plattformen</li>
-          <li>✅ Vault-Zugang</li>
-          <li>✅ Intelligente Tools + Planung</li>
-        </ul>
-        <p class="text-2xl font-semibold text-yellow-400 mb-4">39 € / Monat</p>
-      </div>
-
-      <!-- Ultimate -->
-      <div class="bg-luxgray rounded-2xl shadow-lux p-8 border border-luxgold">
-        <h2 class="text-2xl font-bold text-luxgold mb-2">Ultimate</h2>
-        <p class="text-gray-400 mb-6">All-In für Pros & Agenturen</p>
-        <ul class="text-gray-300 space-y-2 mb-6">
-          <li>✅ Unbegrenzt viele Plattformen</li>
-          <li>✅ Alle Vault- & Bot-Funktionen</li>
-          <li>✅ Individueller Setup-Service</li>
-        </ul>
-        <p class="text-2xl font-semibold text-luxgold mb-4">79 € / Monat</p>
+    <!-- StageOne -->
+    <div class="mb-20">
+      <h2 class="text-3xl font-bold mb-4">StageOne – Multi-Posting</h2>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="border border-luxgray rounded-lg p-6">
+          <h3 class="text-xl font-semibold mb-2">Basic</h3>
+          <p class="mb-2">10 Postings pro Monat</p>
+          <p class="text-lg font-bold">19 €/Monat</p>
+        </div>
+        <div class="border border-luxgray rounded-lg p-6">
+          <h3 class="text-xl font-semibold mb-2">Growth</h3>
+          <p class="mb-2">27 Postings pro Monat</p>
+          <p class="text-lg font-bold">39 €/Monat</p>
+        </div>
+        <div class="border border-luxgray rounded-lg p-6">
+          <h3 class="text-xl font-semibold mb-2">Pro</h3>
+          <p class="mb-2">40 Postings pro Monat</p>
+          <p class="text-lg font-bold">59 €/Monat</p>
+        </div>
       </div>
     </div>
   </section>

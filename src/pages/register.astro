@@ -2,7 +2,6 @@
 import "../styles/global.css";
 ---
 
-<!-- PURE HTML ------------------------------------------------>
 <html lang="de">
   <head>
     <meta charset="utf-8" />
@@ -23,8 +22,24 @@ import "../styles/global.css";
       <input id="email" type="email"    placeholder="E-Mail"
              class="w-full px-4 py-3 rounded bg-black border border-gray-600" required />
 
-      <input id="pass"  type="password" placeholder="Passwort"
+      <!-- Passwortfeld mit Sichtbarkeitsschalter -->
+      <div class="relative">
+        <input id="pass" type="password" placeholder="Passwort"
+               class="w-full px-4 py-3 pr-12 rounded bg-black border border-gray-600" required />
+        <button type="button" id="togglePass"
+                class="absolute right-3 top-3 text-sm text-luxgold">👁</button>
+      </div>
+
+      <input id="passRepeat" type="password" placeholder="Passwort wiederholen"
              class="w-full px-4 py-3 rounded bg-black border border-gray-600" required />
+
+      <!-- Passwortrichtlinien -->
+      <ul class="text-sm space-y-1">
+        <li id="length"  class="text-red-400">• Mindestens 8 Zeichen</li>
+        <li id="upper"   class="text-red-400">• Ein Großbuchstabe</li>
+        <li id="lower"   class="text-red-400">• Ein Kleinbuchstabe</li>
+        <li id="number"  class="text-red-400">• Eine Zahl</li>
+      </ul>
 
       <select id="role" class="w-full px-4 py-3 rounded bg-black border border-gray-600 text-white">
         <option value="creator">Creator / Model</option>
@@ -40,12 +55,37 @@ import "../styles/global.css";
       <p id="msg" class="text-center text-red-400 min-h-[1.25rem] text-sm"></p>
     </form>
 
-    <!--  CLIENT-SIDE SCRIPT  --------------------------------->
+    <!-- JS: Client-Logik -->
     <script type="module">
       import { supabase } from '/src/lib/supabase';
 
       const form = document.getElementById('regForm');
       const msg  = document.getElementById('msg');
+      const pass = document.getElementById('pass');
+      const passRepeat = document.getElementById('passRepeat');
+
+      const length = document.getElementById('length');
+      const upper = document.getElementById('upper');
+      const lower = document.getElementById('lower');
+      const number = document.getElementById('number');
+
+      // Passwortsichtbarkeit
+      document.getElementById('togglePass').addEventListener('click', () => {
+        pass.type = pass.type === 'password' ? 'text' : 'password';
+      });
+
+      // Live-Validierung
+      pass.addEventListener('input', () => {
+        const val = pass.value;
+        length.classList.toggle('text-green-400', val.length >= 8);
+        length.classList.toggle('text-red-400',  val.length < 8);
+        upper.classList.toggle('text-green-400', /[A-Z]/.test(val));
+        upper.classList.toggle('text-red-400',  !/[A-Z]/.test(val));
+        lower.classList.toggle('text-green-400', /[a-z]/.test(val));
+        lower.classList.toggle('text-red-400',  !/[a-z]/.test(val));
+        number.classList.toggle('text-green-400', /\d/.test(val));
+        number.classList.toggle('text-red-400',  !/\d/.test(val));
+      });
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -53,14 +93,25 @@ import "../styles/global.css";
 
         const name  = document.getElementById('name').value.trim();
         const email = document.getElementById('email').value.trim();
-        const pass  = document.getElementById('pass').value;
         const role  = document.getElementById('role').value;
+        const pw    = pass.value.trim();
+        const pw2   = passRepeat.value.trim();
 
-        // 1) Supabase Auth
-        const { data, error } = await supabase.auth.signUp({ email, password: pass });
+        if (pw !== pw2) {
+          msg.textContent = 'Passwörter stimmen nicht überein.';
+          return;
+        }
+
+        // Passwortprüfung
+        if (pw.length < 8 || !/[A-Z]/.test(pw) || !/[a-z]/.test(pw) || !/\d/.test(pw)) {
+          msg.textContent = 'Passwort erfüllt nicht alle Kriterien.';
+          return;
+        }
+
+        // Supabase-Registrierung
+        const { data, error } = await supabase.auth.signUp({ email, password: pw });
         if (error) { msg.textContent = error.message; return; }
 
-        // 2) Profil in Tabelle anlegen
         const { error: insertErr } = await supabase
           .from('profiles')
           .insert({ id: data.user.id, name, role });
@@ -71,7 +122,6 @@ import "../styles/global.css";
           return;
         }
 
-        // Erfolg
         msg.textContent = 'Erfolgreich registriert – weiterleiten …';
         setTimeout(() => (location.href = '/dashboard'), 1000);
       });

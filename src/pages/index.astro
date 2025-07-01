@@ -3,23 +3,11 @@ import Layout from "../layouts/BaseLayout.astro";
 ---
 
 <Layout>
-  <!-- HERO ---------------------------------------------------- -->
-  <section class="relative flex flex-col items-center justify-center min-h-[80vh] text-center">
-    <img src="/Logo.png" alt="Luxbase Logo & Claim"
-         class="w-full max-w-xs mx-auto" loading="eager" />
-
-    <!-- (Optional) CTA-Button -->
-    <a href="#tools"
-       class="mt-10 inline-block px-10 py-3 bg-luxgold text-luxblack font-semibold rounded-lg shadow-lux hover:bg-yellow-400 transition">
-      Tools entdecken
-    </a>
-  </section>
-
   <!-- TOOLS GRID ---------------------------------------------- -->
   <section id="tools" class="max-w-6xl mx-auto grid gap-20 md:gap-32 py-24 px-6">
     <!-- BaaS / VIP-Bot -->
     <div class="grid md:grid-cols-2 gap-10 items-center">
-      <img src="/BaaS.png" alt="BaaS – Automatisiere deine VIP-Gruppe" class="mx-auto max-w-md" />
+      <img src="/baas.png" alt="BaaS – Automatisiere deine VIP-Gruppe" class="mx-auto max-w-md rounded-lg shadow-lg" />
       <div class="text-center md:text-left">
         <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">BaaS – Dein VIP-Bot</h2>
         <p class="text-lg leading-relaxed mb-8">
@@ -35,7 +23,7 @@ import Layout from "../layouts/BaseLayout.astro";
 
     <!-- VaultRoom -->
     <div class="grid md:grid-cols-2 gap-10 items-center md:flex-row-reverse">
-      <img src="/VaultRoom.png" alt="VaultRoom – Content-Safe" class="mx-auto max-w-md" />
+      <img src="/vaultroom.png" alt="VaultRoom – Content-Safe" class="mx-auto max-w-md rounded-lg shadow-lg" />
       <div class="text-center md:text-left">
         <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">VaultRoom – Content-Safe</h2>
         <p class="text-lg leading-relaxed mb-8">
@@ -51,7 +39,7 @@ import Layout from "../layouts/BaseLayout.astro";
 
     <!-- StageOne -->
     <div class="grid md:grid-cols-2 gap-10 items-center">
-      <img src="/StageOne.png" alt="StageOne – Multi-Platform Scheduling" class="mx-auto max-w-md" />
+      <img src="/stageone.png" alt="StageOne – Multi-Platform Scheduling" class="mx-auto max-w-md rounded-lg shadow-lg" />
       <div class="text-center md:text-left">
         <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">StageOne – Multi-Posting</h2>
         <p class="text-lg leading-relaxed mb-8">
@@ -69,7 +57,7 @@ import Layout from "../layouts/BaseLayout.astro";
   <!-- CHAOS vs VAULT (Info-Banner) ----------------------------- -->
   <section class="bg-luxgray py-24">
     <div class="max-w-3xl mx-auto px-6">
-      <img src="/Vaultroom2.png" alt="Chaos vs Vaultroom Vergleich" class="w-full rounded-lg shadow-lux" />
+      <img src="/vaultroom2.png" alt="Chaos vs Vaultroom Vergleich" class="w-full rounded-lg shadow-lux" />
     </div>
   </section>
 </Layout>

@@ -8,33 +8,30 @@ import Layout from "../layouts/BaseLayout.astro";
 
     <!-- VIP-Bot -->
     <div class="mb-24">
-      <div class="bg-luxgray/10 rounded-xl p-8 shadow-md">
-        <h2 class="text-3xl font-bold mb-4 text-luxgold flex items-center justify-center gap-2">
-          <span>🤖</span> VIP-Bot (Creator)
-        </h2>
-        <p class="text-lg mb-2">49 €/Monat</p>
-        <p class="text-sm text-luxgold/80 mb-4">Optional: Persönliche Einrichtung für 159 € (einmalig)</p>
-        <ul class="text-left text-sm space-y-1 max-w-md mx-auto">
-          <li>✅ Telegram-Zugang vollautomatisiert</li>
-          <li>✅ Altersprüfung & Gruppenfreischaltung</li>
-          <li>✅ Sheet-Logging & VIP-Status-Handling</li>
-        </ul>
-      </div>
-
-      <!-- Agentur Variante -->
-      <div class="mt-12 border border-blue-400 rounded-xl p-8 shadow-md animate-pulse">
-        <h2 class="text-3xl font-bold mb-4 text-blue-400 flex items-center justify-center gap-2">
-          <span>🏢</span> VIP-Bot – LuxAgency <span class="text-xs bg-blue-400 text-white px-2 py-0.5 rounded">nur für Agenturen</span>
-        </h2>
-        <p class="text-lg mb-2">49 €/Monat</p>
-        <p class="text-sm text-blue-300 mb-2">+ 159 € einmalig für Einrichtung</p>
+      <h2 class="text-3xl font-bold mb-10 text-luxgold">VIP-Bot</h2>
+      <div class="grid md:grid-cols-4 gap-8">
+        <div class="bg-luxgray/10 rounded-xl p-6 shadow-md">
+          <h3 class="text-xl font-semibold mb-2 text-luxgold flex items-center gap-2">🤖 Creator</h3>
+          <p class="text-lg font-bold mb-2">49 €/Monat</p>
+          <p class="text-sm text-luxgold/80 mb-4">+ 159 € einmalig für Einrichtung</p>
+          <ul class="text-left text-sm space-y-1">
+            <li>✅ Telegram-Zugang automatisiert</li>
+            <li>✅ Altersprüfung & Gruppenfreischaltung</li>
+            <li>✅ Sheet-Logging & VIP-Status</li>
+          </ul>
+        </div>
+        <div class="md:col-span-1 border border-blue-400 rounded-xl p-6 shadow-md animate-pulse">
+          <h3 class="text-xl font-semibold text-blue-400 mb-2 flex items-center gap-2">🏢 LuxAgency <span class="text-xs bg-blue-400 text-white px-2 py-0.5 rounded">nur für Agenturen</span></h3>
+          <p class="text-lg mb-2">49 €/Monat</p>
+          <p class="text-sm text-blue-300">+ 159 € einmalig für Einrichtung</p>
+        </div>
       </div>
     </div>
 
     <!-- VaultRoom -->
     <div class="mb-24">
       <h2 class="text-3xl font-bold mb-10 text-luxgold">VaultRoom</h2>
-      <div class="grid md:grid-cols-3 gap-8">
+      <div class="grid md:grid-cols-4 gap-8">
         <div class="bg-luxgray/10 rounded-xl p-6 shadow-md">
           <h3 class="text-xl font-semibold mb-2 text-luxgold flex items-center gap-2">📦 LuxStart</h3>
           <p class="text-lg font-bold mb-2">49 €/Monat</p>
@@ -61,21 +58,19 @@ import Layout from "../layouts/BaseLayout.astro";
             <li>✅ KI-Vorschläge & Optimierung</li>
           </ul>
         </div>
+        <div class="border border-blue-400 rounded-xl p-6 shadow-md animate-pulse">
+          <h3 class="text-xl font-semibold text-blue-400 mb-2 flex items-center gap-2">🏢 LuxAgency <span class="text-xs bg-blue-400 text-white px-2 py-0.5 rounded">nur für Agenturen</span></h3>
+          <p class="text-lg mb-2">129 €/Monat</p>
+          <p class="text-sm text-blue-300">+ 49 €/Monat je weiteres Model</p>
+        </div>
       </div>
       <p class="text-sm text-luxgold/80 mt-6">Einmalige Einrichtung: 259 €</p>
-
-      <!-- Agentur Variante -->
-      <div class="mt-12 border border-blue-400 rounded-xl p-8 shadow-md animate-pulse">
-        <h3 class="text-2xl font-semibold text-blue-400 mb-2 flex items-center gap-2">🏢 VaultRoom – LuxAgency <span class="text-xs bg-blue-400 text-white px-2 py-0.5 rounded">nur für Agenturen</span></h3>
-        <p class="text-lg mb-2">129 €/Monat</p>
-        <p class="text-sm text-blue-300">+ 49 €/Monat je weiteres Model</p>
-      </div>
     </div>
 
     <!-- StageOne -->
     <div>
       <h2 class="text-3xl font-bold mb-10 text-luxgold">StageOne – Multi-Posting</h2>
-      <div class="grid md:grid-cols-3 gap-8">
+      <div class="grid md:grid-cols-4 gap-8">
         <div class="bg-luxgray/10 rounded-xl p-6 shadow-md">
           <h3 class="text-xl font-semibold mb-2 text-luxgold flex items-center gap-2">✏️ LuxStart</h3>
           <p class="text-lg font-bold mb-2">19 €/Monat</p>
@@ -104,13 +99,11 @@ import Layout from "../layouts/BaseLayout.astro";
             <li>✅ Upsell-Automation & Analyse</li>
           </ul>
         </div>
-      </div>
-
-      <!-- Agentur Variante -->
-      <div class="mt-12 border border-blue-400 rounded-xl p-8 shadow-md animate-pulse">
-        <h3 class="text-2xl font-semibold text-blue-400 mb-2 flex items-center gap-2">🏢 StageOne – LuxAgency <span class="text-xs bg-blue-400 text-white px-2 py-0.5 rounded">nur für Agenturen</span></h3>
-        <p class="text-lg mb-2">69 €/Monat</p>
-        <p class="text-sm text-blue-300">+ 49 €/Monat je weiteres Model</p>
+        <div class="border border-blue-400 rounded-xl p-6 shadow-md animate-pulse">
+          <h3 class="text-xl font-semibold text-blue-400 mb-2 flex items-center gap-2">🏢 LuxAgency <span class="text-xs bg-blue-400 text-white px-2 py-0.5 rounded">nur für Agenturen</span></h3>
+          <p class="text-lg mb-2">69 €/Monat</p>
+          <p class="text-sm text-blue-300">+ 49 €/Monat je weiteres Model</p>
+        </div>
       </div>
     </div>
   </section>

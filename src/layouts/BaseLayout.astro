@@ -6,86 +6,78 @@ import "../styles/global.css";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Luxbase</title>
+
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
     <meta name="theme-color" content="#0d0d0d" />
 
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-      window.supabase = supabase.createClient(
+      window.supabase = createClient(
         import.meta.env.PUBLIC_SUPABASE_URL,
         import.meta.env.PUBLIC_SUPABASE_ANON_KEY
       );
     </script>
   </head>
   <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans">
-    <!-- Header -->
-    <header class="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-black/70 backdrop-blur shadow-md">
-      <h1 class="text-2xl md:text-3xl font-serif font-bold text-luxgold">Luxbase</h1>
-      <button id="openLogin" class="text-sm px-4 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-luxblack transition">Login</button>
+    <!-- ================= HEADER / NAV ================= -->
+    <header class="bg-black/80 backdrop-blur text-white shadow-md sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <!-- Logo -->
+        <a href="/" class="flex items-center gap-2 text-luxgold font-serif font-bold text-2xl">
+          Luxbase
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-10 text-sm font-medium">
+          <a href="/#tools" class="hover:text-luxgold transition">Tools</a>
+          <a href="/weare"  class="hover:text-luxgold transition">Über&nbsp;uns</a>
+          <a href="/kontakt" class="hover:text-luxgold transition">Kontakt</a>
+        </nav>
+
+        <!-- Right actions -->
+        <div class="flex items-center gap-4">
+          <a href="/login" class="hidden md:inline-block px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+            Login
+          </a>
+
+          <!-- Burger -->
+          <button id="mobileMenuBtn" class="md:hidden w-9 h-9 flex flex-col justify-between items-center" aria-label="Menü öffnen / schließen">
+            <span class="block w-full h-0.5 bg-luxgold"></span>
+            <span class="block w-full h-0.5 bg-luxgold"></span>
+            <span class="block w-full h-0.5 bg-luxgold"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Drawer -->
+      <div id="mobileMenu" class="md:hidden hidden bg-black/95 backdrop-blur border-t border-luxgray">
+        <nav class="flex flex-col text-center py-6 text-lg font-medium gap-4">
+          <a href="/#tools"     class="hover:text-luxgold transition" onclick="toggleMenu()">Tools</a>
+          <a href="/weare"      class="hover:text-luxgold transition" onclick="toggleMenu()">Über&nbsp;uns</a>
+          <a href="/kontakt"    class="hover:text-luxgold transition" onclick="toggleMenu()">Kontakt</a>
+          <a href="/login"      class="mx-auto mt-4 px-6 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition" onclick="toggleMenu()">Login</a>
+        </nav>
+      </div>
     </header>
 
-    <!-- Slot for page-specific content -->
-    <main class="flex-1"><slot /></main>
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="flex-1">
+      <slot />
+    </main>
 
-    <!-- Footer -->
+    <!-- ================= FOOTER ====================== -->
     <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
       © {new Date().getFullYear()} Luxbase – Automation with Style.
     </footer>
 
-    <!-- Modal & Auth Logic -->
+    <!-- Mobile menu toggle -->
     <script>
-      const $ = (id) => document.getElementById(id);
-      const modal = $("loginModal");
-      const show = (id) => {
-        ["loginBox", "registerBox", "resetBox"].forEach((b) => $(b)?.classList.add("hidden"));
-        $(id)?.classList.remove("hidden");
-      };
-
-      $("openLogin").onclick = () => {
-        modal.classList.remove("hidden");
-        show("loginBox");
-      };
-      $("closeLogin").onclick = () => modal.classList.add("hidden");
-      modal.onclick = (e) => {
-        if (e.target === modal) modal.classList.add("hidden");
-      };
-
-      $("linkToRegister").addEventListener("click", () => show("registerBox"));
-      $("linkToLogin").addEventListener("click", () => show("loginBox"));
-      $("linkToReset").addEventListener("click", () => show("resetBox"));
-      $("backToLogin").addEventListener("click", () => show("loginBox"));
-
-      const togglePw = (id) => {
-        const el = $(id);
-        el.type = el.type === "password" ? "text" : "password";
-      };
-      $("toggleLoginPw").onclick = () => togglePw("loginPassword");
-      $("toggleSignupPw").onclick = () => togglePw("signupPassword");
-
-      // Live‑Validierung beim Registrieren
-      $("signupPassword").addEventListener("input", (e) => {
-        const v = e.target.value;
-        const rules = [
-          { t: "Mindestens 8 Zeichen", ok: v.length >= 8 },
-          { t: "Mind. ein Großbuchstabe", ok: /[A-Z]/.test(v) },
-          { t: "Mind. eine Zahl", ok: /\d/.test(v) },
-          { t: "Mind. ein Sonderzeichen", ok: /[^A-Za-z0-9]/.test(v) },
-        ];
-        $("pwHints").innerHTML = rules
-          .map((r) => `<p class="${r.ok ? "text-green-400" : "text-gray-400"}">• ${r.t}</p>`) // eslint-disable-line quotes
-          .join("");
-      });
-
-      // Login
-      $("btnLogin").onclick = async () => {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: $("loginEmail").value.trim(),
-          password: $("loginPassword").value,
-        });
-        $("loginMsg").textContent = error ? error.message : "";
-        if (!error) window.location.href = "/dashboard";
-      };
+      function toggleMenu () {
+        document.getElementById('mobileMenu').classList.toggle('hidden');
+      }
+      document.getElementById('mobileMenuBtn')?.addEventListener('click', toggleMenu);
     </script>
   </body>
 </html>

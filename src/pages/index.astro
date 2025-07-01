@@ -1,55 +1,92 @@
 ---
+// pages/index.astro
 import Layout from "../layouts/BaseLayout.astro";
 ---
 
 <Layout>
+  <!-- HERO ---------------------------------------------------- -->
+  <section class="flex flex-col items-center justify-center min-h-[70vh] text-center">
+    <img
+      src="/logo.png"
+      alt="Luxbase Logo & Claim"
+      class="w-3/4 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
+      loading="eager"
+    />
+
+    <a
+      href="#tools"
+      class="mt-10 inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg shadow-lux hover:bg-yellow-400 transition"
+    >
+      Tools entdecken
+    </a>
+  </section>
+
   <!-- TOOLS GRID ---------------------------------------------- -->
-  <section id="tools" class="max-w-6xl mx-auto grid gap-20 md:gap-32 py-24 px-6">
-    <!-- BaaS / VIP-Bot -->
-    <div class="grid md:grid-cols-2 gap-10 items-center">
-      <img src="/baas.png" alt="BaaS – Automatisiere deine VIP-Gruppe" class="mx-auto max-w-md rounded-lg shadow-lg" />
-      <div class="text-center md:text-left">
-        <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">BaaS – Dein VIP-Bot</h2>
-        <p class="text-lg leading-relaxed mb-8">
+  <section id="tools" class="max-w-6xl mx-auto space-y-24 md:space-y-32 py-24 px-6">
+    <!-- ====== BaaS ================================================= -->
+    <div class="flex flex-col md:grid md:grid-cols-2 md:gap-10 items-center">
+      <img
+        src="/baas.png"
+        alt="BaaS – Automatisiere deine VIP-Gruppe"
+        class="mx-auto mb-10 md:mb-0 w-full max-w-sm sm:max-w-md lg:max-w-lg object-contain"
+      />
+      <div class="text-center md:text-left space-y-6">
+        <h2 class="text-3xl sm:text-4xl font-serif font-bold text-luxgold">BaaS – Dein VIP-Bot</h2>
+        <p class="text-base sm:text-lg leading-relaxed">
           Nutze unseren VIP-Bot, um deine Telegram-Gruppe vollautomatisiert zu verwalten,
           Altersabfragen durchzuführen und zahlende Member freizuschalten.
         </p>
-        <a href="/vipbot"
-           class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition">
+        <a
+          href="/vipbot"
+          class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition"
+        >
           Mehr erfahren
         </a>
       </div>
     </div>
 
-    <!-- VaultRoom -->
-    <div class="grid md:grid-cols-2 gap-10 items-center md:flex-row-reverse">
-      <img src="/vaultroom.png" alt="VaultRoom – Content-Safe" class="mx-auto max-w-md rounded-lg shadow-lg" />
-      <div class="text-center md:text-left">
-        <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">VaultRoom – Content-Safe</h2>
-        <p class="text-lg leading-relaxed mb-8">
+    <!-- ====== VaultRoom ============================================ -->
+    <div class="flex flex-col md:grid md:grid-cols-2 md:gap-10 items-center md:flex-row-reverse">
+      <img
+        src="/vaultroom.png"
+        alt="VaultRoom – Content-Safe"
+        class="mx-auto mb-10 md:mb-0 w-full max-w-sm sm:max-w-md lg:max-w-lg object-contain"
+      />
+      <div class="text-center md:text-left space-y-6">
+        <h2 class="text-3xl sm:text-4xl font-serif font-bold text-luxgold">VaultRoom – Content-Safe</h2>
+        <p class="text-base sm:text-lg leading-relaxed">
           Ordne, plane und archiviere dein Roh-Material sicher an einem Ort. Schluss mit Chaos –
           nutze KI-gestützte Tags, Versionierung und Bulk-Uploads.
         </p>
-        <a href="/vault"
-           class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition">
+        <a
+          href="/vault"
+          class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition"
+        >
           Mehr erfahren
         </a>
       </div>
     </div>
 
-    <!-- StageOne -->
-    <div class="grid md:grid-cols-2 gap-10 items-center">
-      <img src="/stageone.png" alt="StageOne – Multi-Platform Scheduling" class="mx-auto max-w-md rounded-lg shadow-lg" />
-      <div class="text-center md:text-left">
-        <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">StageOne – Multi-Posting</h2>
-        <p class="text-lg leading-relaxed mb-8">
-          Plane Posts, Re-Use Captions und veröffentliche parallel auf OnlyFans, Fansly & Co.
+    <!-- ====== StageOne ============================================ -->
+    <div class="flex flex-col md:grid md:grid-cols-2 md:gap-10 items-center">
+      <img
+        src="/stageone.png"
+        alt="StageOne – Multi-Platform Scheduling"
+        class="mx-auto mb-10 md:mb-0 w-full max-w-sm sm:max-w-md lg:max-w-lg object-contain"
+      />
+      <div class="text-center md:text-left space-y-6">
+        <h2 class="text-3xl sm:text-4xl font-serif font-bold text-luxgold">StageOne – Multi-Posting</h2>
+        <p class="text-base sm:text-lg leading-relaxed">
+          Plane Posts, Re-Use Captions und veröffentliche parallel auf OnlyFans, Fansly &amp; Co.
           Spare Zeit und steigere Reichweite mit einem Klick.
         </p>
-        <a href="/cpplattform"
-           class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition">
+        <a
+          href="/cpplattform"
+          class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition"
+        >
           Mehr erfahren
         </a>
       </div>
     </div>
   </section>
+</Layout>

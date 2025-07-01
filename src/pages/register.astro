@@ -1,40 +1,80 @@
-<!-- src/pages/register.astro -->
 ---
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY)
+import "../styles/global.css";
 ---
 
-<form on:submit|preventDefault={async (e) => {
-  const form = e.target;
-  const email = form.email.value;
-  const password = form.password.value;
-  const name = form.name.value;
-  const role = form.role.value;
+<!-- PURE HTML ------------------------------------------------>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registrieren – Luxbase</title>
+  </head>
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        name,
-        role,
-      }
-    }
-  });
+  <body class="min-h-screen flex items-center justify-center bg-luxblack text-white">
+    <form id="regForm"
+          class="w-full max-w-md bg-luxgray p-8 rounded-xl shadow-lux space-y-4">
+      <h1 class="text-3xl font-serif font-bold text-luxgold mb-4 text-center">
+        Konto erstellen
+      </h1>
 
-  if (error) {
-    alert(error.message);
-  } else {
-    window.location.href = '/login';
-  }
-}}>
-  <input type="text" name="name" placeholder="Dein Name" required />
-  <input type="email" name="email" placeholder="E-Mail" required />
-  <input type="password" name="password" placeholder="Passwort" required />
-  <select name="role" required>
-    <option value="creator">Creator / Model</option>
-    <option value="agentur">Agentur</option>
-  </select>
-  <button type="submit">Registrieren</button>
-</form>
+      <input id="name"  type="text"     placeholder="Dein Name"
+             class="w-full px-4 py-3 rounded bg-black border border-gray-600" />
+
+      <input id="email" type="email"    placeholder="E-Mail"
+             class="w-full px-4 py-3 rounded bg-black border border-gray-600" required />
+
+      <input id="pass"  type="password" placeholder="Passwort"
+             class="w-full px-4 py-3 rounded bg-black border border-gray-600" required />
+
+      <select id="role" class="w-full px-4 py-3 rounded bg-black border border-gray-600 text-white">
+        <option value="creator">Creator / Model</option>
+        <option value="agentur">Agentur</option>
+      </select>
+
+      <button
+        type="submit"
+        class="w-full bg-luxgold text-luxblack font-semibold py-3 rounded hover:bg-yellow-400 transition">
+        Registrieren
+      </button>
+
+      <p id="msg" class="text-center text-red-400 min-h-[1.25rem] text-sm"></p>
+    </form>
+
+    <!--  CLIENT-SIDE SCRIPT  --------------------------------->
+    <script type="module">
+      import { supabase } from '/src/lib/supabase';
+
+      const form = document.getElementById('regForm');
+      const msg  = document.getElementById('msg');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        msg.textContent = '';
+
+        const name  = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const pass  = document.getElementById('pass').value;
+        const role  = document.getElementById('role').value;
+
+        // 1) Supabase Auth
+        const { data, error } = await supabase.auth.signUp({ email, password: pass });
+        if (error) { msg.textContent = error.message; return; }
+
+        // 2) Profil in Tabelle anlegen
+        const { error: insertErr } = await supabase
+          .from('profiles')
+          .insert({ id: data.user.id, name, role });
+
+        if (insertErr) {
+          msg.textContent = 'Registrierung ok – Profil konnte nicht gespeichert werden.';
+          console.error(insertErr);
+          return;
+        }
+
+        // Erfolg
+        msg.textContent = 'Erfolgreich registriert – weiterleiten …';
+        setTimeout(() => (location.href = '/dashboard'), 1000);
+      });
+    </script>
+  </body>
+</html>

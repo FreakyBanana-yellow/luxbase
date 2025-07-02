@@ -44,6 +44,18 @@ const InvalidComponentArgs = {
   message: (name) => `Invalid arguments passed to${name ? ` <${name}>` : ""} component.`,
   hint: "Astro components cannot be rendered directly via function call, such as `Component()` or `{items.map(Component)}`."
 };
+const AstroGlobUsedOutside = {
+  name: "AstroGlobUsedOutside",
+  title: "Astro.glob() used outside of an Astro file.",
+  message: (globStr) => `\`Astro.glob(${globStr})\` can only be used in \`.astro\` files. \`import.meta.glob(${globStr})\` can be used instead to achieve a similar result.`,
+  hint: "See Vite's documentation on `import.meta.glob` for more information: https://vite.dev/guide/features.html#glob-import"
+};
+const AstroGlobNoMatch = {
+  name: "AstroGlobNoMatch",
+  title: "Astro.glob() did not match any files.",
+  message: (globStr) => `\`Astro.glob(${globStr})\` did not return any matching files.`,
+  hint: "Check the pattern for typos."
+};
 
 function normalizeLF(code) {
   return code.replace(/\r\n|\r(?!\n)|\n/g, "\n");
@@ -149,7 +161,37 @@ function createComponent(arg1, moduleId, propagation) {
   }
 }
 
+const ASTRO_VERSION = "4.16.18";
 const NOOP_MIDDLEWARE_HEADER = "X-Astro-Noop";
+
+function createAstroGlobFn() {
+  const globHandler = (importMetaGlobResult) => {
+    if (typeof importMetaGlobResult === "string") {
+      throw new AstroError({
+        ...AstroGlobUsedOutside,
+        message: AstroGlobUsedOutside.message(JSON.stringify(importMetaGlobResult))
+      });
+    }
+    let allEntries = [...Object.values(importMetaGlobResult)];
+    if (allEntries.length === 0) {
+      throw new AstroError({
+        ...AstroGlobNoMatch,
+        message: AstroGlobNoMatch.message(JSON.stringify(importMetaGlobResult))
+      });
+    }
+    return Promise.all(allEntries.map((fn) => fn()));
+  };
+  return globHandler;
+}
+function createAstro(site) {
+  return {
+    // TODO: this is no longer necessary for `Astro.site`
+    // but it somehow allows working around caching issues in content collections for some tests
+    site: void 0,
+    generator: `Astro v${ASTRO_VERSION}`,
+    glob: createAstroGlobFn()
+  };
+}
 
 function isPromise(value) {
   return !!value && typeof value === "object" && "then" in value && typeof value.then === "function";
@@ -743,6 +785,9 @@ function isSlotString(str) {
   return !!str[slotString];
 }
 function renderSlot(result, slotted, fallback) {
+  if (!slotted && fallback) {
+    return renderSlot(result, fallback);
+  }
   return {
     async render(destination) {
       await renderChild(destination, typeof slotted === "function" ? slotted(result) : slotted);
@@ -771,7 +816,7 @@ async function renderSlotToString(result, slotted, fallback) {
       }
     }
   };
-  const renderInstance = renderSlot(result, slotted);
+  const renderInstance = renderSlot(result, slotted, fallback);
   await renderInstance.render(temporaryDestination);
   return markHTMLString(new SlotString(content, instructions));
 }
@@ -1482,4 +1527,4 @@ function normalizeProps(props) {
 "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_".split("").reduce((v, c) => (v[c.charCodeAt(0)] = c, v), []);
 "-0123456789_".split("").reduce((v, c) => (v[c.charCodeAt(0)] = c, v), []);
 
-export { NOOP_MIDDLEWARE_HEADER as N, renderTemplate as a, renderHead as b, createComponent as c, decodeKey as d, maybeRenderHead as m, renderComponent as r };
+export { NOOP_MIDDLEWARE_HEADER as N, renderTemplate as a, renderHead as b, createComponent as c, createAstro as d, renderSlot as e, decodeKey as f, maybeRenderHead as m, renderComponent as r };

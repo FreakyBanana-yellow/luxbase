@@ -1,4 +1,4 @@
 import 'kleur/colors';
 import 'html-escaper';
 import 'clsx';
-import './astro/server_CBNIxeik.mjs';
+import './astro/server_DDPzIoUP.mjs';

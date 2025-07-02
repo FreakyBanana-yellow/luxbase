@@ -1,0 +1,125 @@
+import { c as createComponent, d as createAstro, a as renderTemplate, e as renderSlot, b as renderHead } from './astro/server_DDPzIoUP.mjs';
+import 'kleur/colors';
+import 'html-escaper';
+import 'clsx';
+/* empty css                               */
+
+var __freeze = Object.freeze;
+var __defProp = Object.defineProperty;
+var __template = (cooked, raw) => __freeze(__defProp(cooked, "raw", { value: __freeze(raw || cooked.slice()) }));
+var _a;
+const $$Astro = createAstro();
+const $$BaseLayout = createComponent(async ($$result, $$props, $$slots) => {
+  const Astro2 = $$result.createAstro($$Astro, $$props, $$slots);
+  Astro2.self = $$BaseLayout;
+  Astro2.env.PUBLIC_SUPABASE_URL;
+  Astro2.env.PUBLIC_SUPABASE_ANON_KEY;
+  const title = "Registrieren \u2013 Luxbase";
+  return renderTemplate(_a || (_a = __template(['<html lang="de" class="scroll-smooth"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>', '</title><!-- Google Fonts --><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"><meta name="theme-color" content="#0d0d0d">', '</head> <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans"> <!-- ================= HEADER / NAV ================= --> <header class="bg-black/80 backdrop-blur text-white shadow-md sticky top-0 z-50"> <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center"> <a href="/" class="flex items-center gap-2 text-luxgold font-serif font-bold text-xl"> <img src="/logo.png" alt="Luxbase Logo" class="h-6 w-auto">\nLuxbase\n</a> <nav class="hidden md:flex items-center gap-10 text-sm font-medium"> <a href="/#tools" class="hover:text-luxgold transition">Tools</a> <a href="/preise" class="hover:text-luxgold transition">Preise</a> <a href="/weare" class="hover:text-luxgold transition">\xDCber&nbsp;uns</a> <a href="/kontakt" class="hover:text-luxgold transition">Kontakt</a> </nav> <div class="flex items-center gap-4 relative"> <button id="openLogin" class="hidden md:inline-block px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">Login</button> <button id="mobileMenuBtn" class="md:hidden w-9 h-9 flex flex-col justify-between items-center" aria-label="Men\xFC \xF6ffnen / schlie\xDFen"> <span class="block w-full h-0.5 bg-luxgold"></span> <span class="block w-full h-0.5 bg-luxgold"></span> <span class="block w-full h-0.5 bg-luxgold"></span> </button> </div> </div> <div id="mobileMenu" class="md:hidden hidden bg-black/95 backdrop-blur border-t border-luxgray"> <nav class="flex flex-col text-center py-6 text-lg font-medium gap-4"> <a href="/#tools" class="hover:text-luxgold transition" onclick="toggleMenu()">Tools</a> <a href="/preise" class="hover:text-luxgold transition" onclick="toggleMenu()">Preise</a> <a href="/weare" class="hover:text-luxgold transition" onclick="toggleMenu()">\xDCber&nbsp;uns</a> <a href="/kontakt" class="hover:text-luxgold transition" onclick="toggleMenu()">Kontakt</a> <a href="/register" class="mx-auto mt-4 px-6 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition" onclick="toggleMenu()">Registrieren</a> </nav> </div> </header> <div id="loginDropdown" class="fixed z-50 hidden"> <div class="bg-luxgray p-6 rounded-xl shadow-xl w-80 relative text-white border border-luxgold"> <button id="closeDropdown" class="absolute top-2 right-2">&times;</button> <h2 class="text-xl font-serif text-luxgold text-center mb-4">Login</h2> <input id="ddEmail" type="email" placeholder="E\u2011Mail" class="w-full px-3 py-2 mb-3 rounded bg-black border border-gray-600"> <div class="relative mb-3"> <input id="ddPass" type="password" placeholder="Passwort" class="w-full px-3 py-2 pr-10 rounded bg-black border border-gray-600"> <button id="ddToggle" type="button" class="absolute right-2 top-1.5 text-sm text-luxgold">\u{1F441}</button> </div> <button id="ddSubmit" class="w-full bg-luxgold text-luxblack font-semibold py-2 rounded hover:bg-yellow-400 transition">Einloggen</button> <p id="ddMsg" class="text-red-400 text-center text-xs mt-2"></p> <p class="text-xs text-center mt-3">Noch kein Konto? <a href="/register" class="text-yellow-400 underline">Registrieren</a></p> </div> </div> <main class="flex-1"> ', ` </main> <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
+\xA9  Luxbase \u2013 Automation with Style.
+</footer> <!-- Supabase Init + Scripts --> <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+      window.supabase = createClient("\${supabaseUrl}", "\${supabaseKey}");
+
+      function toggleMenu() {
+        document.getElementById('mobileMenu').classList.toggle('hidden');
+      }
+      document.getElementById('mobileMenuBtn')?.addEventListener('click', toggleMenu);
+
+      const loginBtn = document.getElementById('openLogin');
+      const dropdown = document.getElementById('loginDropdown');
+      const closeBtn = document.getElementById('closeDropdown');
+
+      function showDropdown() {
+        const rect = loginBtn.getBoundingClientRect();
+        dropdown.style.top = rect.bottom + window.scrollY + 'px';
+        dropdown.style.left = rect.right - 320 + 'px';
+        dropdown.classList.remove('hidden');
+      }
+      function hideDropdown() {
+        dropdown.classList.add('hidden');
+      }
+
+      loginBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.contains('hidden') ? showDropdown() : hideDropdown();
+      });
+      closeBtn?.addEventListener('click', hideDropdown);
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && e.target !== loginBtn) hideDropdown();
+      });
+
+      document.getElementById('ddToggle')?.addEventListener('click', () => {
+        const f = document.getElementById('ddPass');
+        f.type = f.type === 'password' ? 'text' : 'password';
+      });
+
+      document.getElementById('ddSubmit')?.addEventListener('click', async () => {
+        const email = document.getElementById('ddEmail').value.trim();
+        const password = document.getElementById('ddPass').value.trim();
+
+        const { error } = await window.supabase.auth.signInWithPassword({ email, password });
+        const msg = document.getElementById('ddMsg');
+        if (error) {
+          msg.textContent = error.message;
+        } else {
+          msg.textContent = 'Erfolgreich eingeloggt!';
+          setTimeout(() => window.location.href = '/dashboard', 1000);
+        }
+      });
+    <\/script> </body> </html>`], ['<html lang="de" class="scroll-smooth"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>', '</title><!-- Google Fonts --><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"><meta name="theme-color" content="#0d0d0d">', '</head> <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans"> <!-- ================= HEADER / NAV ================= --> <header class="bg-black/80 backdrop-blur text-white shadow-md sticky top-0 z-50"> <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center"> <a href="/" class="flex items-center gap-2 text-luxgold font-serif font-bold text-xl"> <img src="/logo.png" alt="Luxbase Logo" class="h-6 w-auto">\nLuxbase\n</a> <nav class="hidden md:flex items-center gap-10 text-sm font-medium"> <a href="/#tools" class="hover:text-luxgold transition">Tools</a> <a href="/preise" class="hover:text-luxgold transition">Preise</a> <a href="/weare" class="hover:text-luxgold transition">\xDCber&nbsp;uns</a> <a href="/kontakt" class="hover:text-luxgold transition">Kontakt</a> </nav> <div class="flex items-center gap-4 relative"> <button id="openLogin" class="hidden md:inline-block px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">Login</button> <button id="mobileMenuBtn" class="md:hidden w-9 h-9 flex flex-col justify-between items-center" aria-label="Men\xFC \xF6ffnen / schlie\xDFen"> <span class="block w-full h-0.5 bg-luxgold"></span> <span class="block w-full h-0.5 bg-luxgold"></span> <span class="block w-full h-0.5 bg-luxgold"></span> </button> </div> </div> <div id="mobileMenu" class="md:hidden hidden bg-black/95 backdrop-blur border-t border-luxgray"> <nav class="flex flex-col text-center py-6 text-lg font-medium gap-4"> <a href="/#tools" class="hover:text-luxgold transition" onclick="toggleMenu()">Tools</a> <a href="/preise" class="hover:text-luxgold transition" onclick="toggleMenu()">Preise</a> <a href="/weare" class="hover:text-luxgold transition" onclick="toggleMenu()">\xDCber&nbsp;uns</a> <a href="/kontakt" class="hover:text-luxgold transition" onclick="toggleMenu()">Kontakt</a> <a href="/register" class="mx-auto mt-4 px-6 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition" onclick="toggleMenu()">Registrieren</a> </nav> </div> </header> <div id="loginDropdown" class="fixed z-50 hidden"> <div class="bg-luxgray p-6 rounded-xl shadow-xl w-80 relative text-white border border-luxgold"> <button id="closeDropdown" class="absolute top-2 right-2">&times;</button> <h2 class="text-xl font-serif text-luxgold text-center mb-4">Login</h2> <input id="ddEmail" type="email" placeholder="E\u2011Mail" class="w-full px-3 py-2 mb-3 rounded bg-black border border-gray-600"> <div class="relative mb-3"> <input id="ddPass" type="password" placeholder="Passwort" class="w-full px-3 py-2 pr-10 rounded bg-black border border-gray-600"> <button id="ddToggle" type="button" class="absolute right-2 top-1.5 text-sm text-luxgold">\u{1F441}</button> </div> <button id="ddSubmit" class="w-full bg-luxgold text-luxblack font-semibold py-2 rounded hover:bg-yellow-400 transition">Einloggen</button> <p id="ddMsg" class="text-red-400 text-center text-xs mt-2"></p> <p class="text-xs text-center mt-3">Noch kein Konto? <a href="/register" class="text-yellow-400 underline">Registrieren</a></p> </div> </div> <main class="flex-1"> ', ` </main> <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
+\xA9  Luxbase \u2013 Automation with Style.
+</footer> <!-- Supabase Init + Scripts --> <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+      window.supabase = createClient("\\\${supabaseUrl}", "\\\${supabaseKey}");
+
+      function toggleMenu() {
+        document.getElementById('mobileMenu').classList.toggle('hidden');
+      }
+      document.getElementById('mobileMenuBtn')?.addEventListener('click', toggleMenu);
+
+      const loginBtn = document.getElementById('openLogin');
+      const dropdown = document.getElementById('loginDropdown');
+      const closeBtn = document.getElementById('closeDropdown');
+
+      function showDropdown() {
+        const rect = loginBtn.getBoundingClientRect();
+        dropdown.style.top = rect.bottom + window.scrollY + 'px';
+        dropdown.style.left = rect.right - 320 + 'px';
+        dropdown.classList.remove('hidden');
+      }
+      function hideDropdown() {
+        dropdown.classList.add('hidden');
+      }
+
+      loginBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.contains('hidden') ? showDropdown() : hideDropdown();
+      });
+      closeBtn?.addEventListener('click', hideDropdown);
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && e.target !== loginBtn) hideDropdown();
+      });
+
+      document.getElementById('ddToggle')?.addEventListener('click', () => {
+        const f = document.getElementById('ddPass');
+        f.type = f.type === 'password' ? 'text' : 'password';
+      });
+
+      document.getElementById('ddSubmit')?.addEventListener('click', async () => {
+        const email = document.getElementById('ddEmail').value.trim();
+        const password = document.getElementById('ddPass').value.trim();
+
+        const { error } = await window.supabase.auth.signInWithPassword({ email, password });
+        const msg = document.getElementById('ddMsg');
+        if (error) {
+          msg.textContent = error.message;
+        } else {
+          msg.textContent = 'Erfolgreich eingeloggt!';
+          setTimeout(() => window.location.href = '/dashboard', 1000);
+        }
+      });
+    <\/script> </body> </html>`])), title, renderHead(), renderSlot($$result, $$slots["default"]));
+}, "C:/Users/Anwender/Downloads/luxbase-starter/src/layouts/BaseLayout.astro", void 0);
+
+export { $$BaseLayout as $ };

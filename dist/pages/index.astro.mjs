@@ -1,8 +1,8 @@
 /* empty css                                       */
-import { c as createComponent, a as renderTemplate, r as renderComponent, m as maybeRenderHead } from '../chunks/astro/server_CBNIxeik.mjs';
+import { c as createComponent, a as renderTemplate, r as renderComponent, m as maybeRenderHead } from '../chunks/astro/server_DDPzIoUP.mjs';
 import 'kleur/colors';
 import 'html-escaper';
-import { $ as $$BaseLayout } from '../chunks/BaseLayout_KUFm6zUx.mjs';
+import { $ as $$BaseLayout } from '../chunks/BaseLayout_DlBnAhsg.mjs';
 export { renderers } from '../renderers.mjs';
 
 var __freeze = Object.freeze;

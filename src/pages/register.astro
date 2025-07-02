@@ -9,11 +9,13 @@ const supabase = createClient(
 
 <html lang="de">
   <head>
-    <title>Registrierung – Luxbase</title>
+    <title>Registrieren – Luxbase</title>
   </head>
   <body class="bg-luxblack text-white flex justify-center items-center min-h-screen px-4">
     <form class="bg-black border border-luxgold rounded-xl p-8 w-full max-w-md" id="registerForm">
       <h1 class="text-2xl font-bold text-center text-luxgold mb-6">Registrieren</h1>
+
+      <input id="name" type="text" placeholder="Dein Name" required class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600" />
 
       <input id="email" type="email" placeholder="E‑Mail" required class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600" />
 
@@ -90,18 +92,22 @@ const supabase = createClient(
           return;
         }
 
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const role = document.getElementById('role').value;
+
         const { error: regError } = await supabase.auth.signUp({
-          email: document.getElementById('email').value,
+          email,
           password: pw.value,
           options: {
-            data: { role: document.getElementById('role').value }
+            data: { name, role }
           }
         });
 
         if (regError) {
           error.textContent = regError.message;
         } else {
-          success.textContent = 'Registrierung erfolgreich. Bestätige deine E‑Mail.';
+          success.textContent = 'Registrierung erfolgreich. Bitte E‑Mail bestätigen.';
           form.reset();
         }
       });

@@ -1,14 +1,18 @@
 ---
 import Layout from "../layouts/BaseLayout.astro";
-title = "Registrieren – Luxbase";
+
+/*  Titel – MUSS gesetzt sein, sonst meckert Astro                         */
+title: "Registrieren – Luxbase";
 ---
 
-<Layout>
+<Layout {title}>
   <form
     id="registerForm"
     class="bg-black border border-luxgold rounded-xl p-8 w-full max-w-md mx-auto my-12"
   >
-    <h1 class="text-2xl font-bold text-center text-luxgold mb-6">Registrieren</h1>
+    <h1 class="text-2xl font-bold text-center text-luxgold mb-6">
+      Registrieren
+    </h1>
 
     <input
       id="name"
@@ -35,6 +39,7 @@ title = "Registrieren – Luxbase";
       <option value="agentur">Agentur</option>
     </select>
 
+    <!-- Passwort & Toggle -->
     <div class="relative mb-2">
       <input
         id="password"
@@ -47,7 +52,9 @@ title = "Registrieren – Luxbase";
         type="button"
         id="togglePw"
         class="absolute right-2 top-2 text-yellow-400"
-      >👁</button>
+      >
+        👁
+      </button>
     </div>
 
     <div class="relative mb-2">
@@ -62,9 +69,12 @@ title = "Registrieren – Luxbase";
         type="button"
         id="toggleConfirm"
         class="absolute right-2 top-2 text-yellow-400"
-      >👁</button>
+      >
+        👁
+      </button>
     </div>
 
+    <!-- Live-Feedback -->
     <ul id="passwordCriteria" class="text-sm mb-4">
       <li id="len"   class="text-red-400">• Mind. 8 Zeichen</li>
       <li id="upper" class="text-red-400">• Mind. 1 Großbuchstabe</li>
@@ -80,62 +90,61 @@ title = "Registrieren – Luxbase";
       Registrieren
     </button>
 
-    <p id="error" class="text-red-400 text-sm mt-4 text-center"></p>
+    <p id="error"   class="text-red-400 text-sm mt-4 text-center"></p>
     <p id="success" class="text-green-400 text-sm mt-4 text-center"></p>
   </form>
 
+  <!-- Formular-/Passwort- & Supabase-Logik -->
   <script type="module">
-    const pw = document.getElementById("password");
-    const confirm = document.getElementById("confirmPassword");
-    const errorEl = document.getElementById("error");
-    const successEl = document.getElementById("success");
+    const pw       = document.getElementById("password");
+    const confirm  = document.getElementById("confirmPassword");
+    const errorEl  = document.getElementById("error");
+    const successEl= document.getElementById("success");
 
-    const criteria = {
-      len:   document.getElementById("len"),
+    const crit = {
+      len  : document.getElementById("len"),
       upper: document.getElementById("upper"),
       lower: document.getElementById("lower"),
-      num:   document.getElementById("num"),
+      num  : document.getElementById("num"),
       match: document.getElementById("match"),
     };
 
-    function validate() {
-      const v = pw.value;
-      const okLen   = v.length >= 8;
-      const okUp    = /[A-Z]/.test(v);
-      const okLow   = /[a-z]/.test(v);
-      const okNum   = /\d/.test(v);
-      const okMatch = v === confirm.value && v !== "";
-
-      toggle(criteria.len,   okLen);
-      toggle(criteria.upper, okUp);
-      toggle(criteria.lower, okLow);
-      toggle(criteria.num,   okNum);
-      toggle(criteria.match, okMatch);
-
-      return okLen && okUp && okLow && okNum && okMatch;
+    function mark(el, ok) {
+      el.classList.toggle("text-green-400", ok);
+      el.classList.toggle("text-red-400", !ok);
     }
 
-    function toggle(el, state) {
-      el.classList.toggle("text-green-400", state);
-      el.classList.toggle("text-red-400", !state);
+    function valid() {
+      const v   = pw.value;
+      const len = v.length >= 8;
+      const up  = /[A-Z]/.test(v);
+      const low = /[a-z]/.test(v);
+      const num = /\d/.test(v);
+      const mat = v === confirm.value && v !== "";
+
+      mark(crit.len,   len);
+      mark(crit.upper, up);
+      mark(crit.lower, low);
+      mark(crit.num,   num);
+      mark(crit.match, mat);
+
+      return len && up && low && num && mat;
     }
 
-    pw.addEventListener("input", validate);
-    confirm.addEventListener("input", validate);
+    pw.addEventListener("input",     valid);
+    confirm.addEventListener("input",valid);
 
-    document.getElementById("togglePw").onclick = () => {
-      pw.type = pw.type === "password" ? "text" : "password";
-    };
-    document.getElementById("toggleConfirm").onclick = () => {
-      confirm.type = confirm.type === "password" ? "text" : "password";
-    };
+    // Toggle sichtbar
+    document.getElementById("togglePw").onclick      = () => pw.type      = pw.type      === "password" ? "text" : "password";
+    document.getElementById("toggleConfirm").onclick = () => confirm.type = confirm.type === "password" ? "text" : "password";
 
+    // Submit
     document.getElementById("registerForm").onsubmit = async (e) => {
       e.preventDefault();
-      errorEl.textContent = "";
+      errorEl.textContent   = "";
       successEl.textContent = "";
 
-      if (!validate()) {
+      if (!valid()) {
         errorEl.textContent = "Passwort erfüllt nicht alle Anforderungen.";
         return;
       }
@@ -147,16 +156,14 @@ title = "Registrieren – Luxbase";
       const { error } = await window.supabase.auth.signUp({
         email,
         password: pw.value,
-        options: {
-          data: { name, role }
-        }
+        options: { data: { name, role } }
       });
 
       if (error) {
         errorEl.textContent = error.message;
       } else {
-        successEl.textContent = "Registrierung erfolgreich. Bitte E‑Mail bestätigen …";
-        setTimeout(() => window.location.href = "/dashboard", 1800);
+        successEl.textContent = "Registrierung erfolgreich. Bitte E-Mail bestätigen …";
+        setTimeout(() => (window.location.href = role === "agentur" ? "/dashboard-agentur" : "/dashboard-model"), 1800);
       }
     };
   </script>

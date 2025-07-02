@@ -1,174 +1,163 @@
 ---
-layout: "../layouts/BaseLayout.astro"
-title: "Registrieren – Luxbase"
+import Layout from "../layouts/BaseLayout.astro";
+title = "Registrieren – Luxbase";
 ---
-<form
-  id="registerForm"
-  class="bg-black border border-luxgold rounded-xl p-8 w-full max-w-md mx-auto my-12"
->
-  <h1 class="text-2xl font-bold text-center text-luxgold mb-6">
-    Registrieren
-  </h1>
 
-  <input
-    id="name"
-    type="text"
-    placeholder="Dein Name"
-    required
-    class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600"
-  />
-
-  <input
-    id="email"
-    type="email"
-    placeholder="E-Mail"
-    required
-    class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600"
-  />
-
-  <select
-    id="role"
-    required
-    class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600"
+<Layout>
+  <form
+    id="registerForm"
+    class="bg-black border border-luxgold rounded-xl p-8 w-full max-w-md mx-auto my-12"
   >
-    <option value="creator">Creator / Model</option>
-    <option value="agentur">Agentur</option>
-  </select>
+    <h1 class="text-2xl font-bold text-center text-luxgold mb-6">Registrieren</h1>
 
-  <div class="relative mb-2">
     <input
-      id="password"
-      type="password"
-      placeholder="Passwort"
+      id="name"
+      type="text"
+      placeholder="Dein Name"
       required
-      class="w-full px-4 py-2 pr-10 rounded bg-gray-800 border border-gray-600"
+      class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600"
     />
-    <button
-      type="button"
-      id="togglePw"
-      class="absolute right-2 top-2 text-yellow-400"
-    >
-      👁
-    </button>
-  </div>
 
-  <div class="relative mb-2">
     <input
-      id="confirmPassword"
-      type="password"
-      placeholder="Passwort wiederholen"
+      id="email"
+      type="email"
+      placeholder="E-Mail"
       required
-      class="w-full px-4 py-2 pr-10 rounded bg-gray-800 border border-gray-600"
+      class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600"
     />
-    <button
-      type="button"
-      id="toggleConfirm"
-      class="absolute right-2 top-2 text-yellow-400"
+
+    <select
+      id="role"
+      required
+      class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600"
     >
-      👁
+      <option value="creator">Creator / Model</option>
+      <option value="agentur">Agentur</option>
+    </select>
+
+    <div class="relative mb-2">
+      <input
+        id="password"
+        type="password"
+        placeholder="Passwort"
+        required
+        class="w-full px-4 py-2 pr-10 rounded bg-gray-800 border border-gray-600"
+      />
+      <button
+        type="button"
+        id="togglePw"
+        class="absolute right-2 top-2 text-yellow-400"
+      >👁</button>
+    </div>
+
+    <div class="relative mb-2">
+      <input
+        id="confirmPassword"
+        type="password"
+        placeholder="Passwort wiederholen"
+        required
+        class="w-full px-4 py-2 pr-10 rounded bg-gray-800 border border-gray-600"
+      />
+      <button
+        type="button"
+        id="toggleConfirm"
+        class="absolute right-2 top-2 text-yellow-400"
+      >👁</button>
+    </div>
+
+    <ul id="passwordCriteria" class="text-sm mb-4">
+      <li id="len"   class="text-red-400">• Mind. 8 Zeichen</li>
+      <li id="upper" class="text-red-400">• Mind. 1 Großbuchstabe</li>
+      <li id="lower" class="text-red-400">• Mind. 1 Kleinbuchstabe</li>
+      <li id="num"   class="text-red-400">• Mind. 1 Zahl</li>
+      <li id="match" class="text-red-400">• Beide Passwörter müssen übereinstimmen</li>
+    </ul>
+
+    <button
+      type="submit"
+      class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition"
+    >
+      Registrieren
     </button>
-  </div>
 
-  <ul id="passwordCriteria" class="text-sm mb-4">
-    <li id="len"   class="text-red-400">• Mind. 8 Zeichen</li>
-    <li id="upper" class="text-red-400">• Mind. 1 Großbuchstabe</li>
-    <li id="lower" class="text-red-400">• Mind. 1 Kleinbuchstabe</li>
-    <li id="num"   class="text-red-400">• Mind. 1 Zahl</li>
-    <li id="match" class="text-red-400">• Beide Passwörter müssen übereinstimmen</li>
-  </ul>
+    <p id="error" class="text-red-400 text-sm mt-4 text-center"></p>
+    <p id="success" class="text-green-400 text-sm mt-4 text-center"></p>
+  </form>
 
-  <button
-    type="submit"
-    class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition"
-  >
-    Registrieren
-  </button>
+  <script type="module">
+    const pw = document.getElementById("password");
+    const confirm = document.getElementById("confirmPassword");
+    const errorEl = document.getElementById("error");
+    const successEl = document.getElementById("success");
 
-  <p id="error"   class="text-red-400 text-sm mt-4 text-center"></p>
-  <p id="success" class="text-green-400 text-sm mt-4 text-center"></p>
-</form>
+    const criteria = {
+      len:   document.getElementById("len"),
+      upper: document.getElementById("upper"),
+      lower: document.getElementById("lower"),
+      num:   document.getElementById("num"),
+      match: document.getElementById("match"),
+    };
 
-<script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    function validate() {
+      const v = pw.value;
+      const okLen   = v.length >= 8;
+      const okUp    = /[A-Z]/.test(v);
+      const okLow   = /[a-z]/.test(v);
+      const okNum   = /\d/.test(v);
+      const okMatch = v === confirm.value && v !== "";
 
-  const supabase = createClient(
-    import.meta.env.PUBLIC_SUPABASE_URL,
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-  );
+      toggle(criteria.len,   okLen);
+      toggle(criteria.upper, okUp);
+      toggle(criteria.lower, okLow);
+      toggle(criteria.num,   okNum);
+      toggle(criteria.match, okMatch);
 
-  const pw = document.getElementById("password");
-  const confirm = document.getElementById("confirmPassword");
-  const errorEl = document.getElementById("error");
-  const successEl = document.getElementById("success");
-
-  const criteria = {
-    len:   document.getElementById("len"),
-    upper: document.getElementById("upper"),
-    lower: document.getElementById("lower"),
-    num:   document.getElementById("num"),
-    match: document.getElementById("match"),
-  };
-
-  function validate() {
-    const v = pw.value;
-    const okLen   = v.length >= 8;
-    const okUp    = /[A-Z]/.test(v);
-    const okLow   = /[a-z]/.test(v);
-    const okNum   = /\d/.test(v);
-    const okMatch = v === confirm.value && v !== "";
-
-    toggle(criteria.len,   okLen);
-    toggle(criteria.upper, okUp);
-    toggle(criteria.lower, okLow);
-    toggle(criteria.num,   okNum);
-    toggle(criteria.match, okMatch);
-
-    return okLen && okUp && okLow && okNum && okMatch;
-  }
-
-  function toggle(el, state) {
-    el.classList.toggle("text-green-400", state);
-    el.classList.toggle("text-red-400", !state);
-  }
-
-  pw.addEventListener("input", validate);
-  confirm.addEventListener("input", validate);
-
-  document.getElementById("togglePw").onclick = () => {
-    pw.type = pw.type === "password" ? "text" : "password";
-  };
-
-  document.getElementById("toggleConfirm").onclick = () => {
-    confirm.type = confirm.type === "password" ? "text" : "password";
-  };
-
-  document.getElementById("registerForm").onsubmit = async (e) => {
-    e.preventDefault();
-    errorEl.textContent = "";
-    successEl.textContent = "";
-
-    if (!validate()) {
-      errorEl.textContent = "Passwort erfüllt nicht alle Anforderungen.";
-      return;
+      return okLen && okUp && okLow && okNum && okMatch;
     }
 
-    const name  = document.getElementById("name").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const role  = document.getElementById("role").value;
+    function toggle(el, state) {
+      el.classList.toggle("text-green-400", state);
+      el.classList.toggle("text-red-400", !state);
+    }
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password: pw.value,
-      options: {
-        data: { name, role }
+    pw.addEventListener("input", validate);
+    confirm.addEventListener("input", validate);
+
+    document.getElementById("togglePw").onclick = () => {
+      pw.type = pw.type === "password" ? "text" : "password";
+    };
+    document.getElementById("toggleConfirm").onclick = () => {
+      confirm.type = confirm.type === "password" ? "text" : "password";
+    };
+
+    document.getElementById("registerForm").onsubmit = async (e) => {
+      e.preventDefault();
+      errorEl.textContent = "";
+      successEl.textContent = "";
+
+      if (!validate()) {
+        errorEl.textContent = "Passwort erfüllt nicht alle Anforderungen.";
+        return;
       }
-    });
 
-    if (error) {
-      errorEl.textContent = error.message;
-    } else {
-      successEl.textContent = "Registrierung erfolgreich. Bitte E‑Mail bestätigen …";
-      setTimeout(() => (window.location.href = "/dashboard"), 2000);
-    }
-  };
-</script>
+      const name  = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const role  = document.getElementById("role").value;
+
+      const { error } = await window.supabase.auth.signUp({
+        email,
+        password: pw.value,
+        options: {
+          data: { name, role }
+        }
+      });
+
+      if (error) {
+        errorEl.textContent = error.message;
+      } else {
+        successEl.textContent = "Registrierung erfolgreich. Bitte E‑Mail bestätigen …";
+        setTimeout(() => window.location.href = "/dashboard", 1800);
+      }
+    };
+  </script>
+</Layout>

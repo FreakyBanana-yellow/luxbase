@@ -1,12 +1,14 @@
 ---
 import "../styles/global.css";
+const supabaseUrl = Astro.env.PUBLIC_SUPABASE_URL;
+const supabaseKey = Astro.env.PUBLIC_SUPABASE_ANON_KEY;
 const title = "Registrieren – Luxbase";
 ---
 <html lang="de" class="scroll-smooth">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Registrierung</title>
+    <title>{title}</title>
 
     <!-- Google Fonts -->
     <link
@@ -14,27 +16,16 @@ const title = "Registrieren – Luxbase";
       rel="stylesheet"
     />
     <meta name="theme-color" content="#0d0d0d" />
-
-    <!-- Supabase UMD -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-      window.supabase = supabase.createClient(
-        import.meta.env.PUBLIC_SUPABASE_URL,
-        import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-      );
-    </script>
   </head>
   <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans">
     <!-- ================= HEADER / NAV ================= -->
     <header class="bg-black/80 backdrop-blur text-white shadow-md sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-        <!-- Logo -->
         <a href="/" class="flex items-center gap-2 text-luxgold font-serif font-bold text-xl">
           <img src="/logo.png" alt="Luxbase Logo" class="h-6 w-auto" />
           Luxbase
         </a>
 
-        <!-- Desktop Nav -->
         <nav class="hidden md:flex items-center gap-10 text-sm font-medium">
           <a href="/#tools" class="hover:text-luxgold transition">Tools</a>
           <a href="/preise" class="hover:text-luxgold transition">Preise</a>
@@ -42,12 +33,8 @@ const title = "Registrieren – Luxbase";
           <a href="/kontakt" class="hover:text-luxgold transition">Kontakt</a>
         </nav>
 
-        <!-- Right actions -->
         <div class="flex items-center gap-4 relative">
-          <!-- Login Dropdown Trigger -->
           <button id="openLogin" class="hidden md:inline-block px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">Login</button>
-
-          <!-- Burger -->
           <button id="mobileMenuBtn" class="md:hidden w-9 h-9 flex flex-col justify-between items-center" aria-label="Menü öffnen / schließen">
             <span class="block w-full h-0.5 bg-luxgold"></span>
             <span class="block w-full h-0.5 bg-luxgold"></span>
@@ -56,7 +43,6 @@ const title = "Registrieren – Luxbase";
         </div>
       </div>
 
-      <!-- Mobile Drawer -->
       <div id="mobileMenu" class="md:hidden hidden bg-black/95 backdrop-blur border-t border-luxgray">
         <nav class="flex flex-col text-center py-6 text-lg font-medium gap-4">
           <a href="/#tools" class="hover:text-luxgold transition" onclick="toggleMenu()">Tools</a>
@@ -68,7 +54,6 @@ const title = "Registrieren – Luxbase";
       </div>
     </header>
 
-    <!-- ================= LOGIN DROPDOWN (DESKTOP) ============== -->
     <div id="loginDropdown" class="fixed z-50 hidden">
       <div class="bg-luxgray p-6 rounded-xl shadow-xl w-80 relative text-white border border-luxgold">
         <button id="closeDropdown" class="absolute top-2 right-2">&times;</button>
@@ -84,18 +69,19 @@ const title = "Registrieren – Luxbase";
       </div>
     </div>
 
-    <!-- ================= MAIN CONTENT ================= -->
     <main class="flex-1">
       <slot />
     </main>
 
-    <!-- ================= FOOTER ====================== -->
     <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
       © <script>document.write(new Date().getFullYear())</script> Luxbase – Automation with Style.
     </footer>
 
-    <!-- Mobile menu toggle & Login Script -->
+    <!-- Supabase Init + Scripts -->
     <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+      window.supabase = createClient("${supabaseUrl}", "${supabaseKey}");
+
       function toggleMenu() {
         document.getElementById('mobileMenu').classList.toggle('hidden');
       }

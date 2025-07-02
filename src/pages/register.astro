@@ -1,172 +1,110 @@
 ---
-// src/pages/register.astro
-import Layout from "../layouts/BaseLayout.astro";
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
 ---
 
-<Layout>
-  <section class="min-h-[80vh] flex items-center justify-center px-4 py-20">
-    <div
-      class="w-full max-w-md bg-luxgray border border-luxgold/50 rounded-2xl shadow-xl p-8 text-white"
-    >
-      <h1 class="text-2xl font-serif font-bold text-luxgold text-center mb-6">
-        Registrieren
-      </h1>
+<html lang="de">
+  <head>
+    <title>Registrierung – Luxbase</title>
+  </head>
+  <body class="bg-luxblack text-white flex justify-center items-center min-h-screen px-4">
+    <form class="bg-black border border-luxgold rounded-xl p-8 w-full max-w-md" id="registerForm">
+      <h1 class="text-2xl font-bold text-center text-luxgold mb-6">Registrieren</h1>
 
-      <!-- ===== Form ===== -->
-      <form id="regForm" class="space-y-4" novalidate>
-        <input
-          id="name"
-          type="text"
-          placeholder="Dein Name"
-          class="w-full px-4 py-3 rounded bg-black border border-gray-700 focus:outline-none focus:ring-1 focus:ring-luxgold"
-          required
-        />
+      <input id="email" type="email" placeholder="E‑Mail" required class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600" />
 
-        <input
-          id="email"
-          type="email"
-          placeholder="E-Mail"
-          class="w-full px-4 py-3 rounded bg-black border border-gray-700 focus:outline-none focus:ring-1 focus:ring-luxgold"
-          required
-        />
+      <select id="role" required class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600">
+        <option value="creator">Creator / Model</option>
+        <option value="agentur">Agentur</option>
+      </select>
 
-        <select
-          id="role"
-          class="w-full px-4 py-3 rounded bg-black border border-gray-700 text-white focus:outline-none focus:ring-1 focus:ring-luxgold"
-          required
-        >
-          <option value="">Rolle wählen</option>
-          <option value="creator">Creator / Model</option>
-          <option value="agentur">Agentur</option>
-        </select>
+      <input id="password" type="password" placeholder="Passwort" required class="w-full px-4 py-2 mb-2 rounded bg-gray-800 border border-gray-600" />
+      <input id="confirmPassword" type="password" placeholder="Passwort wiederholen" required class="w-full px-4 py-2 mb-2 rounded bg-gray-800 border border-gray-600" />
 
-        <!-- Passwörter -->
-        <div class="relative">
-          <input
-            id="password"
-            type="password"
-            placeholder="Passwort"
-            class="w-full px-4 py-3 pr-10 rounded bg-black border border-gray-700 focus:outline-none focus:ring-1 focus:ring-luxgold"
-            required
-          />
-          <button
-            type="button"
-            id="pwToggle1"
-            class="absolute right-3 top-3 text-luxgold text-sm"
-          >
-            👁
-          </button>
-        </div>
+      <ul class="text-sm mb-4" id="passwordCriteria">
+        <li id="len" class="text-red-400">• Mind. 8 Zeichen</li>
+        <li id="upper" class="text-red-400">• Mind. 1 Großbuchstabe</li>
+        <li id="lower" class="text-red-400">• Mind. 1 Kleinbuchstabe</li>
+        <li id="num" class="text-red-400">• Mind. 1 Zahl</li>
+        <li id="match" class="text-red-400">• Beide Passwörter müssen übereinstimmen</li>
+      </ul>
 
-        <div class="relative">
-          <input
-            id="confirm"
-            type="password"
-            placeholder="Passwort bestätigen"
-            class="w-full px-4 py-3 pr-10 rounded bg-black border border-gray-700 focus:outline-none focus:ring-1 focus:ring-luxgold"
-            required
-          />
-          <button
-            type="button"
-            id="pwToggle2"
-            class="absolute right-3 top-3 text-luxgold text-sm"
-          >
-            👁
-          </button>
-        </div>
+      <button type="submit" class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition">Registrieren</button>
 
-        <!-- Live-Regeln -->
-        <ul id="rules" class="text-xs space-y-1 mb-2">
-          <li id="rLen" class="text-red-400">• Mind. 8 Zeichen</li>
-          <li id="rUp"  class="text-red-400">• Mind. 1 Großbuchstabe</li>
-          <li id="rLow" class="text-red-400">• Mind. 1 Kleinbuchstabe</li>
-          <li id="rNum" class="text-red-400">• Mind. 1 Zahl</li>
-        </ul>
+      <p id="error" class="text-red-400 text-sm mt-4 text-center"></p>
+      <p id="success" class="text-green-400 text-sm mt-4 text-center"></p>
+    </form>
 
-        <button
-          type="submit"
-          class="w-full bg-luxgold text-luxblack font-semibold py-3 rounded hover:bg-yellow-400 transition"
-        >
-          Registrieren
-        </button>
+    <script type="module">
+      const form = document.getElementById('registerForm');
+      const pw = document.getElementById('password');
+      const confirm = document.getElementById('confirmPassword');
+      const error = document.getElementById('error');
+      const success = document.getElementById('success');
 
-        <p id="msg" class="text-center text-sm mt-2 min-h-[1.4rem]"></p>
-      </form>
-    </div>
-  </section>
+      const criteria = {
+        len: document.getElementById('len'),
+        upper: document.getElementById('upper'),
+        lower: document.getElementById('lower'),
+        num: document.getElementById('num'),
+        match: document.getElementById('match')
+      };
 
-  <!-- ========== REGISTRATION SCRIPT ========== -->
-  <script type="module">
-    // ----- Helpers -----
-    const $ = (id) => document.getElementById(id);
+      function checkPassword() {
+        const value = pw.value;
+        const confirmVal = confirm.value;
 
-    // Passwort-Regeln live prüfen
-    const pwInput = $("password");
-    const rules = {
-      rLen:  (v) => v.length >= 8,
-      rUp:   (v) => /[A-Z]/.test(v),
-      rLow:  (v) => /[a-z]/.test(v),
-      rNum:  (v) => /\\d/.test(v),
-    };
-    pwInput.addEventListener("input", () => {
-      const v = pwInput.value;
-      for (const [id, fn] of Object.entries(rules)) {
-        $(id).classList.toggle("text-green-400", fn(v));
-        $(id).classList.toggle("text-red-400", !fn(v));
-      }
-    });
+        criteria.len.classList.toggle('text-green-400', value.length >= 8);
+        criteria.len.classList.toggle('text-red-400', value.length < 8);
 
-    // Passwort sichtbar machen
-    const togglePw = (field) => {
-      const f = $(field);
-      f.type = f.type === "password" ? "text" : "password";
-    };
-    $("pwToggle1").addEventListener("click", () => togglePw("password"));
-    $("pwToggle2").addEventListener("click", () => togglePw("confirm"));
+        criteria.upper.classList.toggle('text-green-400', /[A-Z]/.test(value));
+        criteria.upper.classList.toggle('text-red-400', !/[A-Z]/.test(value));
 
-    // ----- Submit -----
-    $("regForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const msg = $("msg");
-      msg.textContent = "";
+        criteria.lower.classList.toggle('text-green-400', /[a-z]/.test(value));
+        criteria.lower.classList.toggle('text-red-400', !/[a-z]/.test(value));
 
-      const name  = $("name").value.trim();
-      const email = $("email").value.trim();
-      const role  = $("role").value;
-      const pass  = $("password").value;
-      const conf  = $("confirm").value;
+        criteria.num.classList.toggle('text-green-400', /\d/.test(value));
+        criteria.num.classList.toggle('text-red-400', !/\d/.test(value));
 
-      // Checks
-      if (pass !== conf) {
-        msg.textContent = "Passwörter stimmen nicht überein.";
-        return;
-      }
-      if (!Object.values(rules).every((fn) => fn(pass))) {
-        msg.textContent = "Passwort erfüllt nicht alle Anforderungen.";
-        return;
+        const match = value === confirmVal && value !== '';
+        criteria.match.classList.toggle('text-green-400', match);
+        criteria.match.classList.toggle('text-red-400', !match);
+
+        return value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /\d/.test(value) && match;
       }
 
-      // Supabase Sign-Up
-      const { data, error } = await window.supabase.auth.signUp({
-        email,
-        password: pass,
+      pw.addEventListener('input', checkPassword);
+      confirm.addEventListener('input', checkPassword);
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        error.textContent = '';
+        success.textContent = '';
+
+        if (!checkPassword()) {
+          error.textContent = 'Passwort erfüllt nicht alle Anforderungen.';
+          return;
+        }
+
+        const { error: regError } = await supabase.auth.signUp({
+          email: document.getElementById('email').value,
+          password: pw.value,
+          options: {
+            data: { role: document.getElementById('role').value }
+          }
+        });
+
+        if (regError) {
+          error.textContent = regError.message;
+        } else {
+          success.textContent = 'Registrierung erfolgreich. Bestätige deine E‑Mail.';
+          form.reset();
+        }
       });
-
-      if (error) {
-        msg.textContent = error.message;
-        return;
-      }
-
-      // Profil anlegen
-      const { error: profErr } = await window.supabase
-        .from("profiles")
-        .insert({ id: data.user.id, name, role, email });
-
-      if (profErr) console.error(profErr);
-
-      msg.textContent = "Erfolgreich registriert – Weiterleitung …";
-      msg.classList.add("text-green-400");
-      setTimeout(() => (window.location.href = "/dashboard"), 1500);
-    });
-  </script>
-</Layout>
+    </script>
+  </body>
+</html>

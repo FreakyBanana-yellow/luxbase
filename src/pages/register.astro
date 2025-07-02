@@ -1,5 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+// ENV-Variablen serverseitig einlesen
+const supabaseUrl = Astro.env.PUBLIC_SUPABASE_URL;
+const supabaseKey = Astro.env.PUBLIC_SUPABASE_ANON_KEY;
 ---
 
 <BaseLayout title="Registrieren – Luxbase">
@@ -54,19 +58,18 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <p id="msg" class="mt-4 text-center text-sm min-h-[1.25rem]"></p>
   </form>
 
-  <!-- Logik -->
-  <script type="module" is:inline>
+  <!-- Supabase CDN + Logik -->
+  <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
     const supabase = createClient(
-      import.meta.env.PUBLIC_SUPABASE_URL,
-      import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+      `${supabaseUrl}`,
+      `${supabaseKey}`
     );
-    window.supabase = supabase;
 
-    const form       = document.getElementById('registerForm');
-    const pw         = document.getElementById('password');
-    const confirm    = document.getElementById('confirm');
-    const msg        = document.getElementById('msg');
+    const form    = document.getElementById('registerForm');
+    const pw      = document.getElementById('password');
+    const confirm = document.getElementById('confirm');
+    const msg     = document.getElementById('msg');
 
     const rules = {
       rLen  : v => v.length >= 8,
@@ -116,7 +119,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         return;
       }
 
-      // Warten, bis User-Objekt da ist
       const userId = data?.user?.id || data?.session?.user?.id;
       if (!userId) {
         msg.textContent = '❌ Benutzer-ID konnte nicht ermittelt werden.';

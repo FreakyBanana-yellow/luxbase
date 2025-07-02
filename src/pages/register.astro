@@ -89,6 +89,13 @@ title: "Registrieren – Luxbase"
 </form>
 
 <script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+  const supabase = createClient(
+    import.meta.env.PUBLIC_SUPABASE_URL,
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+  );
+
   const pw = document.getElementById("password");
   const confirm = document.getElementById("confirmPassword");
   const errorEl = document.getElementById("error");
@@ -149,7 +156,7 @@ title: "Registrieren – Luxbase"
     const email = document.getElementById("email").value.trim();
     const role  = document.getElementById("role").value;
 
-    const { error } = await window.supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password: pw.value,
       options: {
@@ -161,7 +168,7 @@ title: "Registrieren – Luxbase"
       errorEl.textContent = error.message;
     } else {
       successEl.textContent = "Registrierung erfolgreich. Bitte E‑Mail bestätigen …";
-      setTimeout(() => (window.location.href = "/dashboard"), 1800);
+      setTimeout(() => (window.location.href = "/dashboard"), 2000);
     }
   };
 </script>

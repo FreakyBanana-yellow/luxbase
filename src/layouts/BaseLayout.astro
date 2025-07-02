@@ -1,128 +1,144 @@
 ---
-layout: "../layouts/BaseLayout.astro"
-title: "Registrieren – Luxbase"
+import "../styles/global.css";
 ---
-<html lang="de">
+<html lang="de" class="scroll-smooth">
   <head>
-    <title>Registrieren – Luxbase</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Luxbase</title>
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <meta name="theme-color" content="#0d0d0d" />
+
+    <!-- Supabase UMD -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      window.supabase = supabase.createClient(
+        import.meta.env.PUBLIC_SUPABASE_URL,
+        import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+      );
+    </script>
   </head>
-  <body class="bg-luxblack text-white flex justify-center items-center min-h-screen px-4">
-    <form class="bg-black border border-luxgold rounded-xl p-8 w-full max-w-md" id="registerForm">
-      <h1 class="text-2xl font-bold text-center text-luxgold mb-6">Registrieren</h1>
+  <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans">
+    <!-- ================= HEADER / NAV ================= -->
+    <header class="bg-black/80 backdrop-blur text-white shadow-md sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <!-- Logo -->
+        <a href="/" class="flex items-center gap-2 text-luxgold font-serif font-bold text-xl">
+          <img src="/logo.png" alt="Luxbase Logo" class="h-6 w-auto" />
+          Luxbase
+        </a>
 
-      <input id="name" type="text" placeholder="Dein Name" required class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600" />
-      <input id="email" type="email" placeholder="E‑Mail" required class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600" />
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-10 text-sm font-medium">
+          <a href="/#tools" class="hover:text-luxgold transition">Tools</a>
+          <a href="/preise" class="hover:text-luxgold transition">Preise</a>
+          <a href="/weare" class="hover:text-luxgold transition">Über&nbsp;uns</a>
+          <a href="/kontakt" class="hover:text-luxgold transition">Kontakt</a>
+        </nav>
 
-      <select id="role" required class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600">
-        <option value="creator">Creator / Model</option>
-        <option value="agentur">Agentur</option>
-      </select>
+        <!-- Right actions -->
+        <div class="flex items-center gap-4 relative">
+          <!-- Login Dropdown Trigger -->
+          <button id="openLogin" class="hidden md:inline-block px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">Login</button>
 
-      <div class="relative mb-2">
-        <input id="password" type="password" placeholder="Passwort" required class="w-full px-4 py-2 pr-10 rounded bg-gray-800 border border-gray-600" />
-        <button type="button" id="togglePw" class="absolute right-2 top-2 text-yellow-400">👁</button>
+          <!-- Burger -->
+          <button id="mobileMenuBtn" class="md:hidden w-9 h-9 flex flex-col justify-between items-center" aria-label="Menü öffnen / schließen">
+            <span class="block w-full h-0.5 bg-luxgold"></span>
+            <span class="block w-full h-0.5 bg-luxgold"></span>
+            <span class="block w-full h-0.5 bg-luxgold"></span>
+          </button>
+        </div>
       </div>
 
-      <div class="relative mb-2">
-        <input id="confirmPassword" type="password" placeholder="Passwort wiederholen" required class="w-full px-4 py-2 pr-10 rounded bg-gray-800 border border-gray-600" />
-        <button type="button" id="toggleConfirm" class="absolute right-2 top-2 text-yellow-400">👁</button>
+      <!-- Mobile Drawer -->
+      <div id="mobileMenu" class="md:hidden hidden bg-black/95 backdrop-blur border-t border-luxgray">
+        <nav class="flex flex-col text-center py-6 text-lg font-medium gap-4">
+          <a href="/#tools" class="hover:text-luxgold transition" onclick="toggleMenu()">Tools</a>
+          <a href="/preise" class="hover:text-luxgold transition" onclick="toggleMenu()">Preise</a>
+          <a href="/weare" class="hover:text-luxgold transition" onclick="toggleMenu()">Über&nbsp;uns</a>
+          <a href="/kontakt" class="hover:text-luxgold transition" onclick="toggleMenu()">Kontakt</a>
+          <a href="/register" class="mx-auto mt-4 px-6 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition" onclick="toggleMenu()">Registrieren</a>
+        </nav>
       </div>
+    </header>
 
-      <ul class="text-sm mb-4" id="passwordCriteria">
-        <li id="len" class="text-red-400">• Mind. 8 Zeichen</li>
-        <li id="upper" class="text-red-400">• Mind. 1 Großbuchstabe</li>
-        <li id="lower" class="text-red-400">• Mind. 1 Kleinbuchstabe</li>
-        <li id="num" class="text-red-400">• Mind. 1 Zahl</li>
-        <li id="match" class="text-red-400">• Beide Passwörter müssen übereinstimmen</li>
-      </ul>
+    <!-- ================= LOGIN DROPDOWN (DESKTOP) ============== -->
+    <div id="loginDropdown" class="fixed z-50 hidden">
+      <div class="bg-luxgray p-6 rounded-xl shadow-xl w-80 relative text-white border border-luxgold">
+        <button id="closeDropdown" class="absolute top-2 right-2">&times;</button>
+        <h2 class="text-xl font-serif text-luxgold text-center mb-4">Login</h2>
+        <input id="ddEmail" type="email" placeholder="E‑Mail" class="w-full px-3 py-2 mb-3 rounded bg-black border border-gray-600" />
+        <div class="relative mb-3">
+          <input id="ddPass" type="password" placeholder="Passwort" class="w-full px-3 py-2 pr-10 rounded bg-black border border-gray-600" />
+          <button id="ddToggle" type="button" class="absolute right-2 top-1.5 text-sm text-luxgold">👁</button>
+        </div>
+        <button id="ddSubmit" class="w-full bg-luxgold text-luxblack font-semibold py-2 rounded hover:bg-yellow-400 transition">Einloggen</button>
+        <p id="ddMsg" class="text-red-400 text-center text-xs mt-2"></p>
+        <p class="text-xs text-center mt-3">Noch kein Konto? <a href="/register" class="text-yellow-400 underline">Registrieren</a></p>
+      </div>
+    </div>
 
-      <button type="submit" class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition">Registrieren</button>
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="flex-1">
+      <slot />
+    </main>
 
-      <p id="error" class="text-red-400 text-sm mt-4 text-center"></p>
-      <p id="success" class="text-green-400 text-sm mt-4 text-center"></p>
-    </form>
+    <!-- ================= FOOTER ====================== -->
+    <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
+      © <script>document.write(new Date().getFullYear())</script> Luxbase – Automation with Style.
+    </footer>
 
+    <!-- Mobile menu toggle & Login Script -->
     <script type="module">
-      const form = document.getElementById('registerForm');
-      const pw = document.getElementById('password');
-      const confirm = document.getElementById('confirmPassword');
-      const error = document.getElementById('error');
-      const success = document.getElementById('success');
+      function toggleMenu() {
+        document.getElementById('mobileMenu').classList.toggle('hidden');
+      }
+      document.getElementById('mobileMenuBtn')?.addEventListener('click', toggleMenu);
 
-      const criteria = {
-        len: document.getElementById('len'),
-        upper: document.getElementById('upper'),
-        lower: document.getElementById('lower'),
-        num: document.getElementById('num'),
-        match: document.getElementById('match')
-      };
+      const loginBtn = document.getElementById('openLogin');
+      const dropdown = document.getElementById('loginDropdown');
+      const closeBtn = document.getElementById('closeDropdown');
 
-      function checkPassword() {
-        const value = pw.value;
-        const confirmVal = confirm.value;
-
-        criteria.len.classList.toggle('text-green-400', value.length >= 8);
-        criteria.len.classList.toggle('text-red-400', value.length < 8);
-
-        criteria.upper.classList.toggle('text-green-400', /[A-Z]/.test(value));
-        criteria.upper.classList.toggle('text-red-400', !/[A-Z]/.test(value));
-
-        criteria.lower.classList.toggle('text-green-400', /[a-z]/.test(value));
-        criteria.lower.classList.toggle('text-red-400', !/[a-z]/.test(value));
-
-        criteria.num.classList.toggle('text-green-400', /\d/.test(value));
-        criteria.num.classList.toggle('text-red-400', !/\d/.test(value));
-
-        const match = value === confirmVal && value !== '';
-        criteria.match.classList.toggle('text-green-400', match);
-        criteria.match.classList.toggle('text-red-400', !match);
-
-        return value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /\d/.test(value) && match;
+      function showDropdown() {
+        const rect = loginBtn.getBoundingClientRect();
+        dropdown.style.top = rect.bottom + window.scrollY + 'px';
+        dropdown.style.left = rect.right - 320 + 'px';
+        dropdown.classList.remove('hidden');
+      }
+      function hideDropdown() {
+        dropdown.classList.add('hidden');
       }
 
-      pw.addEventListener('input', checkPassword);
-      confirm.addEventListener('input', checkPassword);
-
-      document.getElementById('togglePw').addEventListener('click', () => {
-        pw.type = pw.type === 'password' ? 'text' : 'password';
+      loginBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.contains('hidden') ? showDropdown() : hideDropdown();
       });
-      document.getElementById('toggleConfirm').addEventListener('click', () => {
-        confirm.type = confirm.type === 'password' ? 'text' : 'password';
+      closeBtn?.addEventListener('click', hideDropdown);
+      document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target) && e.target !== loginBtn) hideDropdown();
       });
 
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        error.textContent = '';
-        success.textContent = '';
+      document.getElementById('ddToggle')?.addEventListener('click', () => {
+        const f = document.getElementById('ddPass');
+        f.type = f.type === 'password' ? 'text' : 'password';
+      });
 
-        if (!checkPassword()) {
-          error.textContent = 'Passwort erfüllt nicht alle Anforderungen.';
-          return;
-        }
+      document.getElementById('ddSubmit')?.addEventListener('click', async () => {
+        const email = document.getElementById('ddEmail').value.trim();
+        const password = document.getElementById('ddPass').value.trim();
 
-        const name = document.getElementById('name').value.trim();
-        const email = document.getElementById('email').value.trim();
-        const role = document.getElementById('role').value;
-        const password = pw.value;
-
-        try {
-          const { data, error: regError } = await window.supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              data: { name, role }
-            }
-          });
-
-          if (regError) {
-            error.textContent = regError.message;
-          } else {
-            success.textContent = 'Registrierung erfolgreich. Bitte E-Mail bestätigen.';
-            form.reset();
-            setTimeout(() => window.location.href = "/dashboard", 2000);
-          }
-        } catch (err) {
-          error.textContent = 'Es ist ein Fehler aufgetreten.';
+        const { error } = await window.supabase.auth.signInWithPassword({ email, password });
+        const msg = document.getElementById('ddMsg');
+        if (error) {
+          msg.textContent = error.message;
+        } else {
+          msg.textContent = 'Erfolgreich eingeloggt!';
+          setTimeout(() => window.location.href = '/dashboard', 1000);
         }
       });
     </script>

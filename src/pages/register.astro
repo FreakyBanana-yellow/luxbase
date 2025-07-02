@@ -1,151 +1,139 @@
 ---
-/*  Front-Matter nur, falls du serverseitig irgend­wann
-    Supabase brauchst – für das reine Client-Signup nicht nötig
-*/
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
 ---
+
 <html lang="de">
   <head>
     <title>Registrieren – Luxbase</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
 
   <body class="bg-luxblack text-white flex justify-center items-center min-h-screen px-4">
-    <!-- ================= FORM ================= -->
-    <form id="registerForm"
-          class="bg-black border border-luxgold rounded-xl p-8 w-full max-w-md relative">
-      <h1 class="text-2xl font-bold text-center text-luxgold mb-6">
-        Registrieren
-      </h1>
+    <form class="bg-black border border-luxgold rounded-xl p-8 w-full max-w-md" id="registerForm">
+      <h1 class="text-2xl font-bold text-center text-luxgold mb-6">Registrieren</h1>
 
-      <!-- Name -->
-      <input id="name" type="text" placeholder="Dein Name" required
-             class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600" />
+      <input id="name" type="text" placeholder="Dein Name" required class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600" />
 
-      <!-- E-Mail -->
-      <input id="email" type="email" placeholder="E-Mail" required
-             class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600" />
+      <input id="email" type="email" placeholder="E‑Mail" required class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600" />
 
-      <!-- Rolle -->
-      <select id="role" required
-              class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600">
+      <select id="role" required class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600">
         <option value="creator">Creator / Model</option>
         <option value="agentur">Agentur</option>
       </select>
 
-      <!-- Passwort -->
       <div class="relative mb-2">
-        <input id="password" type="password" placeholder="Passwort" required
-               class="w-full px-4 py-2 pr-10 rounded bg-gray-800 border border-gray-600" />
-        <button type="button" data-toggle="password"
-                class="absolute right-2 top-2 text-luxgold text-sm">👁</button>
+        <input id="password" type="password" placeholder="Passwort" required class="w-full px-4 py-2 pr-10 rounded bg-gray-800 border border-gray-600" />
+        <button type="button" id="togglePw" class="absolute right-2 top-2 text-sm text-luxgold">👁</button>
       </div>
 
-      <!-- Passwort wiederholen -->
-      <div class="relative mb-2">
-        <input id="confirmPassword" type="password" placeholder="Passwort wiederholen" required
-               class="w-full px-4 py-2 pr-10 rounded bg-gray-800 border border-gray-600" />
-        <button type="button" data-toggle="confirmPassword"
-                class="absolute right-2 top-2 text-luxgold text-sm">👁</button>
-      </div>
+      <input id="confirmPassword" type="password" placeholder="Passwort wiederholen" required class="w-full px-4 py-2 mb-2 rounded bg-gray-800 border border-gray-600" />
 
-      <!-- Kriterien -->
-      <ul id="passwordCriteria" class="text-sm leading-relaxed mb-4">
-        <li id="len"   class="text-red-400">• Mind. 8 Zeichen</li>
+      <ul class="text-sm mb-4" id="passwordCriteria">
+        <li id="len" class="text-red-400">• Mind. 8 Zeichen</li>
         <li id="upper" class="text-red-400">• Mind. 1 Großbuchstabe</li>
         <li id="lower" class="text-red-400">• Mind. 1 Kleinbuchstabe</li>
-        <li id="num"   class="text-red-400">• Mind. 1 Zahl</li>
+        <li id="num" class="text-red-400">• Mind. 1 Zahl</li>
         <li id="match" class="text-red-400">• Beide Passwörter müssen übereinstimmen</li>
       </ul>
 
-      <!-- Submit -->
-      <button type="submit"
-              class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition">
-        Registrieren
-      </button>
+      <button type="submit" class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition">Registrieren</button>
 
-      <!-- Feedback -->
-      <p id="error"   class="text-red-400   text-sm mt-4 text-center"></p>
+      <p id="error" class="text-red-400 text-sm mt-4 text-center"></p>
       <p id="success" class="text-green-400 text-sm mt-4 text-center"></p>
     </form>
 
-    <!-- ================= SCRIPT ================= -->
     <script type="module">
-      // ---------- DOM-Elemente ----------
-      const form    = document.getElementById('registerForm');
-      const pw      = document.getElementById('password');
+      const supabase = window.supabase;
+
+      const form = document.getElementById('registerForm');
+      const pw = document.getElementById('password');
       const confirm = document.getElementById('confirmPassword');
-      const error   = document.getElementById('error');
+      const error = document.getElementById('error');
       const success = document.getElementById('success');
 
-      // Kriterien-Spans
-      const crit = {
-        len  : document.getElementById('len'),
+      const criteria = {
+        len: document.getElementById('len'),
         upper: document.getElementById('upper'),
         lower: document.getElementById('lower'),
-        num  : document.getElementById('num'),
+        num: document.getElementById('num'),
         match: document.getElementById('match')
       };
 
-      // ---------- Passwort-Validierung ----------
-      function updateCriteria () {
-        const v  = pw.value;
-        const ok = {
-          len  : v.length >= 8,
-          upper: /[A-Z]/.test(v),
-          lower: /[a-z]/.test(v),
-          num  : /\d/.test(v),
-          match: v !== '' && v === confirm.value
-        };
+      function checkPassword() {
+        const value = pw.value;
+        const confirmVal = confirm.value;
 
-        Object.entries(ok).forEach(([key, pass]) => {
-          crit[key].classList.toggle('text-green-400', pass);
-          crit[key].classList.toggle('text-red-400'  , !pass);
-        });
+        criteria.len.classList.toggle('text-green-400', value.length >= 8);
+        criteria.len.classList.toggle('text-red-400', value.length < 8);
 
-        return Object.values(ok).every(Boolean);
+        criteria.upper.classList.toggle('text-green-400', /[A-Z]/.test(value));
+        criteria.upper.classList.toggle('text-red-400', !/[A-Z]/.test(value));
+
+        criteria.lower.classList.toggle('text-green-400', /[a-z]/.test(value));
+        criteria.lower.classList.toggle('text-red-400', !/[a-z]/.test(value));
+
+        criteria.num.classList.toggle('text-green-400', /\d/.test(value));
+        criteria.num.classList.toggle('text-red-400', !/\d/.test(value));
+
+        const match = value === confirmVal && value !== '';
+        criteria.match.classList.toggle('text-green-400', match);
+        criteria.match.classList.toggle('text-red-400', !match);
+
+        return value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /\d/.test(value) && match;
       }
 
-      pw.addEventListener('input', updateCriteria);
-      confirm.addEventListener('input', updateCriteria);
+      pw.addEventListener('input', checkPassword);
+      confirm.addEventListener('input', checkPassword);
 
-      // ---------- Passwort anzeigen / verbergen ----------
-      document.querySelectorAll('[data-toggle]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const field = document.getElementById(btn.dataset.toggle);
-          field.type  = field.type === 'password' ? 'text' : 'password';
-        });
+      document.getElementById('togglePw').addEventListener('click', () => {
+        pw.type = pw.type === 'password' ? 'text' : 'password';
       });
-
-      // ---------- Submit ----------
-      const supabase = window.supabase;   // globaler Client aus BaseLayout
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        error.textContent   = '';
+        error.textContent = '';
         success.textContent = '';
 
-        if (!updateCriteria()) {
+        if (!checkPassword()) {
           error.textContent = 'Passwort erfüllt nicht alle Anforderungen.';
           return;
         }
 
-        // Daten sammeln
-        const name  = document.getElementById('name').value.trim();
+        const name = document.getElementById('name').value.trim();
         const email = document.getElementById('email').value.trim();
-        const role  = document.getElementById('role').value;
+        const role = document.getElementById('role').value;
+        const password = pw.value;
 
-        // Supabase-Signup
-        const { error: signErr } = await supabase.auth.signUp({
+        const { data, error: regError } = await supabase.auth.signUp({
           email,
-          password: pw.value,
-          options: { data: { name, role } }
+          password,
+          options: {
+            data: { name, role }
+          }
         });
 
-        if (signErr) {
-          error.textContent = signErr.message;
+        if (regError) {
+          error.textContent = regError.message;
         } else {
-          success.textContent = 'Registrierung erfolgreich – bitte E-Mail bestätigen.';
+          // Optional: Zusätzlich in 'profiles' Tabelle eintragen
+          /*
+          await supabase.from('profiles').insert({
+            id: data.user.id,
+            name,
+            email,
+            role
+          });
+          */
+
+          success.textContent = 'Registrierung erfolgreich. Bitte E‑Mail bestätigen.';
           form.reset();
-          updateCriteria();
+          setTimeout(() => window.location.href = "/dashboard", 1500);
         }
       });
     </script>

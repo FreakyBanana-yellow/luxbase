@@ -1,170 +1,107 @@
 ---
 import Layout from "../layouts/BaseLayout.astro";
-
-/*  Titel – MUSS gesetzt sein, sonst meckert Astro                         */
-title: "Registrieren – Luxbase";
 ---
 
-<Layout {title}>
-  <form
-    id="registerForm"
-    class="bg-black border border-luxgold rounded-xl p-8 w-full max-w-md mx-auto my-12"
-  >
-    <h1 class="text-2xl font-bold text-center text-luxgold mb-6">
-      Registrieren
-    </h1>
+<Layout title="Registrieren – Luxbase">
+  <!-- DEIN REGISTRIERUNGSCODE STARTET HIER -->
+  <section class="max-w-xl mx-auto px-4 py-16">
+    <h1 class="text-3xl font-bold text-luxgold mb-6 text-center">Registrieren</h1>
+    
+    <form id="registerForm" class="grid gap-6">
+      <input type="text" id="name" placeholder="Name" class="px-4 py-2 rounded bg-black border border-gray-600 text-white" required />
+      
+      <input type="email" id="email" placeholder="E-Mail" class="px-4 py-2 rounded bg-black border border-gray-600 text-white" required />
+      
+      <div>
+        <input type="password" id="password" placeholder="Passwort" class="px-4 py-2 w-full rounded bg-black border border-gray-600 text-white" required />
+        <p id="pwRules" class="text-sm mt-2 text-luxgold hidden">
+          ✅ Mind. 8 Zeichen<br />
+          ✅ 1 Zahl<br />
+          ✅ 1 Großbuchstabe<br />
+          ✅ 1 Sonderzeichen
+        </p>
+      </div>
+      
+      <div>
+        <input type="password" id="confirmPassword" placeholder="Passwort wiederholen" class="px-4 py-2 w-full rounded bg-black border border-gray-600 text-white" required />
+        <p id="pwMismatch" class="text-sm mt-1 text-red-500 hidden">Passwörter stimmen nicht überein</p>
+      </div>
 
-    <input
-      id="name"
-      type="text"
-      placeholder="Dein Name"
-      required
-      class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600"
-    />
+      <select id="role" class="px-4 py-2 rounded bg-black border border-gray-600 text-white" required>
+        <option value="">Wähle deine Rolle</option>
+        <option value="creator">Creator / Model</option>
+        <option value="agentur">Agentur</option>
+      </select>
 
-    <input
-      id="email"
-      type="email"
-      placeholder="E-Mail"
-      required
-      class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600"
-    />
-
-    <select
-      id="role"
-      required
-      class="w-full px-4 py-2 mb-4 rounded bg-gray-800 border border-gray-600"
-    >
-      <option value="creator">Creator / Model</option>
-      <option value="agentur">Agentur</option>
-    </select>
-
-    <!-- Passwort & Toggle -->
-    <div class="relative mb-2">
-      <input
-        id="password"
-        type="password"
-        placeholder="Passwort"
-        required
-        class="w-full px-4 py-2 pr-10 rounded bg-gray-800 border border-gray-600"
-      />
-      <button
-        type="button"
-        id="togglePw"
-        class="absolute right-2 top-2 text-yellow-400"
-      >
-        👁
+      <button type="submit" class="w-full bg-luxgold text-black font-semibold py-2 rounded hover:bg-yellow-400 transition">
+        Registrieren
       </button>
-    </div>
+    </form>
 
-    <div class="relative mb-2">
-      <input
-        id="confirmPassword"
-        type="password"
-        placeholder="Passwort wiederholen"
-        required
-        class="w-full px-4 py-2 pr-10 rounded bg-gray-800 border border-gray-600"
-      />
-      <button
-        type="button"
-        id="toggleConfirm"
-        class="absolute right-2 top-2 text-yellow-400"
-      >
-        👁
-      </button>
-    </div>
+    <p id="regMsg" class="text-center text-sm mt-4 text-red-400"></p>
+  </section>
 
-    <!-- Live-Feedback -->
-    <ul id="passwordCriteria" class="text-sm mb-4">
-      <li id="len"   class="text-red-400">• Mind. 8 Zeichen</li>
-      <li id="upper" class="text-red-400">• Mind. 1 Großbuchstabe</li>
-      <li id="lower" class="text-red-400">• Mind. 1 Kleinbuchstabe</li>
-      <li id="num"   class="text-red-400">• Mind. 1 Zahl</li>
-      <li id="match" class="text-red-400">• Beide Passwörter müssen übereinstimmen</li>
-    </ul>
-
-    <button
-      type="submit"
-      class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition"
-    >
-      Registrieren
-    </button>
-
-    <p id="error"   class="text-red-400 text-sm mt-4 text-center"></p>
-    <p id="success" class="text-green-400 text-sm mt-4 text-center"></p>
-  </form>
-
-  <!-- Formular-/Passwort- & Supabase-Logik -->
   <script type="module">
-    const pw       = document.getElementById("password");
-    const confirm  = document.getElementById("confirmPassword");
-    const errorEl  = document.getElementById("error");
-    const successEl= document.getElementById("success");
+    const pw = document.getElementById("password");
+    const pwRules = document.getElementById("pwRules");
+    const confirmPw = document.getElementById("confirmPassword");
+    const mismatch = document.getElementById("pwMismatch");
+    const regMsg = document.getElementById("regMsg");
 
-    const crit = {
-      len  : document.getElementById("len"),
-      upper: document.getElementById("upper"),
-      lower: document.getElementById("lower"),
-      num  : document.getElementById("num"),
-      match: document.getElementById("match"),
-    };
-
-    function mark(el, ok) {
-      el.classList.toggle("text-green-400", ok);
-      el.classList.toggle("text-red-400", !ok);
+    function checkPasswordStrength(val) {
+      const minLength = val.length >= 8;
+      const hasNumber = /\d/.test(val);
+      const hasUpper = /[A-Z]/.test(val);
+      const hasSpecial = /[!@#$%^&*]/.test(val);
+      return minLength && hasNumber && hasUpper && hasSpecial;
     }
 
-    function valid() {
-      const v   = pw.value;
-      const len = v.length >= 8;
-      const up  = /[A-Z]/.test(v);
-      const low = /[a-z]/.test(v);
-      const num = /\d/.test(v);
-      const mat = v === confirm.value && v !== "";
+    pw.addEventListener("input", () => {
+      pwRules.classList.remove("hidden");
+      if (checkPasswordStrength(pw.value)) {
+        pwRules.classList.add("text-green-500");
+        pwRules.classList.remove("text-luxgold");
+      } else {
+        pwRules.classList.add("text-luxgold");
+        pwRules.classList.remove("text-green-500");
+      }
+    });
 
-      mark(crit.len,   len);
-      mark(crit.upper, up);
-      mark(crit.lower, low);
-      mark(crit.num,   num);
-      mark(crit.match, mat);
+    confirmPw.addEventListener("input", () => {
+      mismatch.classList.toggle("hidden", pw.value === confirmPw.value);
+    });
 
-      return len && up && low && num && mat;
-    }
-
-    pw.addEventListener("input",     valid);
-    confirm.addEventListener("input",valid);
-
-    // Toggle sichtbar
-    document.getElementById("togglePw").onclick      = () => pw.type      = pw.type      === "password" ? "text" : "password";
-    document.getElementById("toggleConfirm").onclick = () => confirm.type = confirm.type === "password" ? "text" : "password";
-
-    // Submit
-    document.getElementById("registerForm").onsubmit = async (e) => {
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      errorEl.textContent   = "";
-      successEl.textContent = "";
 
-      if (!valid()) {
-        errorEl.textContent = "Passwort erfüllt nicht alle Anforderungen.";
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = pw.value.trim();
+      const role = document.getElementById("role").value;
+
+      if (password !== confirmPw.value.trim()) {
+        mismatch.classList.remove("hidden");
         return;
       }
 
-      const name  = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const role  = document.getElementById("role").value;
-
-      const { error } = await window.supabase.auth.signUp({
+      const { data, error } = await window.supabase.auth.signUp({
         email,
-        password: pw.value,
-        options: { data: { name, role } }
+        password,
+        options: {
+          data: {
+            name,
+            role,
+          }
+        }
       });
 
       if (error) {
-        errorEl.textContent = error.message;
+        regMsg.textContent = error.message;
       } else {
-        successEl.textContent = "Registrierung erfolgreich. Bitte E-Mail bestätigen …";
-        setTimeout(() => (window.location.href = role === "agentur" ? "/dashboard-agentur" : "/dashboard-model"), 1800);
+        regMsg.classList.remove("text-red-400");
+        regMsg.classList.add("text-green-500");
+        regMsg.textContent = "Bitte bestätige deine E-Mail – dann geht's weiter.";
       }
-    };
+    });
   </script>
 </Layout>

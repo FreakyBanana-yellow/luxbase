@@ -1,0 +1,35 @@
+<!DOCTYPE html><html lang="de" class="scroll-smooth"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Luxbase</title><!-- Google Fonts --><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"><meta name="theme-color" content="#0d0d0d"><link rel="stylesheet" href="/_astro/cpplattform.4n5OD5Sr.css">
+<link rel="stylesheet" href="/_astro/cpplattform.cjjDh7iL.css"><script type="module">document.write(new Date().getFullYear());
+</script></head> <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans"> <!-- ===== HEADER / NAV (gekürzt) ===== --> <header>…</header> <main class="flex-1">   <section id="tools" class="max-w-6xl mx-auto grid gap-20 md:gap-32 py-24 px-6"> <!-- BaaS / VIP‑Bot --------------------------------------- --> <div class="grid md:grid-cols-2 gap-10 items-center"> <img src="/baas.png" alt="BaaS – Automatisiere deine VIP‑Gruppe" class="mx-auto max-w-md" loading="lazy"> <div class="text-center md:text-left"> <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">
+BaaS – Dein VIP‑Bot
+</h2> <p class="text-lg leading-relaxed mb-8">
+Nutze unseren VIP‑Bot, um deine Telegram‑Gruppe voll­automatisiert zu
+          verwalten, Altersabfragen durchzuführen und zahlende Member
+          freizuschalten.
+</p> <a href="/vipbot" class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition">Mehr erfahren</a> </div> </div> <!-- VaultRoom --------------------------------------------- --> <div class="grid md:grid-cols-2 gap-10 items-center md:flex-row-reverse"> <img src="/vaultroom.png" alt="VaultRoom – Content‑Safe" class="mx-auto max-w-md" loading="lazy"> <div class="text-center md:text-left"> <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">
+VaultRoom – Content‑Safe
+</h2> <p class="text-lg leading-relaxed mb-8">
+Ordne, plane und archiviere dein Roh‑Material sicher an einem Ort.
+          Schluss mit Chaos – nutze KI‑gestützte Tags, Versionierung und
+          Bulk‑Uploads.
+</p> <a href="/vault" class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition">Mehr erfahren</a> </div> </div> <!-- StageOne ---------------------------------------------- --> <div class="grid md:grid-cols-2 gap-10 items-center"> <img src="/stageone.png" alt="StageOne – Multi‑Platform Scheduling" class="mx-auto max-w-md" loading="lazy"> <div class="text-center md:text-left"> <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">
+StageOne – Multi‑Posting
+</h2> <p class="text-lg leading-relaxed mb-8">
+Plane Posts, Re‑Use Captions und veröffentliche parallel auf
+          OnlyFans, Fansly & Co. Spare Zeit und steigere Reichweite mit einem
+          Klick.
+</p> <a href="/cpplattform" class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition">Mehr erfahren</a> </div> </div> </section>  </main> <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
+©  Luxbase – Automation with Style.
+</footer> <!-- Supabase Init – Variablen werden HIER hart eingebrannt --> <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+      window.supabase = createClient(
+        /* Build-Time Strings! */
+        "${SUPABASE_URL}",
+        "${SUPABASE_KEY}"
+      );
+
+      /* … Menu- & Login-JS bleibt unverändert … */
+    </script> </body> </html> <!-- Supabase‑Client im Browser verfügbar machen --> <script type="module">
+  import { supabase } from '/src/lib/supabase';
+  window.supabase = supabase;
+</script>

@@ -1,0 +1,36 @@
+<!DOCTYPE html><html lang="de" class="scroll-smooth"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dashboard – Luxbase</title><!-- Google Fonts --><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"><meta name="theme-color" content="#0d0d0d"><link rel="stylesheet" href="/_astro/cpplattform.4n5OD5Sr.css">
+<link rel="stylesheet" href="/_astro/cpplattform.cjjDh7iL.css"><script type="module">document.write(new Date().getFullYear());
+</script></head> <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans"> <!-- ===== HEADER / NAV (gekürzt) ===== --> <header>…</header> <main class="flex-1">   <section class="min-h-[60vh] flex flex-col items-center justify-center gap-6"> <svg class="animate-spin h-10 w-10 text-luxgold" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"> <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path> </svg> <p class="text-luxgold/80">Dashboard wird geladen …</p> </section>  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabase = createClient(
+      import.meta.env.PUBLIC_SUPABASE_URL,
+      import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+    );
+
+    // Aktuelle Session holen
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      // nicht eingeloggt → zurück zur Startseite
+      window.location.replace("/");
+    } else {
+      const role = session.user?.user_metadata?.role ?? "creator";
+      if (role === "agentur") {
+        window.location.replace("/dashboard-agentur");
+      } else {
+        window.location.replace("/dashboard-model");
+      }
+    }
+  </script>  </main> <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
+©  Luxbase – Automation with Style.
+</footer> <!-- Supabase Init – Variablen werden HIER hart eingebrannt --> <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+      window.supabase = createClient(
+        /* Build-Time Strings! */
+        "${SUPABASE_URL}",
+        "${SUPABASE_KEY}"
+      );
+
+      /* … Menu- & Login-JS bleibt unverändert … */
+    </script> </body> </html>

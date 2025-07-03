@@ -2,8 +2,8 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 //  ➜  env-Variablen für den Client in String-Form
-const supabaseUrl = Astro.env.PUBLIC_SUPABASE_URL;
-const supabaseKey = Astro.env.PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 ---
 
 <BaseLayout title="Registrieren – Luxbase">

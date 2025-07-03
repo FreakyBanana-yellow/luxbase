@@ -2,12 +2,15 @@
 import { createClient } from '@supabase/supabase-js';
 import Layout from "../layouts/BaseLayout.astro";
 
-const supabase = createClient(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-);
----
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("❌ Supabase-Umgebungsvariablen fehlen! Bitte .env oder Netlify prüfen.");
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+---
 <html lang="de">
   <head>
     <title>Luxbase – Dashboard</title>

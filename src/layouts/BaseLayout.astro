@@ -8,12 +8,14 @@ const { title = "Luxbase" } = Astro.props;
     <meta charset="utf-8" />
     <title>{title}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
     <meta name="theme-color" content="#0d0d0d" />
-    <script type="text/javascript">
-  window.SUPABASE_URL = "{import.meta.env.PUBLIC_SUPABASE_URL}";
-  window.SUPABASE_KEY = "{import.meta.env.PUBLIC_SUPABASE_ANON_KEY}";
-</script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+
+    <!-- ✅ Supabase Keys clientseitig verfügbar machen -->
+    <script>
+      window.SUPABASE_URL = {import.meta.env.PUBLIC_SUPABASE_URL};
+      window.SUPABASE_KEY = {import.meta.env.PUBLIC_SUPABASE_ANON_KEY};
+    </script>
   </head>
   <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans">
 
@@ -72,9 +74,8 @@ const { title = "Luxbase" } = Astro.props;
 
     <!-- ============ LOGIN + SESSION SCRIPT ============ -->
     <script type="module">
-  import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-  const supabase = supabase_js.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+      import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+      const supabase = supabase_js.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
 
       const modal = document.getElementById("loginModal");
       const openBtn = document.getElementById("openLogin");
@@ -93,8 +94,7 @@ const { title = "Luxbase" } = Astro.props;
       if (user) {
         openBtn?.classList.add("hidden");
         accountMenu?.classList.remove("hidden");
-        const name = user.user_metadata?.name || "Account";
-        usernameEl.textContent = name;
+        usernameEl.textContent = user.user_metadata?.name || "Account";
 
         accountBtn?.addEventListener("click", () => {
           accountDropdown.classList.toggle("hidden");

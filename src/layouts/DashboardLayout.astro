@@ -1,14 +1,7 @@
 ---
 import Sidebar from "../components/Sidebar.astro";
-import { getUserProfile } from "../lib/getUserProfile";
+// Keine Authentifizierung auf Serverebene – wird clientseitig geregelt
 
-const { session, profile } = await getUserProfile();
-
-if (!session) {
-  return Astro.redirect("/");
-}
-
-const { name, role } = profile;
 ---
 
 <html lang="de">

@@ -1,20 +1,71 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
+
+let user = null;
+let creatorConfig = null;
+
+const {
+  data: { session }
+} = await supabase.auth.getSession();
+
+if (session) {
+  user = session.user;
+  const { data } = await supabase
+    .from("creator_config")
+    .select("*")
+    .eq("creator_id", user.id)
+    .single();
+  creatorConfig = data;
+}
 ---
 
 <DashboardLayout title="Dein Luxbase Dashboard">
-  <div class="grid md:grid-cols-3 gap-6">
-    <a href="/vault" class="bg-zinc-900 p-6 rounded-xl border border-luxgold shadow hover:bg-zinc-800 transition">
-      <h2 class="text-xl font-bold mb-2">📁 VaultRoom</h2>
-      <p>Upload, Versionierung & Planung in deinem Content-Safe.</p>
-    </a>
-    <a href="/cpplattform" class="bg-zinc-900 p-6 rounded-xl border border-luxgold shadow hover:bg-zinc-800 transition">
-      <h2 class="text-xl font-bold mb-2">📤 StageOne</h2>
-      <p>Multiplattform-Posting mit Kampagnen, Hashtags & Reuse.</p>
-    </a>
-    <a href="/vipbot" class="bg-zinc-900 p-6 rounded-xl border border-luxgold shadow hover:bg-zinc-800 transition">
-      <h2 class="text-xl font-bold mb-2">🤖 VIP‑Bot</h2>
-      <p>Altersprüfung, Sheet‑Sync & automatisierte Gruppenzugänge.</p>
-    </a>
-  </div>
+  {user && creatorConfig ? (
+    <section class="space-y-8">
+      <div>
+        <h1 class="text-3xl font-bold text-luxgold mb-2">
+          Willkommen zurück, {creatorConfig.creator_name || "Creator"}!
+        </h1>
+        <p class="text-zinc-300">
+          Dein Paket: <span class="font-semibold text-white">{creatorConfig.bot_paket}</span>
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        <a href="/vault" class="bg-zinc-900 p-6 rounded-xl border border-luxgold shadow hover:bg-zinc-800 transition">
+          <h2 class="text-xl font-bold mb-2">📁 VaultRoom</h2>
+          <p>Upload, Versionierung & Planung in deinem Content-Safe.</p>
+        </a>
+        <a href="/cpplattform" class="bg-zinc-900 p-6 rounded-xl border border-luxgold shadow hover:bg-zinc-800 transition">
+          <h2 class="text-xl font-bold mb-2">📤 StageOne</h2>
+          <p>Multiplattform-Posting mit Kampagnen, Hashtags & Reuse.</p>
+        </a>
+        <a href="/vipbot" class="bg-zinc-900 p-6 rounded-xl border border-luxgold shadow hover:bg-zinc-800 transition">
+          <h2 class="text-xl font-bold mb-2">🤖 VIP‑Bot</h2>
+          <p>Altersprüfung, Sheet‑Sync & automatisierte Gruppenzugänge.</p>
+        </a>
+      </div>
+
+      {creatorConfig.bot_paket === "premium" && (
+        <div class="mt-6">
+          <h3 class="text-lg font-semibold text-luxgold mb-2">Premium-Extras</h3>
+          <ul class="list-disc list-inside text-zinc-300">
+            <li>SelfieCheck aktiv</li>
+            <li>Eigene Begrüßungstexte verfügbar</li>
+          </ul>
+        </div>
+      )}
+    </section>
+  ) : (
+    <section class="text-center mt-24 text-white">
+      <h2 class="text-2xl font-bold mb-4">Bitte einloggen...</h2>
+      <p class="text-zinc-400">Du musst eingeloggt sein, um dein Dashboard zu sehen.</p>
+    </section>
+  )}
 </DashboardLayout>

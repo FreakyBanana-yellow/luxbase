@@ -88,5 +88,15 @@ const supabase = createClient(supabaseUrl, supabaseKey);
         location.href = "/";
       });
     </script>
+
+    <script>
+  const config = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
+
+  if (config?.bot_name) {
+    document.getElementById("welcome-name").textContent = config.bot_name;
+    document.getElementById("group-link").href = config.gruppe_link;
+    document.getElementById("paypal-email").textContent = config.paypal;
+  }
+</script>
   </body>
 </html>

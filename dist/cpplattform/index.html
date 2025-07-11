@@ -1,24 +1,22 @@
-<!DOCTYPE html><html lang="de" class="scroll-smooth"> <head><meta charset="utf-8"><title>Multiplattform-Posting – Poste auf allen Plattformen gleichzeitig</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"><meta name="theme-color" content="#0d0d0d"><script type="text/javascript">
-  window.SUPABASE_URL = "{import.meta.env.PUBLIC_SUPABASE_URL}";
-  window.SUPABASE_KEY = "{import.meta.env.PUBLIC_SUPABASE_ANON_KEY}";
-</script><link rel="stylesheet" href="/_astro/cpplattform.BsBVl178.css">
+<!DOCTYPE html><html lang="de" class="scroll-smooth"> <head><meta charset="utf-8"><title>Multiplattform-Posting – Poste auf allen Plattformen gleichzeitig</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0d0d0d"><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"><!-- Supabase Keys via Meta-Tag --><meta id="supabase-config" data-url="{`${import.meta.env.PUBLIC_SUPABASE_URL}`}" data-key="{`${import.meta.env.PUBLIC_SUPABASE_ANON_KEY}`}"><link rel="stylesheet" href="/_astro/cpplattform.BsBVl178.css">
 <link rel="stylesheet" href="/_astro/cpplattform.MTIYB4pn.css"><script type="module">document.write(new Date().getFullYear());
-</script></head> <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans"> <!-- ============ HEADER ============ --> <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50"> <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a> <nav class="flex items-center gap-4"> <!-- Login Button --> <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+</script></head> <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans"> <!-- HEADER --> <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50"> <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a> <nav class="flex items-center gap-4"> <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
 Login
-</button> <!-- Account Dropdown --> <div id="accountMenu" class="relative hidden"> <button id="accountBtn" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
-👤 <span id="username">Account</span> </button> <div class="absolute right-0 mt-2 w-48 bg-black border border-luxgray rounded shadow-xl text-sm hidden" id="accountDropdown"> <a href="/dashboard" class="block px-4 py-2 hover:bg-luxgray/30">Dashboard</a> <a href="/preise" class="block px-4 py-2 hover:bg-luxgray/30">Pakete</a> <button id="logoutBtn" class="w-full text-left px-4 py-2 hover:bg-red-900/40 text-red-400">Abmelden</button> </div> </div> </nav> </header> <!-- ============ LOGIN MODAL ============ --> <div id="loginModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden"> <div class="bg-zinc-900 border border-luxgold p-8 rounded-xl w-96 relative text-white shadow-xl"> <button id="closeLogin" class="absolute top-3 right-4 text-white text-xl hover:text-luxgold">&times;</button> <h2 class="text-xl font-serif font-bold text-luxgold text-center mb-6">Login</h2> <form id="popupLoginForm" class="space-y-4"> <input type="email" name="email" placeholder="E‑Mail" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded"> <input type="password" name="password" placeholder="Passwort" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded"> <button type="submit" class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition">
+</button> <div id="accountMenu" class="relative hidden"> <button id="accountBtn" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+👤 <span id="username">Account</span> </button> <div class="absolute right-0 mt-2 w-48 bg-black border border-luxgray rounded shadow-xl text-sm hidden" id="accountDropdown"> <a href="/dashboard" class="block px-4 py-2 hover:bg-luxgray/30">Dashboard</a> <button id="logoutBtn" class="w-full text-left px-4 py-2 hover:bg-red-900/40 text-red-400">Abmelden</button> </div> </div> </nav> </header> <!-- LOGIN MODAL --> <div id="loginModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden"> <div class="bg-zinc-900 border border-luxgold p-8 rounded-xl w-96 relative text-white shadow-xl"> <button id="closeLogin" class="absolute top-3 right-4 text-white text-xl hover:text-luxgold">&times;</button> <h2 class="text-xl font-serif font-bold text-luxgold text-center mb-6">Login</h2> <form id="popupLoginForm" class="space-y-4"> <input type="email" name="email" placeholder="E‑Mail" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded"> <input type="password" name="password" placeholder="Passwort" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded"> <button type="submit" class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition">
 Einloggen
 </button> </form> <p id="popupLoginMsg" class="text-sm text-center text-red-400 mt-2 min-h-[1.25rem]"></p> <p class="text-center text-sm mt-6 text-gray-400">
-Noch kein Account? <a href="/register" class="text-luxgold hover:underline">Jetzt registrieren</a> </p> </div> </div> <!-- ============ SEITENINHALT ============ --> <main class="flex-1">  <section class="max-w-4xl mx-auto px-6 py-20 text-center"> <h1 class="text-4xl md:text-5xl font-serif font-bold text-luxgold mb-6">
+Noch kein Account? <a href="/register" class="text-luxgold hover:underline">Jetzt registrieren</a> </p> </div> </div> <main class="flex-1">  <section class="max-w-4xl mx-auto px-6 py-20 text-center"> <h1 class="text-4xl md:text-5xl font-serif font-bold text-luxgold mb-6">
 Multiplattform-Posting leicht gemacht
 </h1> <p class="text-lg text-gray-300 mb-10">
 Spare Zeit & Nerven: Veröffentliche deine Inhalte automatisch auf OnlyFans, Fansly, BestFans & mehr.
-</p> <img src="/assets/screenshots/multiplattform.png" alt="Multiplattform Screenshot" class="rounded-xl border border-luxgray shadow-xl mx-auto mb-10 max-w-full"> <div class="text-left space-y-4 max-w-3xl mx-auto text-gray-400"> <p>✨ Inhalte nur 1× hochladen – und gleichzeitig auf mehreren Plattformen posten.</p> <p>🧠 Automatische Anpassung von Captions, Hashtags & Formaten.</p> <p>📅 Posts planen &amp; recyceln mit dem smarten Kampagnenmanager.</p> </div> </section>  </main> <!-- ============ FOOTER ============ --> <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
+</p> <img src="/assets/screenshots/multiplattform.png" alt="Multiplattform Screenshot" class="rounded-xl border border-luxgray shadow-xl mx-auto mb-10 max-w-full"> <div class="text-left space-y-4 max-w-3xl mx-auto text-gray-400"> <p>✨ Inhalte nur 1× hochladen – und gleichzeitig auf mehreren Plattformen posten.</p> <p>🧠 Automatische Anpassung von Captions, Hashtags & Formaten.</p> <p>📅 Posts planen &amp; recyceln mit dem smarten Kampagnenmanager.</p> </div> </section>  </main> <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
 ©  Luxbase – Automation with Style.
-</footer> <!-- ============ LOGIN + SESSION SCRIPT ============ --> <script type="module">
-  import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+</footer> <!-- LOGIN + FEATURE-LOGIK --> <script type="module">
+      import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-  const supabase = supabase_js.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+      const meta = document.getElementById("supabase-config");
+      const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
 
       const modal = document.getElementById("loginModal");
       const openBtn = document.getElementById("openLogin");
@@ -37,8 +35,7 @@ Spare Zeit & Nerven: Veröffentliche deine Inhalte automatisch auf OnlyFans, Fan
       if (user) {
         openBtn?.classList.add("hidden");
         accountMenu?.classList.remove("hidden");
-        const name = user.user_metadata?.name || "Account";
-        usernameEl.textContent = name;
+        usernameEl.textContent = user.user_metadata?.name || "Account";
 
         accountBtn?.addEventListener("click", () => {
           accountDropdown.classList.toggle("hidden");
@@ -46,6 +43,7 @@ Spare Zeit & Nerven: Veröffentliche deine Inhalte automatisch auf OnlyFans, Fan
 
         logoutBtn?.addEventListener("click", async () => {
           await supabase.auth.signOut();
+          sessionStorage.clear();
           location.href = "/";
         });
       } else {
@@ -63,14 +61,45 @@ Spare Zeit & Nerven: Veröffentliche deine Inhalte automatisch auf OnlyFans, Fan
         const email = form.email.value.trim();
         const password = form.password.value.trim();
 
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data: loginData, error } = await supabase.auth.signInWithPassword({ email, password });
 
         if (error) {
           msg.textContent = "❌ " + error.message;
           msg.className = "text-red-400 text-sm text-center";
         } else {
+          const user = loginData.user;
+          const { data: config, error: configError } = await supabase
+            .from("creator_config")
+            .select("*")
+            .eq("creator_id", user.id)
+            .single();
+
+          if (configError || !config) {
+            msg.textContent = "⚠️ Login ok, aber kein Config-Eintrag gefunden.";
+            msg.className = "text-yellow-400 text-sm text-center";
+            return;
+          }
+
+          // VIP Bot Paket-Logik (nur basic & premium)
+          const paketFeatures = {
+            basic: {
+              show_selfie_gate: false,
+              can_customize_texts: false,
+            },
+            premium: {
+              show_selfie_gate: true,
+              can_customize_texts: true,
+            },
+          };
+
+          const features = paketFeatures[config.bot_paket] || paketFeatures.basic;
+          const mergedConfig = { ...config, ...features };
+
+          sessionStorage.setItem("luxbase_config", JSON.stringify(mergedConfig));
+
           msg.textContent = "✅ Login erfolgreich – Weiterleitung …";
           msg.className = "text-green-400 text-sm text-center";
+
           setTimeout(() => location.href = "/dashboard", 1200);
         }
       });

@@ -155,7 +155,8 @@ const { title = "Luxbase" } = Astro.props;
           msg.textContent = "✅ Login erfolgreich – Weiterleitung …";
           msg.className = "text-green-400 text-sm text-center";
 
-          setTimeout(() => location.href = "/dashboard", 1200);
+          window.location.assign("/dashboard");
+
         }
       });
     </script>

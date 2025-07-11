@@ -1,35 +1,87 @@
-<!DOCTYPE html><html lang="de" class="scroll-smooth"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Luxbase</title><!-- Google Fonts --><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"><meta name="theme-color" content="#0d0d0d"><link rel="stylesheet" href="/_astro/cpplattform.4n5OD5Sr.css">
-<link rel="stylesheet" href="/_astro/cpplattform.cjjDh7iL.css"><script type="module">document.write(new Date().getFullYear());
-</script></head> <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans"> <!-- ===== HEADER / NAV (gekürzt) ===== --> <header>…</header> <main class="flex-1">   <section id="tools" class="max-w-6xl mx-auto grid gap-20 md:gap-32 py-24 px-6"> <!-- BaaS / VIP‑Bot --------------------------------------- --> <div class="grid md:grid-cols-2 gap-10 items-center"> <img src="/baas.png" alt="BaaS – Automatisiere deine VIP‑Gruppe" class="mx-auto max-w-md" loading="lazy"> <div class="text-center md:text-left"> <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">
-BaaS – Dein VIP‑Bot
-</h2> <p class="text-lg leading-relaxed mb-8">
-Nutze unseren VIP‑Bot, um deine Telegram‑Gruppe voll­automatisiert zu
-          verwalten, Altersabfragen durchzuführen und zahlende Member
-          freizuschalten.
-</p> <a href="/vipbot" class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition">Mehr erfahren</a> </div> </div> <!-- VaultRoom --------------------------------------------- --> <div class="grid md:grid-cols-2 gap-10 items-center md:flex-row-reverse"> <img src="/vaultroom.png" alt="VaultRoom – Content‑Safe" class="mx-auto max-w-md" loading="lazy"> <div class="text-center md:text-left"> <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">
-VaultRoom – Content‑Safe
-</h2> <p class="text-lg leading-relaxed mb-8">
-Ordne, plane und archiviere dein Roh‑Material sicher an einem Ort.
-          Schluss mit Chaos – nutze KI‑gestützte Tags, Versionierung und
-          Bulk‑Uploads.
-</p> <a href="/vault" class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition">Mehr erfahren</a> </div> </div> <!-- StageOne ---------------------------------------------- --> <div class="grid md:grid-cols-2 gap-10 items-center"> <img src="/stageone.png" alt="StageOne – Multi‑Platform Scheduling" class="mx-auto max-w-md" loading="lazy"> <div class="text-center md:text-left"> <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">
-StageOne – Multi‑Posting
-</h2> <p class="text-lg leading-relaxed mb-8">
-Plane Posts, Re‑Use Captions und veröffentliche parallel auf
-          OnlyFans, Fansly & Co. Spare Zeit und steigere Reichweite mit einem
-          Klick.
-</p> <a href="/cpplattform" class="inline-block px-8 py-3 bg-luxgold text-luxblack font-semibold rounded-lg hover:bg-yellow-400 transition">Mehr erfahren</a> </div> </div> </section>  </main> <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
+<!DOCTYPE html><html lang="de" class="scroll-smooth"> <head><meta charset="utf-8"><title>Willkommen bei Luxbase</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"><meta name="theme-color" content="#0d0d0d"><script type="text/javascript">
+  window.SUPABASE_URL = "{import.meta.env.PUBLIC_SUPABASE_URL}";
+  window.SUPABASE_KEY = "{import.meta.env.PUBLIC_SUPABASE_ANON_KEY}";
+</script><link rel="stylesheet" href="/_astro/cpplattform.BsBVl178.css">
+<link rel="stylesheet" href="/_astro/cpplattform.MTIYB4pn.css"><script type="module">document.write(new Date().getFullYear());
+</script></head> <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans"> <!-- ============ HEADER ============ --> <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50"> <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a> <nav class="flex items-center gap-4"> <!-- Login Button --> <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+Login
+</button> <!-- Account Dropdown --> <div id="accountMenu" class="relative hidden"> <button id="accountBtn" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+👤 <span id="username">Account</span> </button> <div class="absolute right-0 mt-2 w-48 bg-black border border-luxgray rounded shadow-xl text-sm hidden" id="accountDropdown"> <a href="/dashboard" class="block px-4 py-2 hover:bg-luxgray/30">Dashboard</a> <a href="/preise" class="block px-4 py-2 hover:bg-luxgray/30">Pakete</a> <button id="logoutBtn" class="w-full text-left px-4 py-2 hover:bg-red-900/40 text-red-400">Abmelden</button> </div> </div> </nav> </header> <!-- ============ LOGIN MODAL ============ --> <div id="loginModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden"> <div class="bg-zinc-900 border border-luxgold p-8 rounded-xl w-96 relative text-white shadow-xl"> <button id="closeLogin" class="absolute top-3 right-4 text-white text-xl hover:text-luxgold">&times;</button> <h2 class="text-xl font-serif font-bold text-luxgold text-center mb-6">Login</h2> <form id="popupLoginForm" class="space-y-4"> <input type="email" name="email" placeholder="E‑Mail" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded"> <input type="password" name="password" placeholder="Passwort" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded"> <button type="submit" class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition">
+Einloggen
+</button> </form> <p id="popupLoginMsg" class="text-sm text-center text-red-400 mt-2 min-h-[1.25rem]"></p> <p class="text-center text-sm mt-6 text-gray-400">
+Noch kein Account? <a href="/register" class="text-luxgold hover:underline">Jetzt registrieren</a> </p> </div> </div> <!-- ============ SEITENINHALT ============ --> <main class="flex-1">  <section class="text-center py-32 max-w-xl mx-auto"> <h1 class="text-5xl font-bold text-luxgold mb-8">Willkommen bei Luxbase</h1> <p class="text-white/80 mb-10">
+Die elegante Automatisierungsplattform für Creator:innen, Agenturen und digitale Performer.
+</p> </section>  <section class="max-w-6xl mx-auto grid gap-32 md:gap-48 py-32 px-6" id="tools"> <!-- VIP-Bot --> <div class="grid md:grid-cols-2 gap-12 items-center"> <img src="/baas2.png" alt="VIP Bot" class="mx-auto max-w-md rounded-xl shadow-xl" loading="lazy"> <div class="text-center md:text-left"> <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">BaaS – Dein VIP‑Bot</h2> <p class="text-lg text-white/80 mb-6">
+Altersprüfung, Zahlungsnachweise, Gruppen­freischaltung und Mitglieder­verwaltung vollautomatisch per Telegram.
+</p> <a href="/vipbot" class="inline-block px-8 py-3 bg-luxgold text-black font-semibold rounded-lg hover:bg-yellow-400 transition">
+Mehr erfahren
+</a> </div> </div> <!-- VaultRoom --> <div class="grid md:grid-cols-2 gap-12 items-center md:flex-row-reverse"> <img src="/vaultroom2.png" alt="VaultRoom" class="mx-auto max-w-md rounded-xl shadow-xl" loading="lazy"> <div class="text-center md:text-left"> <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">VaultRoom – Dein Content‑Safe</h2> <p class="text-lg text-white/80 mb-6">
+Verwalte, tagge und plane deine Inhalte zentral – mit KI-Unterstützung, Bulk-Upload & Backup-System.
+</p> <a href="/vault" class="inline-block px-8 py-3 bg-luxgold text-black font-semibold rounded-lg hover:bg-yellow-400 transition">
+Mehr erfahren
+</a> </div> </div> <!-- StageOne --> <div class="grid md:grid-cols-2 gap-12 items-center"> <img src="/stageone2.png" alt="StageOne" class="mx-auto max-w-md rounded-xl shadow-xl" loading="lazy"> <div class="text-center md:text-left"> <h2 class="text-4xl font-serif font-bold text-luxgold mb-6">StageOne – Multi‑Posting leicht gemacht</h2> <p class="text-lg text-white/80 mb-6">
+Veröffentliche Inhalte einmalig – und poste gleichzeitig auf OnlyFans, Fansly, BestFans & Co.
+</p> <a href="/cpplattform" class="inline-block px-8 py-3 bg-luxgold text-black font-semibold rounded-lg hover:bg-yellow-400 transition">
+Mehr erfahren
+</a> </div> </div> </section>  </main> <!-- ============ FOOTER ============ --> <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
 ©  Luxbase – Automation with Style.
-</footer> <!-- Supabase Init – Variablen werden HIER hart eingebrannt --> <script type="module">
-      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-      window.supabase = createClient(
-        /* Build-Time Strings! */
-        "${SUPABASE_URL}",
-        "${SUPABASE_KEY}"
-      );
+</footer> <!-- ============ LOGIN + SESSION SCRIPT ============ --> <script type="module">
+  import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-      /* … Menu- & Login-JS bleibt unverändert … */
-    </script> </body> </html> <!-- Supabase‑Client im Browser verfügbar machen --> <script type="module">
-  import { supabase } from '/src/lib/supabase';
-  window.supabase = supabase;
-</script>
+  const supabase = supabase_js.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+
+      const modal = document.getElementById("loginModal");
+      const openBtn = document.getElementById("openLogin");
+      const closeBtn = document.getElementById("closeLogin");
+      const form = document.getElementById("popupLoginForm");
+      const msg = document.getElementById("popupLoginMsg");
+
+      const accountMenu = document.getElementById("accountMenu");
+      const accountBtn = document.getElementById("accountBtn");
+      const accountDropdown = document.getElementById("accountDropdown");
+      const usernameEl = document.getElementById("username");
+      const logoutBtn = document.getElementById("logoutBtn");
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        openBtn?.classList.add("hidden");
+        accountMenu?.classList.remove("hidden");
+        const name = user.user_metadata?.name || "Account";
+        usernameEl.textContent = name;
+
+        accountBtn?.addEventListener("click", () => {
+          accountDropdown.classList.toggle("hidden");
+        });
+
+        logoutBtn?.addEventListener("click", async () => {
+          await supabase.auth.signOut();
+          location.href = "/";
+        });
+      } else {
+        openBtn?.classList.remove("hidden");
+        accountMenu?.classList.add("hidden");
+      }
+
+      openBtn?.addEventListener("click", () => modal.classList.remove("hidden"));
+      closeBtn?.addEventListener("click", () => modal.classList.add("hidden"));
+
+      form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        msg.textContent = "";
+
+        const email = form.email.value.trim();
+        const password = form.password.value.trim();
+
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+          msg.textContent = "❌ " + error.message;
+          msg.className = "text-red-400 text-sm text-center";
+        } else {
+          msg.textContent = "✅ Login erfolgreich – Weiterleitung …";
+          msg.className = "text-green-400 text-sm text-center";
+          setTimeout(() => location.href = "/dashboard", 1200);
+        }
+      });
+    </script> </body> </html>

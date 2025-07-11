@@ -1,0 +1,25 @@
+---
+const { role = "creator" } = Astro.props;
+const links = [
+  { label: "🏠 Übersicht", href: "/dashboard" },
+  { label: "📁 VaultRoom", href: "/vault" },
+  { label: "📤 StageOne", href: "/cpplattform" },
+  { label: "🤖 VIP‑Bot", href: "/vipbot" },
+  { label: "💳 Preise", href: "/preise" },
+];
+
+if (role === "agentur") {
+  links.push({ label: "🏢 Agentur-Tools", href: "/dashboard-agentur" });
+}
+---
+
+<aside class="w-64 bg-black border-r border-luxgray min-h-screen p-6 hidden md:block">
+  <div class="text-luxgold font-serif text-2xl mb-10">
+    <a href="/dashboard">LUXBASE</a>
+  </div>
+  <nav class="space-y-4 text-sm font-semibold">
+    {links.map(link => (
+      <a href={link.href} class="block hover:text-luxgold">{link.label}</a>
+    ))}
+  </nav>
+</aside>

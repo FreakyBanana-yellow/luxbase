@@ -1,39 +1,29 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
----
+import { createClient } from "@supabase/supabase-js";
 
-<BaseLayout title="Dashboard – Luxbase">
-  <!-- Kleiner Lade-Screen, bis die Weiterleitung passiert -->
-  <section class="min-h-[60vh] flex flex-col items-center justify-center gap-6">
-    <svg class="animate-spin h-10 w-10 text-luxgold" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-    </svg>
-    <p class="text-luxgold/80">Dashboard wird geladen …</p>
-  </section>
+const supabase = createClient(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+);
 
-  <!-- Client-seitige Weiterleitung -->
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+// Session prüfen
+const {
+  data: { session },
+} = await supabase.auth.getSession();
 
-    const supabase = createClient(
-      import.meta.env.PUBLIC_SUPABASE_URL,
-      import.meta.env.PUBLIC_SUPABASE_ANON_KEY
-    );
+if (!session) {
+  return Astro.redirect("/");
+}
 
-    // Aktuelle Session holen
-    const { data: { session } } = await supabase.auth.getSession();
+const { data: profile } = await supabase
+  .from("profiles")
+  .select("role")
+  .eq("id", session.user.id)
+  .single();
 
-    if (!session) {
-      // nicht eingeloggt → zurück zur Startseite
-      window.location.replace("/");
-    } else {
-      const role = session.user?.user_metadata?.role ?? "creator";
-      if (role === "agentur") {
-        window.location.replace("/dashboard-agentur");
-      } else {
-        window.location.replace("/dashboard-model");
-      }
-    }
-  </script>
-</BaseLayout>
+// Redirect je nach Rolle
+if (profile?.role === "agentur") {
+  return Astro.redirect("/dashboard-agentur");
+} else {
+  return Astro.redirect("/dashboard/index");
+}

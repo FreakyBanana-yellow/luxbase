@@ -1,0 +1,20 @@
+---
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
+---
+
+<DashboardLayout title="Dein Luxbase Dashboard">
+  <div class="grid md:grid-cols-3 gap-6">
+    <a href="/vault" class="bg-zinc-900 p-6 rounded-xl border border-luxgold shadow hover:bg-zinc-800 transition">
+      <h2 class="text-xl font-bold mb-2">📁 VaultRoom</h2>
+      <p>Upload, Versionierung & Planung in deinem Content-Safe.</p>
+    </a>
+    <a href="/cpplattform" class="bg-zinc-900 p-6 rounded-xl border border-luxgold shadow hover:bg-zinc-800 transition">
+      <h2 class="text-xl font-bold mb-2">📤 StageOne</h2>
+      <p>Multiplattform-Posting mit Kampagnen, Hashtags & Reuse.</p>
+    </a>
+    <a href="/vipbot" class="bg-zinc-900 p-6 rounded-xl border border-luxgold shadow hover:bg-zinc-800 transition">
+      <h2 class="text-xl font-bold mb-2">🤖 VIP‑Bot</h2>
+      <p>Altersprüfung, Sheet‑Sync & automatisierte Gruppenzugänge.</p>
+    </a>
+  </div>
+</DashboardLayout>

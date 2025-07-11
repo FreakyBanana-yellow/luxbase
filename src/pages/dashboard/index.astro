@@ -1,10 +1,10 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
-import DashboardClient from "../../components/DashboardClient.astro";
+import DashboardClient from "../../components/DashboardClient.jsx";
 --- 
 
 <DashboardLayout title="Dein Luxbase Dashboard">
-    <DashboardClient client:only="astro" />
+  <DashboardClient client:only="react" />
   </div>
 
   <script type="module">

@@ -124,15 +124,25 @@ const supabase = createClient(meta.dataset.url, meta.dataset.key);
 
       // 2) Profil speichern
       const userId = data?.user?.id ?? data?.session?.user?.id;
-      const { error: insErr } = await supabase
-        .from("profiles")
-        .insert([{ id: userId, name, role, email }]);
+      const { error: configErr } = await supabase
+  .from("creator_config")
+  .insert([
+    {
+      creator_id: userId,
+      creator_name: name,
+      email: email,
+      rolle: role,
+      bot_paket: "basic",
+      has_vipbot: true
+    }
+  ]);
 
-      if (insErr) {
-        msg.textContent = "⚠️ Profil konnte nicht gespeichert werden: " + insErr.message;
-        msg.classList.add("text-red-400");
-        return;
-      }
+if (configErr) {
+  msg.textContent = "⚠️ Bot-Setup fehlgeschlagen: " + configErr.message;
+  msg.classList.add("text-red-400");
+  return;
+}
+
 
       msg.textContent = "✅ Registrierung erfolgreich – bitte E-Mail bestätigen.";
       msg.classList.add("text-green-400");

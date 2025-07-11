@@ -11,12 +11,12 @@ const { title = "Luxbase" } = Astro.props;
     <meta name="theme-color" content="#0d0d0d" />
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
 
-    <!-- ✅ Supabase Keys clientseitig verfügbar machen -->
-    <script>
-      window.SUPABASE_URL = {import.meta.env.PUBLIC_SUPABASE_URL};
-      window.SUPABASE_KEY = {import.meta.env.PUBLIC_SUPABASE_ANON_KEY};
-    </script>
+    <!-- ✅ Supabase Keys via Meta-Tag -->
+    <meta id="supabase-config"
+          data-url="{import.meta.env.PUBLIC_SUPABASE_URL}"
+          data-key="{import.meta.env.PUBLIC_SUPABASE_ANON_KEY}" />
   </head>
+
   <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans">
 
     <!-- ============ HEADER ============ -->
@@ -24,12 +24,10 @@ const { title = "Luxbase" } = Astro.props;
       <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a>
 
       <nav class="flex items-center gap-4">
-        <!-- Login Button -->
         <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
           Login
         </button>
 
-        <!-- Account Dropdown -->
         <div id="accountMenu" class="relative hidden">
           <button id="accountBtn" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
             👤 <span id="username">Account</span>
@@ -72,10 +70,15 @@ const { title = "Luxbase" } = Astro.props;
       © <script>document.write(new Date().getFullYear())</script> Luxbase – Automation with Style.
     </footer>
 
-    <!-- ============ LOGIN + SESSION SCRIPT ============ -->
+    <!-- ============ SCRIPT ============ -->
     <script type="module">
       import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-      const supabase = supabase_js.createClient(window.SUPABASE_URL, window.SUPABASE_KEY);
+
+      const meta = document.getElementById("supabase-config");
+      const supabaseUrl = meta.dataset.url;
+      const supabaseKey = meta.dataset.key;
+
+      const supabase = supabase_js.createClient(supabaseUrl, supabaseKey);
 
       const modal = document.getElementById("loginModal");
       const openBtn = document.getElementById("openLogin");

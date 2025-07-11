@@ -1,6 +1,5 @@
 ---
 import { createClient } from '@supabase/supabase-js';
-import Layout from "../layouts/BaseLayout.astro";
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
 const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
@@ -10,7 +9,15 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Session abfragen (serverseitig)
+const { data: { session } } = await supabase.auth.getSession();
+
+if (!session) {
+  return Astro.redirect("/");
+}
 ---
+
 <html lang="de">
   <head>
     <title>Luxbase – Dashboard</title>

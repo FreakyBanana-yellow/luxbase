@@ -65,7 +65,9 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
     // →  Werte werden beim Build injiziert:
-    const supabase = createClient("${supabaseUrl}", "${supabaseKey}");
+   const meta = document.getElementById("supabase-config");
+const supabase = createClient(meta.dataset.url, meta.dataset.key);
+
 
     const form     = document.getElementById("registerForm");
     const pw       = document.getElementById("password");

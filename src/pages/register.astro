@@ -79,7 +79,7 @@ const supabase = createClient(meta.dataset.url, meta.dataset.key);
       rLen  : v => v.length >= 8,
       rUp   : v => /[A-Z]/.test(v),
       rLow  : v => /[a-z]/.test(v),
-      rNum  : v => /\\d/.test(v),
+      rNum  : v => /\d/.test(v),
       rMatch: () => pw.value === confirm.value && pw.value !== ""
     };
     function updateRules () {

@@ -1,12 +1,23 @@
 ---
-import Layout from "../layouts/BaseLayout.astro";
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
 const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error("❌ PUBLIC_SUPABASE_URL oder _ANON_KEY fehlt – prüf .env / Netlify!");
+  throw new Error("❌ Supabase-Umgebungsvariablen fehlen! Bitte .env oder Netlify prüfen.");
 }
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Session abfragen (serverseitig)
+const { data: { session } } = await supabase.auth.getSession();
+
+if (!session) {
+  return Astro.redirect("/");
+}
+---
+
 ---
 <html lang="de">
   <head>

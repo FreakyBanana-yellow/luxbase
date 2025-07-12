@@ -1,0 +1,125 @@
+---
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
+---
+
+<DashboardLayout title="VIP‑Bot Einstellungen">
+  <section class="max-w-3xl mx-auto px-4 py-12">
+    <h1 class="text-3xl font-bold text-luxgold mb-6">VIP‑Bot Einstellungen</h1>
+
+    <div class="bg-black border border-luxgold rounded-xl p-6 space-y-6 shadow-xl">
+      <form id="vipbotSettings" class="space-y-4">
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Telegram-Gruppenlink</label>
+          <input type="url" name="gruppe_link" required class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="https://t.me/+...">
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">PayPal-Adresse</label>
+          <input type="email" name="paypal" required class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="deine@email.com">
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Telegram Username (optional)</label>
+          <input type="text" name="telegram_username" class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="@deinname">
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Support E-Mail (optional)</label>
+          <input type="email" name="support_email" class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="support@deine-domain.com">
+        </div>
+
+        <div class="premium-fields hidden">
+          <label class="block text-sm text-gray-400 mb-1">Eigener Begrüßungstext</label>
+          <textarea name="begrüßung_text" rows="3" class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="Hi, willkommen in meiner Gruppe …"></textarea>
+        </div>
+
+        <div class="premium-fields hidden">
+          <label class="block text-sm text-gray-400 mb-1">Eigener Regeltext</label>
+          <textarea name="regeln_text" rows="3" class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="Bitte beachte folgende Regeln …"></textarea>
+        </div>
+
+        <div class="premium-fields hidden">
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" name="selfie_check" class="form-checkbox h-5 w-5 text-luxgold bg-zinc-900 border border-zinc-600">
+            <span class="text-sm text-gray-300">SelfieCheck aktivieren</span>
+          </label>
+        </div>
+
+        <button type="submit" class="bg-luxgold text-black font-bold py-2 px-6 rounded hover:bg-yellow-400 transition">
+          Speichern
+        </button>
+        <p id="saveMsg" class="text-sm mt-2 min-h-[1.25rem]"></p>
+      </form>
+
+      <hr class="border-luxgray/30">
+
+      <div class="text-sm text-gray-400 space-y-3">
+        <h2 class="text-lg font-bold text-luxgold">🧭 Anleitung für deine Einstellungen</h2>
+        <ul class="list-decimal list-inside space-y-1">
+          <li>Füge den Link zu deiner Telegram-Gruppe ein (diesen erhältst du im Gruppen-Adminbereich).</li>
+          <li>Gib die PayPal-Adresse an, auf die Nutzer Tipps senden können.</li>
+          <li>Optional: Trage deinen Telegram-Namen ein, damit du leichter erreichbar bist.</li>
+          <li>Nur bei Premium: Definiere eigene Texte für Begrüßung & Regeln.</li>
+          <li>Aktiviere den SelfieCheck nur, wenn du explizit verifizieren willst.</li>
+          <li>Klick auf Speichern – fertig. Die Änderungen greifen automatisch im Bot.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <script type="module">
+    import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const meta = document.getElementById("supabase-config");
+    const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
+    const form = document.getElementById("vipbotSettings");
+    const msg = document.getElementById("saveMsg");
+    const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
+
+    if (!lux?.creator_id) {
+      msg.textContent = "❌ Nicht eingeloggt oder keine Konfiguration gefunden.";
+      msg.className = "text-red-400";
+    } else {
+      // Prefill
+      for (const el of form.elements) {
+        if (el.name && lux[el.name] !== undefined) {
+          if (el.type === "checkbox") {
+            el.checked = !!lux[el.name];
+          } else {
+            el.value = lux[el.name] ?? "";
+          }
+        }
+      }
+
+      // Premiumfelder sichtbar?
+      if (lux.bot_paket === "premium") {
+        document.querySelectorAll(".premium-fields").forEach(e => e.classList.remove("hidden"));
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        msg.textContent = "";
+
+        const formData = new FormData(form);
+        const updateData = {};
+        for (const [key, value] of formData.entries()) {
+          updateData[key] = value;
+        }
+        updateData.selfie_check = form.selfie_check.checked;
+
+        const { error } = await supabase
+          .from("creator_config")
+          .update(updateData)
+          .eq("creator_id", lux.creator_id);
+
+        if (error) {
+          msg.textContent = "❌ Fehler beim Speichern: " + error.message;
+          msg.className = "text-red-400";
+        } else {
+          msg.textContent = "✅ Erfolgreich gespeichert.";
+          msg.className = "text-green-400";
+        }
+      });
+    }
+  </script>
+</DashboardLayout>

@@ -1,12 +1,17 @@
 ---
 const { role = "creator" } = Astro.props;
+const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
+
 const links = [
   { label: "🏠 Übersicht", href: "/dashboard" },
   { label: "📁 VaultRoom", href: "/vault" },
   { label: "📤 StageOne", href: "/cpplattform" },
-  { label: "🤖 VIP‑Bot", href: "/dashboard/vipbot-einstellungen" },
   { label: "💳 Preise", href: "/preise" },
 ];
+
+if (lux?.bot_aktiv) {
+  links.splice(3, 0, { label: "🤖 VIP‑Bot", href: "/dashboard/vipbot-einstellungen" });
+}
 
 if (role === "agentur") {
   links.push({ label: "🏢 Agentur-Tools", href: "/dashboard-agentur" });

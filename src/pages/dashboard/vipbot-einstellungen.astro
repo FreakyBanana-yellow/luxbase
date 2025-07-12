@@ -6,7 +6,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
   <section class="max-w-3xl mx-auto px-4 py-12">
     <h1 class="text-3xl font-bold text-luxgold mb-6">VIP‑Bot Einstellungen</h1>
 
-    <div class="bg-black border border-luxgold rounded-xl p-6 space-y-6 shadow-xl">
+    <div class="bg-black border border-luxgold rounded-xl p-6 space-y-6 shadow-xl" id="vipbotContainer" style="display:none">
       <form id="vipbotSettings" class="space-y-4">
         <div>
           <label class="block text-sm text-gray-400 mb-1">Telegram-Gruppenlink</label>
@@ -16,6 +16,11 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         <div>
           <label class="block text-sm text-gray-400 mb-1">PayPal-Adresse</label>
           <input type="email" name="paypal" required class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="deine@email.com">
+        </div>
+
+        <div>
+          <label class="block text-sm text-gray-400 mb-1">Preis für VIP-Mitgliedschaft (€)</label>
+          <input type="number" name="preis_vip" step="0.01" min="0" class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="z. B. 9.99">
         </div>
 
         <div>
@@ -59,6 +64,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
           <li>Füge den Link zu deiner Telegram-Gruppe ein (diesen erhältst du im Gruppen-Adminbereich).</li>
           <li>Gib die PayPal-Adresse an, auf die Nutzer Tipps senden können.</li>
           <li>Optional: Trage deinen Telegram-Namen ein, damit du leichter erreichbar bist.</li>
+          <li>Trage den gewünschten Preis für den VIP-Zugang in Euro ein (z. B. 9.99).</li>
           <li>Nur bei Premium: Definiere eigene Texte für Begrüßung & Regeln.</li>
           <li>Aktiviere den SelfieCheck nur, wenn du explizit verifizieren willst.</li>
           <li>Klick auf Speichern – fertig. Die Änderungen greifen automatisch im Bot.</li>
@@ -80,7 +86,10 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       msg.textContent = "❌ Nicht eingeloggt oder keine Konfiguration gefunden.";
       msg.className = "text-red-400";
     } else {
-      // Prefill
+      if (lux?.bot_aktiv) {
+        document.getElementById("vipbotContainer").style.display = "block";
+      }
+
       for (const el of form.elements) {
         if (el.name && lux[el.name] !== undefined) {
           if (el.type === "checkbox") {
@@ -91,7 +100,6 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         }
       }
 
-      // Premiumfelder sichtbar?
       if (lux.bot_paket === "premium") {
         document.querySelectorAll(".premium-fields").forEach(e => e.classList.remove("hidden"));
       }
@@ -116,8 +124,32 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
           msg.textContent = "❌ Fehler beim Speichern: " + error.message;
           msg.className = "text-red-400";
         } else {
+          const { data: updated } = await supabase
+            .from("creator_config")
+            .select("*")
+            .eq("creator_id", lux.creator_id)
+            .single();
+
+          if (updated) {
+            const paketFeatures = {
+              basic: {
+                show_selfie_gate: false,
+                can_customize_texts: false,
+              },
+              premium: {
+                show_selfie_gate: true,
+                can_customize_texts: true,
+              },
+            };
+
+            const features = paketFeatures[updated.bot_paket] || paketFeatures.basic;
+            sessionStorage.setItem("luxbase_config", JSON.stringify({ ...updated, ...features }));
+          }
+
           msg.textContent = "✅ Erfolgreich gespeichert.";
           msg.className = "text-green-400";
+
+          setTimeout(() => location.reload(), 1200);
         }
       });
     }

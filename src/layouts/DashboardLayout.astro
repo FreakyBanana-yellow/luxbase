@@ -49,65 +49,73 @@ const name = "Creator";
 
     <!-- CLIENTSIDE LOGIC -->
     <script type="module">
-      import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-      const meta = document.getElementById("supabase-config");
-      const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
+  (async () => {
+    const meta = document.getElementById("supabase-config");
+    const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
 
-      const openBtn = document.getElementById("openLogin");
-      const accountMenu = document.getElementById("accountMenu");
-      const accountBtn = document.getElementById("accountBtn");
-      const accountDropdown = document.getElementById("accountDropdown");
-      const usernameEl = document.getElementById("username");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const welcomeHeadline = document.getElementById("welcomeHeadline");
+    const openBtn = document.getElementById("openLogin");
+    const accountMenu = document.getElementById("accountMenu");
+    const accountBtn = document.getElementById("accountBtn");
+    const accountDropdown = document.getElementById("accountDropdown");
+    const usernameEl = document.getElementById("username");
+    const logoutBtn = document.getElementById("logoutBtn");
 
-      // Check User Session
-      const { data: { user } } = await supabase.auth.getUser();
+    const welcomeHeadline = document.getElementById("welcomeHeadline");
+    const root = document.getElementById("dashboardRoot");
 
-      if (user) {
-        openBtn?.classList.add("hidden");
-        accountMenu?.classList.remove("hidden");
+    const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
+    console.log("LUX-KONFIGURATION:", lux); // Debug-Hilfe
 
-        // Benutzername im Dropdown
-        usernameEl.textContent = user.user_metadata?.name || "Account";
+    // 🔐 Kein Creator eingeloggt?
+    if (!lux?.creator_id) {
+      root.innerHTML = `
+        <div class="text-red-400 text-center">
+          ❌ Nicht eingeloggt oder keine gültige Konfiguration gefunden.
+        </div>`;
+      return;
+    }
 
-        // Dropdown-Logik
-        accountBtn?.addEventListener("click", () => {
-          accountDropdown.classList.toggle("hidden");
-        });
+    // 🧠 Fallback-Name bestimmen
+    const fallbackName = lux.role === "agentur" ? "deine Agentur" : "dein Creator-Profil";
+    const anzeigeName = lux.creator_name?.trim() || fallbackName;
 
-        logoutBtn?.addEventListener("click", async () => {
-          await supabase.auth.signOut();
-          sessionStorage.clear();
-          location.href = "/";
-        });
+    if (welcomeHeadline) {
+      welcomeHeadline.textContent = `Willkommen zurück, ${anzeigeName}! 👋`;
+    }
 
-        // Config aus Supabase laden
-        const { data: config, error } = await supabase
-          .from("creator_config")
-          .select("*")
-          .match({ creator_id: user.id })
-          .single();
+    // 🤖 VIP-Bot prüfen
+    if (!lux?.has_vipbot && root) {
+      root.innerHTML += `
+        <p class="text-center text-gray-400 mt-6">
+          Der VIP‑Bot ist für deinen Account nicht aktiviert.
+        </p>`;
+    }
 
-        if (!error && config) {
-          const paketFeatures = {
-            basic: { show_selfie_gate: false, can_customize_texts: false },
-            premium: { show_selfie_gate: true, can_customize_texts: true },
-          };
-          const fullConfig = { ...config, ...paketFeatures[config.bot_paket] || {} };
-          sessionStorage.setItem("luxbase_config", JSON.stringify(fullConfig));
+    // 🔐 Login-Status prüfen
+    const { data: { user } } = await supabase.auth.getUser();
 
-          // Headline updaten
-          if (config.creator_name && welcomeHeadline) {
-            welcomeHeadline.textContent = `Willkommen zurück, ${config.creator_name}! 👋`;
-          }
-        }
+    if (user) {
+      openBtn?.classList.add("hidden");
+      accountMenu?.classList.remove("hidden");
+      usernameEl.textContent = lux?.creator_name || "Account";
 
-      } else {
-        openBtn?.classList.remove("hidden");
-        accountMenu?.classList.add("hidden");
-      }
-    </script>
+      accountBtn?.addEventListener("click", () => {
+        accountDropdown.classList.toggle("hidden");
+      });
+
+      logoutBtn?.addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        sessionStorage.clear();
+        location.href = "/";
+      });
+    } else {
+      openBtn?.classList.remove("hidden");
+      accountMenu?.classList.add("hidden");
+    }
+  })();
+</script>
+
   </body>
 </html>

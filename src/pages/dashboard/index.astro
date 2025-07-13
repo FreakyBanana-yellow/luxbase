@@ -7,17 +7,18 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     <div class="text-center text-gray-400">Lade deine Daten …</div>
   </section>
 
-<script type="module">
-  import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-  import Chart from "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js";
+  <!-- Chart.js UMD-Version -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-  if (typeof window !== "undefined") {
-    const meta = document.getElementById("supabase-config");
-    const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
-    const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
-    const root = document.getElementById("dashboard-root");
+  <script type="module">
+    import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    async function loadDashboard() {
+    if (typeof window !== "undefined") {
+      const meta = document.getElementById("supabase-config");
+      const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
+      const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
+      const root = document.getElementById("dashboard-root");
+
       if (!lux?.creator_id || !lux?.bot_aktiv) {
         root.innerHTML = `
           <div class="text-center py-12 text-gray-400">
@@ -71,8 +72,9 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         </div>
       `;
 
+      // Diagramm rendern
       const ctx = document.getElementById("chart");
-      new Chart(ctx, {
+      new window.Chart(ctx, {
         type: "bar",
         data: {
           labels: labels,
@@ -94,8 +96,5 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         }
       });
     }
-
-    loadDashboard();
-  }
-</script>
+  </script>
 </DashboardLayout>

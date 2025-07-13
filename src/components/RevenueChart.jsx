@@ -19,7 +19,7 @@ export default function RevenueChart({ supabase, creatorId, preisVIP }) {
       const { data: users, error } = await supabase
         .from("vip_users")
         .select("joined_at")
-        .eq("creator_id", creatorId);
+         .match({ creator_id: lux.creator_id });
 
       if (error || !users) return;
 

@@ -28,10 +28,8 @@ const lux = typeof window !== "undefined" && window.sessionStorage
     <button id="closeLogin" class="absolute top-3 right-4 text-white text-xl hover:text-luxgold">&times;</button>
     <h2 class="text-xl font-serif font-bold text-luxgold text-center mb-6">Login</h2>
     <form id="popupLoginForm" class="space-y-4">
-      <input type="email" name="email" placeholder="E‑Mail" required
-             class="w-full px-4 py-2 bg-black border border-zinc-600 rounded" />
-      <input type="password" name="password" placeholder="Passwort" required
-             class="w-full px-4 py-2 bg-black border border-zinc-600 rounded" />
+      <input type="email" name="email" placeholder="E‑Mail" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded" />
+      <input type="password" name="password" placeholder="Passwort" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded" />
       <button type="submit" class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition">
         Einloggen
       </button>
@@ -59,27 +57,33 @@ const lux = typeof window !== "undefined" && window.sessionStorage
   const usernameEl = document.getElementById("username");
   const logoutBtn = document.getElementById("logoutBtn");
 
+  // 🔐 Nutzerstatus prüfen
   const { data: { user } } = await supabase.auth.getUser();
 
   if (user) {
     openBtn?.classList.add("hidden");
     accountMenu?.classList.remove("hidden");
 
-    const { data: config } = await supabase
-      .from("creator_config")
-      .select("*")
-      .match({ creator_id: lux.creator_id })
+    // 🧠 Lux aus Storage oder neu laden
+    let lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
 
-      .single();
+    if (!lux?.creator_id) {
+      const { data: config } = await supabase
+        .from("creator_config")
+        .select("*")
+        .match({ creator_id: user.id })
+        .single();
 
-    const paketFeatures = {
-      basic: { show_selfie_gate: false, can_customize_texts: false },
-      premium: { show_selfie_gate: true, can_customize_texts: true },
-    };
+      const paketFeatures = {
+        basic: { show_selfie_gate: false, can_customize_texts: false },
+        premium: { show_selfie_gate: true, can_customize_texts: true },
+      };
 
-    const merged = { ...config, ...paketFeatures[config?.bot_paket || "basic"] };
-    sessionStorage.setItem("luxbase_config", JSON.stringify(merged));
-    usernameEl.textContent = config?.creator_name || "Account";
+      lux = { ...config, ...paketFeatures[config?.bot_paket || "basic"] };
+      sessionStorage.setItem("luxbase_config", JSON.stringify(lux));
+    }
+
+    usernameEl.textContent = lux?.creator_name || "Account";
 
     accountBtn?.addEventListener("click", () => {
       accountDropdown.classList.toggle("hidden");
@@ -98,6 +102,7 @@ const lux = typeof window !== "undefined" && window.sessionStorage
   openBtn?.addEventListener("click", () => modal.classList.remove("hidden"));
   closeBtn?.addEventListener("click", () => modal.classList.add("hidden"));
 
+  // 🧠 Login mit Supabase + config laden
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     msg.textContent = "";
@@ -111,11 +116,11 @@ const lux = typeof window !== "undefined" && window.sessionStorage
       msg.textContent = "❌ " + error.message;
     } else {
       const user = loginData.user;
+
       const { data: config } = await supabase
         .from("creator_config")
         .select("*")
-        .match({ creator_id: lux.creator_id })
-
+        .match({ creator_id: user.id })
         .single();
 
       const paketFeatures = {

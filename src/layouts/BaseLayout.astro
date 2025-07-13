@@ -12,19 +12,17 @@ const { title = "Luxbase" } = Astro.props;
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
 
     <!-- Supabase Keys via Meta-Tag -->
-<meta id="supabase-config"
-      data-url={`${import.meta.env.PUBLIC_SUPABASE_URL}`}
-      data-key={`${import.meta.env.PUBLIC_SUPABASE_ANON_KEY}`} />
-
+    <meta id="supabase-config"
+          data-url={`${import.meta.env.PUBLIC_SUPABASE_URL}`}
+          data-key={`${import.meta.env.PUBLIC_SUPABASE_ANON_KEY}`} />
   </head>
 
   <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans">
-
     <!-- HEADER -->
     <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
       <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a>
       <nav class="flex items-center gap-4">
-        <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+        <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition hidden">
           Login
         </button>
         <div id="accountMenu" class="relative hidden">
@@ -51,7 +49,7 @@ const { title = "Luxbase" } = Astro.props;
             Einloggen
           </button>
         </form>
-        <p id="popupLoginMsg" class="text-sm text-center text-red-400 mt-2 min-h-[1.25rem]"> </p>
+        <p id="popupLoginMsg" class="text-sm text-center text-red-400 mt-2 min-h-[1.25rem]"></p>
         <p class="text-center text-sm mt-6 text-gray-400">
           Noch kein Account? <a href="/register" class="text-luxgold hover:underline">Jetzt registrieren</a>
         </p>
@@ -68,14 +66,12 @@ const { title = "Luxbase" } = Astro.props;
 
     <!-- LOGIN + FEATURE-LOGIK -->
     <script type="module">
-      import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+      const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
 
-      const meta = document.getElementById("supabase-config");
-      const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
-
-      const modal = document.getElementById("loginModal");
       const openBtn = document.getElementById("openLogin");
       const closeBtn = document.getElementById("closeLogin");
+      const modal = document.getElementById("loginModal");
       const form = document.getElementById("popupLoginForm");
       const msg = document.getElementById("popupLoginMsg");
 
@@ -90,7 +86,21 @@ const { title = "Luxbase" } = Astro.props;
       if (user) {
         openBtn?.classList.add("hidden");
         accountMenu?.classList.remove("hidden");
-        usernameEl.textContent = user.user_metadata?.name || "Account";
+
+        const { data: config } = await supabase
+          .from("creator_config")
+          .select("*")
+          .match({ creator_id: user.id })
+          .single();
+
+        const paketFeatures = {
+          basic: { show_selfie_gate: false, can_customize_texts: false },
+          premium: { show_selfie_gate: true, can_customize_texts: true },
+        };
+
+        const mergedConfig = { ...config, ...paketFeatures[config?.bot_paket || "basic"] };
+        sessionStorage.setItem("luxbase_config", JSON.stringify(mergedConfig));
+        usernameEl.textContent = config?.creator_name || "Account";
 
         accountBtn?.addEventListener("click", () => {
           accountDropdown.classList.toggle("hidden");
@@ -123,41 +133,25 @@ const { title = "Luxbase" } = Astro.props;
           msg.className = "text-red-400 text-sm text-center";
         } else {
           const user = loginData.user;
-          const { data: config, error: configError } = await supabase
+
+          const { data: config } = await supabase
             .from("creator_config")
             .select("*")
-            .match({ creator_id: lux.creator_id })
-
+            .match({ creator_id: user.id })
             .single();
 
-          if (configError || !config) {
-            msg.textContent = "⚠️ Login ok, aber kein Config-Eintrag gefunden.";
-            msg.className = "text-yellow-400 text-sm text-center";
-            return;
-          }
-
-          // VIP Bot Paket-Logik (nur basic & premium)
           const paketFeatures = {
-            basic: {
-              show_selfie_gate: false,
-              can_customize_texts: false,
-            },
-            premium: {
-              show_selfie_gate: true,
-              can_customize_texts: true,
-            },
+            basic: { show_selfie_gate: false, can_customize_texts: false },
+            premium: { show_selfie_gate: true, can_customize_texts: true },
           };
 
-          const features = paketFeatures[config.bot_paket] || paketFeatures.basic;
-          const mergedConfig = { ...config, ...features };
-
-          sessionStorage.setItem("luxbase_config", JSON.stringify(mergedConfig));
+          const merged = { ...config, ...paketFeatures[config?.bot_paket || "basic"] };
+          sessionStorage.setItem("luxbase_config", JSON.stringify(merged));
 
           msg.textContent = "✅ Login erfolgreich – Weiterleitung …";
           msg.className = "text-green-400 text-sm text-center";
 
           window.location.href = "/dashboard/index";
-
         }
       });
     </script>

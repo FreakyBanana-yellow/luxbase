@@ -1,8 +1,7 @@
 ---
 import Sidebar from "../components/Sidebar.astro";
-
-const role = "creator"; // Platzhalterrolle – wird clientseitig ersetzt
-const name = "Creator"; // Platzhaltername – wird überschrieben
+const role = "creator";
+const name = "Creator";
 ---
 
 <html lang="de">
@@ -20,12 +19,10 @@ const name = "Creator"; // Platzhaltername – wird überschrieben
     <!-- HEADER -->
     <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
       <a href="/dashboard" class="text-luxgold font-serif text-xl">LUXBASE</a>
-
       <nav class="flex items-center gap-4">
-        <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+        <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition hidden">
           Login
         </button>
-
         <div id="accountMenu" class="relative hidden">
           <button id="accountBtn" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
             👤 <span id="username">Account</span>
@@ -63,17 +60,19 @@ const name = "Creator"; // Platzhaltername – wird überschrieben
       const accountDropdown = document.getElementById("accountDropdown");
       const usernameEl = document.getElementById("username");
       const logoutBtn = document.getElementById("logoutBtn");
-
       const welcomeHeadline = document.getElementById("welcomeHeadline");
 
-      // Session prüfen
+      // Check User Session
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
         openBtn?.classList.add("hidden");
         accountMenu?.classList.remove("hidden");
+
+        // Benutzername im Dropdown
         usernameEl.textContent = user.user_metadata?.name || "Account";
 
+        // Dropdown-Logik
         accountBtn?.addEventListener("click", () => {
           accountDropdown.classList.toggle("hidden");
         });
@@ -84,30 +83,22 @@ const name = "Creator"; // Platzhaltername – wird überschrieben
           location.href = "/";
         });
 
-        // Nutzerkonfiguration aus Supabase laden
+        // Config aus Supabase laden
         const { data: config, error } = await supabase
           .from("creator_config")
           .select("*")
-          .match({ creator_id: lux.creator_id })
-
+          .match({ creator_id: user.id })
           .single();
 
         if (!error && config) {
           const paketFeatures = {
-            basic: {
-              show_selfie_gate: false,
-              can_customize_texts: false,
-            },
-            premium: {
-              show_selfie_gate: true,
-              can_customize_texts: true,
-            },
+            basic: { show_selfie_gate: false, can_customize_texts: false },
+            premium: { show_selfie_gate: true, can_customize_texts: true },
           };
-          const features = paketFeatures[config.bot_paket] || paketFeatures.basic;
-          const fullConfig = { ...config, ...features };
-
+          const fullConfig = { ...config, ...paketFeatures[config.bot_paket] || {} };
           sessionStorage.setItem("luxbase_config", JSON.stringify(fullConfig));
 
+          // Headline updaten
           if (config.creator_name && welcomeHeadline) {
             welcomeHeadline.textContent = `Willkommen zurück, ${config.creator_name}! 👋`;
           }

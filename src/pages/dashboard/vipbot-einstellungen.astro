@@ -61,13 +61,13 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       <div class="text-sm text-gray-400 space-y-3">
         <h2 class="text-lg font-bold text-luxgold">🧭 Anleitung für deine Einstellungen</h2>
         <ul class="list-decimal list-inside space-y-1">
-          <li>Füge den Link zu deiner Telegram-Gruppe ein (diesen erhältst du im Gruppen-Adminbereich).</li>
+          <li>Füge den Link zu deiner Telegram-Gruppe ein.</li>
           <li>Gib die PayPal-Adresse an, auf die Nutzer Tipps senden können.</li>
-          <li>Optional: Trage deinen Telegram-Namen ein, damit du leichter erreichbar bist.</li>
-          <li>Trage den gewünschten Preis für den VIP-Zugang in Euro ein (z. B. 9.99).</li>
-          <li>Nur bei Premium: Definiere eigene Texte für Begrüßung & Regeln.</li>
-          <li>Aktiviere den SelfieCheck nur, wenn du explizit verifizieren willst.</li>
-          <li>Klick auf Speichern – fertig. Die Änderungen greifen automatisch im Bot.</li>
+          <li>Optional: Telegram-Nutzername + Support-Mail.</li>
+          <li>Trage den gewünschten Preis für den VIP-Zugang ein (z. B. 9.99).</li>
+          <li>Nur bei Premium: Eigene Texte für Begrüßung & Regeln definieren.</li>
+          <li>SelfieCheck aktivieren, wenn du verifizieren willst.</li>
+          <li>Klick auf Speichern – Änderungen greifen direkt im Bot.</li>
         </ul>
       </div>
     </div>
@@ -86,7 +86,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       msg.textContent = "❌ Nicht eingeloggt oder keine Konfiguration gefunden.";
       msg.className = "text-red-400";
     } else {
-     if (lux?.has_vipbot) {
+      if (lux.has_vipbot) {
         document.getElementById("vipbotContainer").style.display = "block";
       }
 
@@ -118,8 +118,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         const { error } = await supabase
           .from("creator_config")
           .update(updateData)
-          .match({ creator_id: lux.creator_id })
-
+          .match({ creator_id: lux.creator_id });
 
         if (error) {
           msg.textContent = "❌ Fehler beim Speichern: " + error.message;

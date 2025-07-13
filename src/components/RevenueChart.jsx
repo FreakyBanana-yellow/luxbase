@@ -15,13 +15,18 @@ export default function RevenueChart({ supabase, creatorId, preisVIP }) {
   const [data, setData] = useState(null);
 
   useEffect(() => {
+    if (!creatorId) return;
+
     async function fetchRevenueData() {
       const { data: users, error } = await supabase
         .from("vip_users")
         .select("joined_at")
-         .match({ creator_id: lux.creator_id });
+        .match({ creator_id: creatorId });
 
-      if (error || !users) return;
+      if (error || !users) {
+        console.error("Fehler beim Laden der VIP-Daten:", error);
+        return;
+      }
 
       const monthMap = {};
 
@@ -44,6 +49,7 @@ export default function RevenueChart({ supabase, creatorId, preisVIP }) {
             label: "Monatlicher Umsatz (€)",
             data: sorted.map((key) => monthMap[key] * preisVIP),
             backgroundColor: "#eab308",
+            borderRadius: 6,
           },
         ],
       });
@@ -59,24 +65,25 @@ export default function RevenueChart({ supabase, creatorId, preisVIP }) {
   return (
     <div className="bg-zinc-900 p-6 border border-luxgold rounded-xl shadow mt-10">
       <h3 className="text-lg font-bold text-luxgold mb-4">📈 Umsatzentwicklung</h3>
-      <Bar data={data} options={{
-        responsive: true,
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: function (value) {
-                return "€" + value;
+      <Bar
+        data={data}
+        options={{
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: (value) => `€${value}`,
               },
             },
           },
-        },
-        plugins: {
-          legend: {
-            display: false,
+          plugins: {
+            legend: {
+              display: false,
+            },
           },
-        },
-      }} />
+        }}
+      />
     </div>
   );
 }

@@ -1,32 +1,121 @@
 ---
 import Sidebar from "../components/Sidebar.astro";
 
-const role = "creator"; // Platzhalterrolle – wird clientseitig ggf. ersetzt
-const name = "Creator";
+const role = "creator"; // Platzhalterrolle – wird clientseitig ersetzt
+const name = "Creator"; // Platzhaltername – wird überschrieben
 ---
 
 <html lang="de">
   <head>
     <title>{Astro.props.title || "Luxbase Dashboard"}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta charset="utf-8" />
-  <meta name="theme-color" content="#0d0d0d" />
-
-  <!-- Supabase Meta Tag hier -->
-  <meta id="supabase-config"
-        data-url={`${import.meta.env.PUBLIC_SUPABASE_URL}`}
-        data-key={`${import.meta.env.PUBLIC_SUPABASE_ANON_KEY}`} />
+    <meta charset="utf-8" />
+    <meta name="theme-color" content="#0d0d0d" />
+    <meta id="supabase-config"
+      data-url={`${import.meta.env.PUBLIC_SUPABASE_URL}`}
+      data-key={`${import.meta.env.PUBLIC_SUPABASE_ANON_KEY}`} />
   </head>
+
   <body class="bg-luxblack text-white font-sans">
+    <!-- HEADER -->
+    <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
+      <a href="/dashboard" class="text-luxgold font-serif text-xl">LUXBASE</a>
+
+      <nav class="flex items-center gap-4">
+        <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+          Login
+        </button>
+
+        <div id="accountMenu" class="relative hidden">
+          <button id="accountBtn" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+            👤 <span id="username">Account</span>
+          </button>
+          <div class="absolute right-0 mt-2 w-48 bg-black border border-luxgray rounded shadow-xl text-sm hidden" id="accountDropdown">
+            <a href="/dashboard" class="block px-4 py-2 hover:bg-luxgray/30">Dashboard</a>
+            <button id="logoutBtn" class="w-full text-left px-4 py-2 hover:bg-red-900/40 text-red-400">Abmelden</button>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- BODY -->
     <div class="flex min-h-screen">
       <Sidebar role={role} />
       <main class="flex-1 p-6">
         <slot name="header" />
-        <h1 class="text-3xl font-bold text-luxgold mb-8">
+        <h1 class="text-3xl font-bold text-luxgold mb-8" id="welcomeHeadline">
           Willkommen zurück, {name}! 👋
         </h1>
         <slot />
       </main>
     </div>
+
+    <!-- CLIENTSIDE LOGIC -->
+    <script type="module">
+      import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+      const meta = document.getElementById("supabase-config");
+      const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
+
+      const openBtn = document.getElementById("openLogin");
+      const accountMenu = document.getElementById("accountMenu");
+      const accountBtn = document.getElementById("accountBtn");
+      const accountDropdown = document.getElementById("accountDropdown");
+      const usernameEl = document.getElementById("username");
+      const logoutBtn = document.getElementById("logoutBtn");
+
+      const welcomeHeadline = document.getElementById("welcomeHeadline");
+
+      // Session prüfen
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        openBtn?.classList.add("hidden");
+        accountMenu?.classList.remove("hidden");
+        usernameEl.textContent = user.user_metadata?.name || "Account";
+
+        accountBtn?.addEventListener("click", () => {
+          accountDropdown.classList.toggle("hidden");
+        });
+
+        logoutBtn?.addEventListener("click", async () => {
+          await supabase.auth.signOut();
+          sessionStorage.clear();
+          location.href = "/";
+        });
+
+        // Nutzerkonfiguration aus Supabase laden
+        const { data: config, error } = await supabase
+          .from("creator_config")
+          .select("*")
+          .eq("creator_id", user.id)
+          .single();
+
+        if (!error && config) {
+          const paketFeatures = {
+            basic: {
+              show_selfie_gate: false,
+              can_customize_texts: false,
+            },
+            premium: {
+              show_selfie_gate: true,
+              can_customize_texts: true,
+            },
+          };
+          const features = paketFeatures[config.bot_paket] || paketFeatures.basic;
+          const fullConfig = { ...config, ...features };
+
+          sessionStorage.setItem("luxbase_config", JSON.stringify(fullConfig));
+
+          if (config.creator_name && welcomeHeadline) {
+            welcomeHeadline.textContent = `Willkommen zurück, ${config.creator_name}! 👋`;
+          }
+        }
+
+      } else {
+        openBtn?.classList.remove("hidden");
+        accountMenu?.classList.add("hidden");
+      }
+    </script>
   </body>
 </html>

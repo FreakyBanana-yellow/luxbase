@@ -9,6 +9,13 @@ const name = "Creator";
   <head>
     <title>{Astro.props.title || "Luxbase Dashboard"}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="theme-color" content="#0d0d0d" />
+
+  <!-- Supabase Meta Tag hier -->
+  <meta id="supabase-config"
+        data-url={`${import.meta.env.PUBLIC_SUPABASE_URL}`}
+        data-key={`${import.meta.env.PUBLIC_SUPABASE_ANON_KEY}`} />
   </head>
   <body class="bg-luxblack text-white font-sans">
     <div class="flex min-h-screen">

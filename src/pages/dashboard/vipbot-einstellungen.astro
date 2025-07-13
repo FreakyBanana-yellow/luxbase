@@ -54,6 +54,18 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
           Speichern
         </button>
         <p id="saveMsg" class="text-sm mt-2 min-h-[1.25rem]"></p>
+        <div id="botLinkContainer" class="mt-4 hidden">
+  <label class="block text-sm text-gray-400 mb-1">Dein persönlicher Bot-Link</label>
+  <div class="flex items-center gap-2">
+    <input id="botLink" readonly class="flex-1 px-4 py-2 bg-zinc-800 text-luxgold border border-luxgold rounded" />
+    <button id="copyBotLink" type="button" class="px-3 py-2 bg-luxgold text-black font-bold rounded hover:bg-yellow-400 transition">
+      Kopieren
+    </button>
+  </div>
+  <p id="copyMsg" class="text-sm mt-2 text-luxgold h-5"></p>
+</div>
+
+
       </form>
 
       <hr class="border-luxgray/30">
@@ -156,6 +168,30 @@ if (lux.bot_paket === "premium") {
           }
 
           msg.textContent = "✅ Erfolgreich gespeichert.";
+         // Botlink anzeigen
+const botLinkInput = document.getElementById("botLink");
+const botLinkContainer = document.getElementById("botLinkContainer");
+const copyBtn = document.getElementById("copyBotLink");
+const copyMsg = document.getElementById("copyMsg");
+
+if (lux.creator_id && botLinkInput && botLinkContainer) {
+  const link = `https://t.me/LUXEntryBot?start=${encodeURIComponent(lux.creator_id)}`;
+  botLinkInput.value = link;
+  botLinkContainer.classList.remove("hidden");
+
+  copyBtn?.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      copyMsg.textContent = "✅ Link kopiert!";
+      setTimeout(() => copyMsg.textContent = "", 2000);
+    } catch (err) {
+      copyMsg.textContent = "❌ Fehler beim Kopieren.";
+    }
+  });
+}
+
+
+
           msg.className = "text-green-400";
 
           setTimeout(() => location.reload(), 1200);

@@ -51,7 +51,8 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         const { data: vipList, error } = await supabase
           .from("vip_users")
           .select("joined_at")
-          .eq("creator_id", lux.creator_id);
+          .match({ creator_id: lux.creator_id })
+
 
         if (error || !vipList) {
           root.innerHTML = `

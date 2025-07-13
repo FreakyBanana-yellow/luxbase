@@ -10,102 +10,100 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
   <!-- Chart.js als globales Script -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-  <script type="module">
-    import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+ <script type="module">
+  import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // Nur im Browser ausführen
-    if (typeof window !== "undefined") {
-      const meta = document.getElementById("supabase-config");
-      const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
-      const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
-      const root = document.getElementById("dashboard-root");
+  if (typeof window !== "undefined") {
+    const meta = document.getElementById("supabase-config");
+    const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
+    const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
+    const root = document.getElementById("dashboard-root");
 
-      const fallbackName = lux.role === "agentur" ? "deine Agentur" : "dein Creator-Profil";
-      const anzeigeName = lux.creator_name?.trim() || fallbackName;
+    const fallbackName = lux.role === "agentur" ? "deine Agentur" : "dein Creator-Profil";
+    const anzeigeName = lux.creator_name?.trim() || fallbackName;
 
-      // Falls kein Bot aktiv → Hinweis anzeigen
-      if (!lux?.creator_id || !lux?.bot_aktiv) {
-        root.innerHTML = `
-          <div>
-            <h1 class="text-3xl font-bold text-luxgold mb-2">Willkommen zurück, ${anzeigeName}! 👋</h1>
-            <p class="text-center py-12 text-gray-400">Der VIP‑Bot ist für deinen Account nicht aktiviert.</p>
-          </div>`;
-        return;
-      }
-
-      // VIP-Daten holen
-      const { data: vipList, error } = await supabase
-        .from("vip_user")
-        .select("joined_at")
-        .eq("creator_id", lux.creator_id);
-
-      if (error) {
-        root.innerHTML = "<p class='text-red-400'>❌ Fehler beim Laden der VIP-Daten.</p>";
-        return;
-      }
-
-      // Monatsstatistik berechnen
-      const monthlyStats = {};
-      for (const user of vipList) {
-        const date = new Date(user.joined_at);
-        const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}`;
-        monthlyStats[key] = (monthlyStats[key] || 0) + 1;
-      }
-
-      const preis = parseFloat(lux.preis_vip || 0);
-      const labels = Object.keys(monthlyStats).sort();
-      const values = labels.map(k => monthlyStats[k] * preis);
-      const total = values.reduce((a, b) => a + b, 0).toFixed(2);
-
-      // Inhalt einfügen
+    if (!lux?.creator_id || !lux?.bot_aktiv) {
       root.innerHTML = `
         <div>
           <h1 class="text-3xl font-bold text-luxgold mb-2">Willkommen zurück, ${anzeigeName}! 👋</h1>
-          <p class="text-zinc-300">Paket: <span class="font-semibold text-white">${lux.bot_paket}</span></p>
-        </div>
+          <p class="text-center py-12 text-gray-400">Der VIP‑Bot ist für deinen Account nicht aktiviert.</p>
+        </div>`;
+    } else {
+      try {
+        const { data: vipList, error } = await supabase
+          .from("vip_user")
+          .select("joined_at")
+          .eq("creator_id", lux.creator_id);
 
-        <div class="grid md:grid-cols-3 gap-6 mt-6">
-          <div class="bg-zinc-900 border border-luxgold rounded-lg p-6 shadow">
-            <h2 class="text-lg font-semibold text-luxgold mb-2">👥 Aktive VIPs</h2>
-            <p class="text-3xl font-bold">${vipList.length}</p>
+        if (error) {
+          root.innerHTML = "<p class='text-red-400'>❌ Fehler beim Laden der VIP-Daten.</p>";
+          return;
+        }
+
+        const monthlyStats = {};
+        for (const user of vipList) {
+          const date = new Date(user.joined_at);
+          const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}`;
+          monthlyStats[key] = (monthlyStats[key] || 0) + 1;
+        }
+
+        const preis = parseFloat(lux.preis_vip || 0);
+        const labels = Object.keys(monthlyStats).sort();
+        const values = labels.map(k => monthlyStats[k] * preis);
+        const total = values.reduce((a, b) => a + b, 0).toFixed(2);
+
+        root.innerHTML = `
+          <div>
+            <h1 class="text-3xl font-bold text-luxgold mb-2">Willkommen zurück, ${anzeigeName}! 👋</h1>
+            <p class="text-zinc-300">Paket: <span class="font-semibold text-white">${lux.bot_paket}</span></p>
           </div>
-          <div class="bg-zinc-900 border border-luxgold rounded-lg p-6 shadow">
-            <h2 class="text-lg font-semibold text-luxgold mb-2">💰 Gesamtumsatz</h2>
-            <p class="text-3xl font-bold">€ ${total}</p>
+
+          <div class="grid md:grid-cols-3 gap-6 mt-6">
+            <div class="bg-zinc-900 border border-luxgold rounded-lg p-6 shadow">
+              <h2 class="text-lg font-semibold text-luxgold mb-2">👥 Aktive VIPs</h2>
+              <p class="text-3xl font-bold">${vipList.length}</p>
+            </div>
+            <div class="bg-zinc-900 border border-luxgold rounded-lg p-6 shadow">
+              <h2 class="text-lg font-semibold text-luxgold mb-2">💰 Gesamtumsatz</h2>
+              <p class="text-3xl font-bold">€ ${total}</p>
+            </div>
           </div>
-        </div>
 
-        <div class="bg-zinc-900 mt-10 p-6 border border-luxgold rounded-xl shadow-lg">
-          <h3 class="text-lg font-semibold text-luxgold mb-4">📈 Entwicklung der VIP-Umsätze</h3>
-          <canvas id="chart" height="100"></canvas>
-        </div>
-      `;
+          <div class="bg-zinc-900 mt-10 p-6 border border-luxgold rounded-xl shadow-lg">
+            <h3 class="text-lg font-semibold text-luxgold mb-4">📈 Entwicklung der VIP-Umsätze</h3>
+            <canvas id="chart" height="100"></canvas>
+          </div>
+        `;
 
-      // Diagramm anzeigen
-      const ctx = document.getElementById("chart");
-      if (ctx && window.Chart) {
-        new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: labels,
-            datasets: [{
-              label: "Monatsumsatz (€)",
-              data: values,
-              backgroundColor: "#facc15",
-              borderRadius: 6
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { display: false }
+        const ctx = document.getElementById("chart");
+        if (ctx && window.Chart) {
+          new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: labels,
+              datasets: [{
+                label: "Monatsumsatz (€)",
+                data: values,
+                backgroundColor: "#facc15",
+                borderRadius: 6
+              }]
             },
-            scales: {
-              y: { beginAtZero: true }
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                y: { beginAtZero: true }
+              }
             }
-          }
-        });
+          });
+        }
+      } catch (e) {
+        root.innerHTML = "<p class='text-red-400'>❌ Fehler beim Laden der Daten.</p>";
       }
     }
-  </script>
+  }
+</script>
+
 </DashboardLayout>

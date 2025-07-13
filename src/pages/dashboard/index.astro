@@ -18,7 +18,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       const fallbackName = lux.role === "agentur" ? "deine Agentur" : "dein Creator-Profil";
       const anzeigeName = lux.creator_name?.trim() || fallbackName;
 
-      if (!lux?.creator_id || !lux?.bot_aktiv) {
+      if (!lux?.creator_id || !lux?.has_vipbot) {
         root.innerHTML = `
           <div>
             <h1 class="text-3xl font-bold text-luxgold mb-2">Willkommen zurück, ${anzeigeName}! 👋</h1>

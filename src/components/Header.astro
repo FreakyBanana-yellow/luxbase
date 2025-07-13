@@ -68,7 +68,8 @@ const lux = typeof window !== "undefined" && window.sessionStorage
     const { data: config } = await supabase
       .from("creator_config")
       .select("*")
-      .eq("creator_id", user.id)
+      .match({ creator_id: lux.creator_id })
+
       .single();
 
     const paketFeatures = {
@@ -113,7 +114,8 @@ const lux = typeof window !== "undefined" && window.sessionStorage
       const { data: config } = await supabase
         .from("creator_config")
         .select("*")
-        .eq("creator_id", user.id)
+        .match({ creator_id: lux.creator_id })
+
         .single();
 
       const paketFeatures = {

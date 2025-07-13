@@ -88,7 +88,8 @@ const name = "Creator"; // Platzhaltername – wird überschrieben
         const { data: config, error } = await supabase
           .from("creator_config")
           .select("*")
-          .eq("creator_id", user.id)
+          .match({ creator_id: lux.creator_id })
+
           .single();
 
         if (!error && config) {

@@ -10,32 +10,22 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       <form id="vipbotSettings" class="space-y-4">
         <div>
           <label class="block text-sm text-gray-400 mb-1">Telegram-Gruppenlink</label>
-          <input type="url" name="gruppe_link" required class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="https://t.me/+...">
+          <input type="url" name="gruppe_link" required class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="https://t.me/+..." />
         </div>
 
         <div>
           <label class="block text-sm text-gray-400 mb-1">PayPal-Adresse</label>
-          <input type="email" name="paypal" required class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="deine@email.com">
+          <input type="email" name="paypal" required class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="deine@email.com" />
         </div>
 
         <div>
           <label class="block text-sm text-gray-400 mb-1">Preis für VIP-Mitgliedschaft (€)</label>
-          <input type="number" name="preis_vip" step="0.01" min="0" class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="z. B. 9.99">
-        </div>
-
-        <div>
-          <label class="block text-sm text-gray-400 mb-1">Telegram Username (optional)</label>
-          <input type="text" name="telegram_username" class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="@deinname">
-        </div>
-
-        <div>
-          <label class="block text-sm text-gray-400 mb-1">Support E-Mail (optional)</label>
-          <input type="email" name="support_email" class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="support@deine-domain.com">
+          <input type="number" name="preis" step="0.01" min="0" class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="z. B. 9.99" />
         </div>
 
         <div class="premium-fields hidden">
           <label class="block text-sm text-gray-400 mb-1">Eigener Begrüßungstext</label>
-          <textarea name="begrüßung_text" rows="3" class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="Hi, willkommen in meiner Gruppe …"></textarea>
+          <textarea name="welcome_text" rows="3" class="w-full px-4 py-2 rounded bg-zinc-900 border border-zinc-600" placeholder="Hi, willkommen in meiner Gruppe …"></textarea>
         </div>
 
         <div class="premium-fields hidden">
@@ -45,7 +35,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
         <div class="premium-fields hidden">
           <label class="inline-flex items-center gap-2">
-            <input type="checkbox" name="selfie_check" class="form-checkbox h-5 w-5 text-luxgold bg-zinc-900 border border-zinc-600">
+            <input type="checkbox" name="selfie_check" class="form-checkbox h-5 w-5 text-luxgold bg-zinc-900 border border-zinc-600" />
             <span class="text-sm text-gray-300">SelfieCheck aktivieren</span>
           </label>
         </div>
@@ -54,28 +44,26 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
           Speichern
         </button>
         <p id="saveMsg" class="text-sm mt-2 min-h-[1.25rem]"></p>
+
         <div id="botLinkContainer" class="mt-4 hidden">
-  <label class="block text-sm text-gray-400 mb-1">Dein persönlicher Bot-Link</label>
-  <div class="flex items-center gap-2">
-    <input id="botLink" readonly class="flex-1 px-4 py-2 bg-zinc-800 text-luxgold border border-luxgold rounded" />
-    <button id="copyBotLink" type="button" class="px-3 py-2 bg-luxgold text-black font-bold rounded hover:bg-yellow-400 transition">
-      Kopieren
-    </button>
-  </div>
-  <p id="copyMsg" class="text-sm mt-2 text-luxgold h-5"></p>
-</div>
-
-
+          <label class="block text-sm text-gray-400 mb-1">Dein persönlicher Bot-Link</label>
+          <div class="flex items-center gap-2">
+            <input id="botLink" readonly class="flex-1 px-4 py-2 bg-zinc-800 text-luxgold border border-luxgold rounded" />
+            <button id="copyBotLink" type="button" class="px-3 py-2 bg-luxgold text-black font-bold rounded hover:bg-yellow-400 transition">
+              Kopieren
+            </button>
+          </div>
+          <p id="copyMsg" class="text-sm mt-2 text-luxgold h-5"></p>
+        </div>
       </form>
 
-      <hr class="border-luxgray/30">
+      <hr class="border-luxgray/30" />
 
       <div class="text-sm text-gray-400 space-y-3">
         <h2 class="text-lg font-bold text-luxgold">🧭 Anleitung für deine Einstellungen</h2>
         <ul class="list-decimal list-inside space-y-1">
           <li>Füge den Link zu deiner Telegram-Gruppe ein.</li>
           <li>Gib die PayPal-Adresse an, auf die Nutzer Tipps senden können.</li>
-          <li>Optional: Telegram-Nutzername + Support-Mail.</li>
           <li>Trage den gewünschten Preis für den VIP-Zugang ein (z. B. 9.99).</li>
           <li>Nur bei Premium: Eigene Texte für Begrüßung & Regeln definieren.</li>
           <li>SelfieCheck aktivieren, wenn du verifizieren willst.</li>
@@ -121,20 +109,17 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         msg.textContent = "";
 
         const formData = new FormData(form);
-const updateData = {};
+        const updateData = {
+          gruppe_link: formData.get("gruppe_link"),
+          paypal: formData.get("paypal"),
+          preis: parseFloat(formData.get("preis")) || 0
+        };
 
-// Nur Basisdaten aufnehmen
-["gruppe_link", "paypal", "preis_vip", "telegram_username", "support_email"].forEach((key) => {
-  updateData[key] = formData.get(key);
-});
-
-// Wenn Premium, dann auch Sonderfelder ergänzen
-if (lux.bot_paket === "premium") {
-  updateData.begrüßung_text = formData.get("begrüßung_text");
-  updateData.regeln_text = formData.get("regeln_text");
-  updateData.selfie_check = form.selfie_check.checked;
-}
-
+        if (lux.bot_paket === "premium") {
+          updateData.welcome_text = formData.get("welcome_text");
+          updateData.regeln_text = formData.get("regeln_text");
+          updateData.selfie_check = form.selfie_check.checked;
+        }
 
         const { error } = await supabase
           .from("creator_config")
@@ -145,56 +130,22 @@ if (lux.bot_paket === "premium") {
           msg.textContent = "❌ Fehler beim Speichern: " + error.message;
           msg.className = "text-red-400";
         } else {
-          const { data: updated } = await supabase
-            .from("creator_config")
-            .select("*")
-            .match({ creator_id: lux.creator_id })
-            .single();
+          const botLink = `https://t.me/LUXEntryBot?start=${encodeURIComponent(lux.creator_id)}`;
+          document.getElementById("botLink").value = botLink;
+          document.getElementById("botLinkContainer").classList.remove("hidden");
 
-          if (updated) {
-            const paketFeatures = {
-              basic: {
-                show_selfie_gate: false,
-                can_customize_texts: false,
-              },
-              premium: {
-                show_selfie_gate: true,
-                can_customize_texts: true,
-              },
-            };
-
-            const features = paketFeatures[updated.bot_paket] || paketFeatures.basic;
-            sessionStorage.setItem("luxbase_config", JSON.stringify({ ...updated, ...features }));
-          }
+          document.getElementById("copyBotLink").addEventListener("click", async () => {
+            try {
+              await navigator.clipboard.writeText(botLink);
+              document.getElementById("copyMsg").textContent = "✅ Link kopiert!";
+              setTimeout(() => document.getElementById("copyMsg").textContent = "", 2000);
+            } catch {
+              document.getElementById("copyMsg").textContent = "❌ Fehler beim Kopieren.";
+            }
+          });
 
           msg.textContent = "✅ Erfolgreich gespeichert.";
-         // Botlink anzeigen
-const botLinkInput = document.getElementById("botLink");
-const botLinkContainer = document.getElementById("botLinkContainer");
-const copyBtn = document.getElementById("copyBotLink");
-const copyMsg = document.getElementById("copyMsg");
-
-if (lux.creator_id && botLinkInput && botLinkContainer) {
-  const link = `https://t.me/LUXEntryBot?start=${encodeURIComponent(lux.creator_id)}`;
-  botLinkInput.value = link;
-  botLinkContainer.classList.remove("hidden");
-
-  copyBtn?.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(link);
-      copyMsg.textContent = "✅ Link kopiert!";
-      setTimeout(() => copyMsg.textContent = "", 2000);
-    } catch (err) {
-      copyMsg.textContent = "❌ Fehler beim Kopieren.";
-    }
-  });
-}
-
-
-
           msg.className = "text-green-400";
-
-          setTimeout(() => location.reload(), 1200);
         }
       });
     }

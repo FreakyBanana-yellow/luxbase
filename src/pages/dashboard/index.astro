@@ -21,14 +21,13 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       if (!lux?.creator_id || !lux?.has_vipbot) {
         root.innerHTML = `
           <div>
-            <h1 class="text-3xl font-bold text-luxgold mb-2">Willkommen zurück, ${anzeigeName}! 👋</h1>
             <p class="text-center py-12 text-gray-400">Der VIP‑Bot ist für deinen Account nicht aktiviert.</p>
           </div>`;
       } else {
         (async () => {
           try {
             const { data: vipList, error } = await supabase
-              .from("vip_user")
+              .from("vip_users")
               .select("joined_at")
               .eq("creator_id", lux.creator_id);
 

@@ -17,7 +17,7 @@ export default function RevenueChart({ supabase, creatorId, preisVIP }) {
   useEffect(() => {
     async function fetchRevenueData() {
       const { data: users, error } = await supabase
-        .from("vip_user")
+        .from("vip_users")
         .select("joined_at")
         .eq("creator_id", creatorId);
 

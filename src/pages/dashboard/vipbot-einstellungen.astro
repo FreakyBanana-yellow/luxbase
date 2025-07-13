@@ -109,11 +109,20 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         msg.textContent = "";
 
         const formData = new FormData(form);
-        const updateData = {};
-        for (const [key, value] of formData.entries()) {
-          updateData[key] = value;
-        }
-        updateData.selfie_check = form.selfie_check.checked;
+const updateData = {};
+
+// Nur Basisdaten aufnehmen
+["gruppe_link", "paypal", "preis_vip", "telegram_username", "support_email"].forEach((key) => {
+  updateData[key] = formData.get(key);
+});
+
+// Wenn Premium, dann auch Sonderfelder ergänzen
+if (lux.bot_paket === "premium") {
+  updateData.begrüßung_text = formData.get("begrüßung_text");
+  updateData.regeln_text = formData.get("regeln_text");
+  updateData.selfie_check = form.selfie_check.checked;
+}
+
 
         const { error } = await supabase
           .from("creator_config")

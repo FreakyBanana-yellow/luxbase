@@ -12,16 +12,47 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
 <script type="module">
   import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  import Chart from "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js";
 
-  async function main() {
-    if (typeof window === "undefined") return;
-
+  if (typeof window !== "undefined") {
     const meta = document.getElementById("supabase-config");
     const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
-    const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
     const root = document.getElementById("dashboard-root");
 
-    if (!lux?.creator_id || !lux?.bot_aktiv) {
+    const session = await supabase.auth.getSession();
+    const user = session?.data?.session?.user;
+
+    if (!user) {
+      root.innerHTML = "<p class='text-red-400 text-center'>Nicht eingeloggt.</p>";
+      return;
+    }
+
+    const { data: config, error: configError } = await supabase
+      .from("creator_config")
+      .select("*")
+      .eq("creator_id", user.id)
+      .single();
+
+    if (configError || !config) {
+      root.innerHTML = "<p class='text-red-400 text-center'>⚠️ Keine Konfiguration gefunden.</p>";
+      return;
+    }
+
+    // Features reinmischen + speichern
+    const paketFeatures = {
+      basic: {
+        show_selfie_gate: false,
+        can_customize_texts: false,
+      },
+      premium: {
+        show_selfie_gate: true,
+        can_customize_texts: true,
+      },
+    };
+    const lux = { ...config, ...paketFeatures[config.bot_paket || "basic"] };
+    sessionStorage.setItem("luxbase_config", JSON.stringify(lux));
+
+    if (!lux.bot_aktiv) {
       root.innerHTML = `
         <div class="text-center py-12 text-gray-400">
           Der VIP‑Bot ist für deinen Account nicht aktiviert.
@@ -29,6 +60,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       return;
     }
 
+    // VIP-Daten laden
     const { data: vipList, error } = await supabase
       .from("vip_user")
       .select("joined_at")
@@ -57,7 +89,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         <p class="text-zinc-300">Paket: <span class="font-semibold text-white">${lux.bot_paket}</span></p>
       </div>
 
-      <div class="grid md:grid-cols-3 gap-6">
+      <div class="grid md:grid-cols-3 gap-6 mt-6">
         <div class="bg-zinc-900 border border-luxgold rounded-lg p-6 shadow">
           <h2 class="text-lg font-semibold text-luxgold mb-2">👥 Aktive VIPs</h2>
           <p class="text-3xl font-bold">${vipList.length}</p>
@@ -75,7 +107,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     `;
 
     const ctx = document.getElementById("chart");
-    new window.Chart(ctx, {
+    new Chart(ctx, {
       type: "bar",
       data: {
         labels: labels,
@@ -88,16 +120,11 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       },
       options: {
         responsive: true,
-        plugins: {
-          legend: { display: false }
-        },
-        scales: {
-          y: { beginAtZero: true }
-        }
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
       }
     });
   }
-
-  main();
 </script>
+
 </DashboardLayout>

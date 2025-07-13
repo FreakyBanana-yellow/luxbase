@@ -7,133 +7,43 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     <div class="text-center text-gray-400">Lade deine Daten …</div>
   </section>
 
-  <script type="module">
-    import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+ <script type="module">
+  import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    if (typeof window !== "undefined") {
-      const meta = document.getElementById("supabase-config");
-      const supabase = supabase_js.createClient(meta?.dataset?.url, meta?.dataset?.key);
-      const root = document.getElementById("dashboard-root");
+  (async () => {
+    const meta = document.getElementById("supabase-config");
+    const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
 
-      // 🔐 Lux-Konfiguration aus dem sessionStorage laden
-      const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
-      console.log("LUX KONFIGURATION:", lux); // Debug-Hilfe
+    const root = document.getElementById("dashboardRoot");
+    const welcomeHeadline = document.getElementById("welcomeHeadline");
 
-      // 🔒 Absicherung: kein Creator? = raus
-      if (!lux?.creator_id) {
-        root.innerHTML = `
-          <div class="text-red-400 text-center">
-            ❌ Nicht eingeloggt oder keine gültige Konfiguration gefunden.
-          </div>`;
-        return;
+    const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
+    console.log("LUX-KONFIGURATION:", lux);
+
+    if (!lux?.creator_id) {
+      if (root) {
+        root.innerHTML = `<div class="text-red-400 text-center">
+          ❌ Nicht eingeloggt oder keine gültige Konfiguration gefunden.
+        </div>`;
       }
-
-      // 👋 Name anzeigen
-      const fallbackName = lux.role === "agentur" ? "deine Agentur" : "dein Creator-Profil";
-      const anzeigeName = lux.creator_name?.trim() || fallbackName;
-
-      // 🚫 Kein aktiver VIP-Bot
-      if (!lux?.has_vipbot) {
-        root.innerHTML = `
-          <div>
-            <h1 class="text-3xl font-bold text-luxgold mb-2">
-              Willkommen zurück, ${anzeigeName}! 👋
-            </h1>
-            <p class="text-center py-12 text-gray-400">
-              Der VIP‑Bot ist für deinen Account nicht aktiviert.
-            </p>
-          </div>`;
-        return;
-      }
-
-      // ✅ Aktiver VIP-Bot – jetzt Daten laden
-      try {
-        const { data: vipList, error } = await supabase
-          .from("vip_users")
-          .select("joined_at")
-          .match({ creator_id: lux.creator_id })
-
-
-        if (error || !vipList) {
-          root.innerHTML = `
-            <div>
-
-              <p class="text-red-400">❌ Fehler beim Laden der VIP-Daten.</p>
-            </div>`;
-          return;
-        }
-
-        // 📊 Monatsdaten berechnen
-        const monthlyStats = {};
-        for (const user of vipList) {
-          const date = new Date(user.joined_at);
-          const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}`;
-          monthlyStats[key] = (monthlyStats[key] || 0) + 1;
-        }
-
-        const preis = parseFloat(lux.preis_vip || 0);
-        const labels = Object.keys(monthlyStats).sort();
-        const values = labels.map(k => monthlyStats[k] * preis);
-        const total = values.reduce((a, b) => a + b, 0).toFixed(2);
-
-        // 🎯 Dashboard anzeigen
-        root.innerHTML = `
-          <div>
-            <h1 class="text-3xl font-bold text-luxgold mb-2">
-              Willkommen zurück, ${anzeigeName}! 👋
-            </h1>
-            <p class="text-zinc-300">
-              Paket: <span class="font-semibold text-white">${lux.bot_paket}</span>
-            </p>
-          </div>
-
-          <div class="grid md:grid-cols-3 gap-6 mt-6">
-            <div class="bg-zinc-900 border border-luxgold rounded-lg p-6 shadow">
-              <h2 class="text-lg font-semibold text-luxgold mb-2">👥 Aktive VIPs</h2>
-              <p class="text-3xl font-bold">${vipList.length}</p>
-            </div>
-            <div class="bg-zinc-900 border border-luxgold rounded-lg p-6 shadow">
-              <h2 class="text-lg font-semibold text-luxgold mb-2">💰 Gesamtumsatz</h2>
-              <p class="text-3xl font-bold">€ ${total}</p>
-            </div>
-          </div>
-
-          <div class="bg-zinc-900 mt-10 p-6 border border-luxgold rounded-xl shadow-lg">
-            <h3 class="text-lg font-semibold text-luxgold mb-4">📈 Entwicklung der VIP-Umsätze</h3>
-            <canvas id="chart" height="100"></canvas>
-          </div>
-        `;
-
-        // 📈 Chart nachladen
-        const { Chart } = await import("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js");
-        const ctx = document.getElementById("chart");
-
-        if (ctx && Chart) {
-          new Chart(ctx, {
-            type: "bar",
-            data: {
-              labels: labels,
-              datasets: [{
-                label: "Monatsumsatz (€)",
-                data: values,
-                backgroundColor: "#facc15",
-                borderRadius: 6
-              }]
-            },
-            options: {
-              responsive: true,
-              plugins: { legend: { display: false } },
-              scales: { y: { beginAtZero: true } }
-            }
-          });
-        }
-      } catch (err) {
-        console.error("Fehler beim Dashboard-Laden:", err);
-        root.innerHTML = `
-          <div class="text-red-400 text-center">
-            ❌ Interner Fehler beim Laden der Daten.
-          </div>`;
-      }
+      return; // ✅ jetzt erlaubt, weil innerhalb einer async function
     }
-  </script>
+
+    const fallbackName = lux.role === "agentur" ? "deine Agentur" : "dein Creator-Profil";
+    const anzeigeName = lux.creator_name?.trim() || fallbackName;
+
+    if (welcomeHeadline) {
+      welcomeHeadline.textContent = `Willkommen zurück, ${anzeigeName}! 👋`;
+    }
+
+    if (!lux?.has_vipbot && root) {
+      root.innerHTML += `<p class="text-center text-gray-400 mt-6">
+        Der VIP‑Bot ist für deinen Account nicht aktiviert.
+      </p>`;
+    }
+
+    // Weitere Logik …
+  })();
+</script>
+
 </DashboardLayout>

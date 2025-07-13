@@ -118,7 +118,8 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         const { error } = await supabase
           .from("creator_config")
           .update(updateData)
-          .eq("creator_id", lux.creator_id);
+          .match({ creator_id: lux.creator_id })
+
 
         if (error) {
           msg.textContent = "❌ Fehler beim Speichern: " + error.message;
@@ -127,7 +128,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
           const { data: updated } = await supabase
             .from("creator_config")
             .select("*")
-            .eq("creator_id", lux.creator_id)
+            .match({ creator_id: lux.creator_id })
             .single();
 
           if (updated) {

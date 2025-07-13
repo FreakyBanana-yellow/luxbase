@@ -126,7 +126,8 @@ const { title = "Luxbase" } = Astro.props;
           const { data: config, error: configError } = await supabase
             .from("creator_config")
             .select("*")
-            .eq("creator_id", user.id)
+            .match({ creator_id: lux.creator_id })
+
             .single();
 
           if (configError || !config) {

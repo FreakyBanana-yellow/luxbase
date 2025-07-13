@@ -67,7 +67,9 @@ const { title = "Luxbase" } = Astro.props;
     <!-- LOGIN + FEATURE-LOGIK -->
     <script type="module">
       import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-      const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
+      const meta = document.getElementById("supabase-config");
+const supabase = createClient(meta.dataset.url, meta.dataset.key);
+
 
       const openBtn = document.getElementById("openLogin");
       const closeBtn = document.getElementById("closeLogin");

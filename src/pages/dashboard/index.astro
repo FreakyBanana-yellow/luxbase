@@ -7,124 +7,125 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     <div class="text-center text-gray-400">Lade deine Daten …</div>
   </section>
 
-  <!-- Chart.js UMD-Version -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script type="module">
+    import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    import Chart from "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js";
 
-<script type="module">
-  import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-  import Chart from "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js";
+    if (typeof window !== "undefined") {
+      const main = async () => {
+        const meta = document.getElementById("supabase-config");
+        const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
+        const root = document.getElementById("dashboard-root");
 
-  if (typeof window !== "undefined") {
-    const meta = document.getElementById("supabase-config");
-    const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
-    const root = document.getElementById("dashboard-root");
+        // Session prüfen
+        const session = await supabase.auth.getSession();
+        const user = session?.data?.session?.user;
 
-    const session = await supabase.auth.getSession();
-    const user = session?.data?.session?.user;
+        if (!user) {
+          root.innerHTML = "<p class='text-red-400 text-center'>Nicht eingeloggt.</p>";
+          return;
+        }
 
-    if (!user) {
-      root.innerHTML = "<p class='text-red-400 text-center'>Nicht eingeloggt.</p>";
-      return;
+        // Konfiguration laden
+        const { data: config, error: configError } = await supabase
+          .from("creator_config")
+          .select("*")
+          .eq("creator_id", user.id)
+          .single();
+
+        if (configError || !config) {
+          root.innerHTML = "<p class='text-red-400 text-center'>⚠️ Keine Konfiguration gefunden.</p>";
+          return;
+        }
+
+        // Features aus Paket ableiten
+        const paketFeatures = {
+          basic: { show_selfie_gate: false, can_customize_texts: false },
+          premium: { show_selfie_gate: true, can_customize_texts: true },
+        };
+
+        const lux = { ...config, ...paketFeatures[config.bot_paket || "basic"] };
+        sessionStorage.setItem("luxbase_config", JSON.stringify(lux));
+
+        // Falls kein Bot aktiv → Hinweis
+        if (!lux.bot_aktiv) {
+          root.innerHTML = `
+            <div class="text-center py-12 text-gray-400">
+              Der VIP‑Bot ist für deinen Account nicht aktiviert.
+            </div>`;
+          return;
+        }
+
+        // VIP User-Daten laden
+        const { data: vipList, error: vipError } = await supabase
+          .from("vip_user")
+          .select("joined_at")
+          .eq("creator_id", lux.creator_id);
+
+        if (vipError) {
+          root.innerHTML = "<p class='text-red-400'>❌ Fehler beim Laden der VIP-Daten.</p>";
+          return;
+        }
+
+        // Monatsstatistik berechnen
+        const monthlyStats = {};
+        for (const user of vipList) {
+          const date = new Date(user.joined_at);
+          const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}`;
+          monthlyStats[key] = (monthlyStats[key] || 0) + 1;
+        }
+
+        const preis = parseFloat(lux.preis_vip || 0);
+        const labels = Object.keys(monthlyStats).sort();
+        const values = labels.map(k => monthlyStats[k] * preis);
+        const total = values.reduce((a, b) => a + b, 0).toFixed(2);
+
+        // HTML-Übersicht
+        root.innerHTML = `
+          <div>
+            <h1 class="text-3xl font-bold text-luxgold mb-2">Willkommen zurück, ${lux.creator_name || "Creator"}! 👋</h1>
+            <p class="text-zinc-300">Paket: <span class="font-semibold text-white">${lux.bot_paket}</span></p>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-6 mt-6">
+            <div class="bg-zinc-900 border border-luxgold rounded-lg p-6 shadow">
+              <h2 class="text-lg font-semibold text-luxgold mb-2">👥 Aktive VIPs</h2>
+              <p class="text-3xl font-bold">${vipList.length}</p>
+            </div>
+            <div class="bg-zinc-900 border border-luxgold rounded-lg p-6 shadow">
+              <h2 class="text-lg font-semibold text-luxgold mb-2">💰 Gesamtumsatz</h2>
+              <p class="text-3xl font-bold">€ ${total}</p>
+            </div>
+          </div>
+
+          <div class="bg-zinc-900 mt-10 p-6 border border-luxgold rounded-xl shadow-lg">
+            <h3 class="text-lg font-semibold text-luxgold mb-4">📈 Entwicklung der VIP-Umsätze</h3>
+            <canvas id="chart" height="100"></canvas>
+          </div>
+        `;
+
+        // Chart rendern
+        const ctx = document.getElementById("chart");
+        new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: labels,
+            datasets: [{
+              label: "Monatsumsatz (€)",
+              data: values,
+              backgroundColor: "#facc15",
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+      };
+
+      main();
     }
-
-    const { data: config, error: configError } = await supabase
-      .from("creator_config")
-      .select("*")
-      .eq("creator_id", user.id)
-      .single();
-
-    if (configError || !config) {
-      root.innerHTML = "<p class='text-red-400 text-center'>⚠️ Keine Konfiguration gefunden.</p>";
-      return;
-    }
-
-    // Features reinmischen + speichern
-    const paketFeatures = {
-      basic: {
-        show_selfie_gate: false,
-        can_customize_texts: false,
-      },
-      premium: {
-        show_selfie_gate: true,
-        can_customize_texts: true,
-      },
-    };
-    const lux = { ...config, ...paketFeatures[config.bot_paket || "basic"] };
-    sessionStorage.setItem("luxbase_config", JSON.stringify(lux));
-
-    if (!lux.bot_aktiv) {
-      root.innerHTML = `
-        <div class="text-center py-12 text-gray-400">
-          Der VIP‑Bot ist für deinen Account nicht aktiviert.
-        </div>`;
-      return;
-    }
-
-    // VIP-Daten laden
-    const { data: vipList, error } = await supabase
-      .from("vip_user")
-      .select("joined_at")
-      .eq("creator_id", lux.creator_id);
-
-    if (error) {
-      root.innerHTML = "<p class='text-red-400'>❌ Fehler beim Laden der VIP-Daten.</p>";
-      return;
-    }
-
-    const monthlyStats = {};
-    for (const user of vipList) {
-      const date = new Date(user.joined_at);
-      const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}`;
-      monthlyStats[key] = (monthlyStats[key] || 0) + 1;
-    }
-
-    const preis = parseFloat(lux.preis_vip || 0);
-    const labels = Object.keys(monthlyStats).sort();
-    const values = labels.map(k => monthlyStats[k] * preis);
-    const total = values.reduce((a, b) => a + b, 0).toFixed(2);
-
-    root.innerHTML = `
-      <div>
-        <h1 class="text-3xl font-bold text-luxgold mb-2">Willkommen zurück, ${lux.creator_name || "Creator"}! 👋</h1>
-        <p class="text-zinc-300">Paket: <span class="font-semibold text-white">${lux.bot_paket}</span></p>
-      </div>
-
-      <div class="grid md:grid-cols-3 gap-6 mt-6">
-        <div class="bg-zinc-900 border border-luxgold rounded-lg p-6 shadow">
-          <h2 class="text-lg font-semibold text-luxgold mb-2">👥 Aktive VIPs</h2>
-          <p class="text-3xl font-bold">${vipList.length}</p>
-        </div>
-        <div class="bg-zinc-900 border border-luxgold rounded-lg p-6 shadow">
-          <h2 class="text-lg font-semibold text-luxgold mb-2">💰 Gesamtumsatz</h2>
-          <p class="text-3xl font-bold">€ ${total}</p>
-        </div>
-      </div>
-
-      <div class="bg-zinc-900 mt-10 p-6 border border-luxgold rounded-xl shadow-lg">
-        <h3 class="text-lg font-semibold text-luxgold mb-4">📈 Entwicklung der VIP-Umsätze</h3>
-        <canvas id="chart" height="100"></canvas>
-      </div>
-    `;
-
-    const ctx = document.getElementById("chart");
-    new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: labels,
-        datasets: [{
-          label: "Monatsumsatz (€)",
-          data: values,
-          backgroundColor: "#facc15",
-          borderRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
-  }
-</script>
-
+  </script>
 </DashboardLayout>

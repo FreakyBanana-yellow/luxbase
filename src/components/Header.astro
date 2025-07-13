@@ -1,16 +1,28 @@
 ---
+const lux = typeof window !== "undefined" && window.sessionStorage
+  ? JSON.parse(sessionStorage.getItem("luxbase_config") || "{}")
+  : {};
 ---
 
 <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
   <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a>
   <nav class="flex items-center gap-4">
-    <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+    <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition hidden">
       Login
     </button>
+    <div id="accountMenu" class="relative hidden">
+      <button id="accountBtn" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+        👤 <span id="username">Account</span>
+      </button>
+      <div class="absolute right-0 mt-2 w-48 bg-black border border-luxgray rounded shadow-xl text-sm hidden" id="accountDropdown">
+        <a href="/dashboard" class="block px-4 py-2 hover:bg-luxgray/30">Dashboard</a>
+        <button id="logoutBtn" class="w-full text-left px-4 py-2 hover:bg-red-900/40 text-red-400">Abmelden</button>
+      </div>
+    </div>
   </nav>
 </header>
 
-<!-- Login Modal wird dynamisch eingeblendet -->
+<!-- Login Modal -->
 <div id="loginModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
   <div class="bg-zinc-900 border border-luxgold p-8 rounded-xl w-96 relative text-white shadow-xl">
     <button id="closeLogin" class="absolute top-3 right-4 text-white text-xl hover:text-luxgold">&times;</button>
@@ -41,6 +53,47 @@
   const form = document.getElementById("popupLoginForm");
   const msg = document.getElementById("popupLoginMsg");
 
+  const accountMenu = document.getElementById("accountMenu");
+  const accountBtn = document.getElementById("accountBtn");
+  const accountDropdown = document.getElementById("accountDropdown");
+  const usernameEl = document.getElementById("username");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user) {
+    openBtn?.classList.add("hidden");
+    accountMenu?.classList.remove("hidden");
+
+    const { data: config } = await supabase
+      .from("creator_config")
+      .select("*")
+      .eq("creator_id", user.id)
+      .single();
+
+    const paketFeatures = {
+      basic: { show_selfie_gate: false, can_customize_texts: false },
+      premium: { show_selfie_gate: true, can_customize_texts: true },
+    };
+
+    const merged = { ...config, ...paketFeatures[config?.bot_paket || "basic"] };
+    sessionStorage.setItem("luxbase_config", JSON.stringify(merged));
+    usernameEl.textContent = config?.creator_name || "Account";
+
+    accountBtn?.addEventListener("click", () => {
+      accountDropdown.classList.toggle("hidden");
+    });
+
+    logoutBtn?.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      sessionStorage.clear();
+      location.href = "/";
+    });
+  } else {
+    openBtn?.classList.remove("hidden");
+    accountMenu?.classList.add("hidden");
+  }
+
   openBtn?.addEventListener("click", () => modal.classList.remove("hidden"));
   closeBtn?.addEventListener("click", () => modal.classList.add("hidden"));
 
@@ -51,13 +104,29 @@
     const email = form.email.value.trim();
     const password = form.password.value.trim();
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data: loginData, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       msg.textContent = "❌ " + error.message;
     } else {
-      msg.textContent = "✅ Erfolgreich eingeloggt – Weiterleitung …";
+      const user = loginData.user;
+      const { data: config } = await supabase
+        .from("creator_config")
+        .select("*")
+        .eq("creator_id", user.id)
+        .single();
+
+      const paketFeatures = {
+        basic: { show_selfie_gate: false, can_customize_texts: false },
+        premium: { show_selfie_gate: true, can_customize_texts: true },
+      };
+
+      const merged = { ...config, ...paketFeatures[config?.bot_paket || "basic"] };
+      sessionStorage.setItem("luxbase_config", JSON.stringify(merged));
+
+      msg.textContent = "✅ Login erfolgreich – Weiterleitung …";
       msg.className = "text-green-400 text-sm text-center";
+
       setTimeout(() => location.href = "/dashboard", 1200);
     }
   });

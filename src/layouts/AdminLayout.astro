@@ -1,5 +1,5 @@
 ---
-import Sidebar from "../components/Sidebar.astro";
+import AdminSidebar from "../components/AdminSidebar.astro";
 const { title = "Luxbase Admin" } = Astro.props;
 ---
 
@@ -17,14 +17,12 @@ const { title = "Luxbase Admin" } = Astro.props;
   <body class="bg-luxblack text-white font-sans">
     <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
       <a href="/admin" class="text-luxgold font-serif text-xl">LUXBASE</a>
-      <span class="text-sm text-luxgold/60">🛡️ Adminbereich</span>
+      <span class="text-sm text-luxgold/60">🔐 Adminbereich</span>
     </header>
 
     <div class="flex min-h-screen">
-      <Sidebar role="admin" />
+      <AdminSidebar />
       <main class="flex-1 p-6">
-        <slot name="header" />
-        <h1 class="text-3xl font-bold text-luxgold mb-8">👨‍⚖️ Admin Dashboard</h1>
         <slot />
       </main>
     </div>

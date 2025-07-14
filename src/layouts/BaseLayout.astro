@@ -153,7 +153,18 @@ const supabase = createClient(meta.dataset.url, meta.dataset.key);
           msg.textContent = "✅ Login erfolgreich – Weiterleitung …";
           msg.className = "text-green-400 text-sm text-center";
 
-          window.location.href = "/dashboard/index";
+          let redirectTo = "/dashboard/index"; // Fallback
+
+const rolle = config?.rolle || "creator";
+
+if (rolle === "admin") {
+  redirectTo = "/admin/index";
+} else if (rolle === "agentur") {
+  redirectTo = "/dashboard-agentur/index";
+}
+
+window.location.href = redirectTo;
+
         }
       });
     </script>

@@ -1,0 +1,32 @@
+---
+import Sidebar from "../components/Sidebar.astro";
+const { title = "Luxbase Admin" } = Astro.props;
+---
+
+<html lang="de">
+  <head>
+    <title>{title}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d0d0d" />
+    <meta id="supabase-config"
+          data-url={`${import.meta.env.PUBLIC_SUPABASE_URL}`}
+          data-key={`${import.meta.env.PUBLIC_SUPABASE_ANON_KEY}`} />
+  </head>
+
+  <body class="bg-luxblack text-white font-sans">
+    <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
+      <a href="/admin" class="text-luxgold font-serif text-xl">LUXBASE</a>
+      <span class="text-sm text-luxgold/60">🛡️ Adminbereich</span>
+    </header>
+
+    <div class="flex min-h-screen">
+      <Sidebar role="admin" />
+      <main class="flex-1 p-6">
+        <slot name="header" />
+        <h1 class="text-3xl font-bold text-luxgold mb-8">👨‍⚖️ Admin Dashboard</h1>
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,5 +1,5 @@
 ---
-import PaketVerwaltung from "../../../components/PaketVerwaltung.jsx";
+const PaketVerwaltung = (await import("../../../components/PaketVerwaltung.jsx")).default;
 ---
 
 <!DOCTYPE html>
@@ -8,7 +8,6 @@ import PaketVerwaltung from "../../../components/PaketVerwaltung.jsx";
     <meta charset="UTF-8" />
     <title>Paketverwaltung – Luxbase Admin</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Verwalte VIP-Bot, Vault und StageOne Pakete für deine Creator:innen." />
   </head>
   <body class="bg-black text-white min-h-screen">
     <main class="max-w-7xl mx-auto px-4 py-6">

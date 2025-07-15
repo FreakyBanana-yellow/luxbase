@@ -1,10 +1,17 @@
 ---
-import AdminLayout from "../../layouts/AdminLayout.astro";
+import { useEffect } from 'react';
+
+useEffect(() => {
+  window.location.href = '/admin/pakete/';
+}, []);
 ---
 
-<AdminLayout title="🛠 Pakete & Funktionen">
-  <section class="p-8 text-white">
-    <h1 class="text-3xl font-bold text-luxgold mb-6">🛠 Pakete & Funktionen</h1>
-    <p>Verwalte hier die gebuchten Features der Creator:innen wie VIP-Bot oder Vault.</p>
-  </section>
-</AdminLayout>
+<html>
+  <head>
+    <meta http-equiv="refresh" content="0;url=/admin/pakete/" />
+    <title>Weiterleitung...</title>
+  </head>
+  <body>
+    <p>Du wirst weitergeleitet…</p>
+  </body>
+</html>

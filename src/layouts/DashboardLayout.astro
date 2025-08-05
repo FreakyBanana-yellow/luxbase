@@ -2,6 +2,10 @@
 import Sidebar from "../components/Sidebar.astro";
 const role = "creator";
 const name = "Creator";
+const lux = typeof window !== "undefined" && window.sessionStorage
+  ? JSON.parse(sessionStorage.getItem("luxbase_config") || "{}")
+  : {};
+---
 ---
 
 <html lang="de">
@@ -16,10 +20,7 @@ const name = "Creator";
   </head>
 
   <body class="bg-luxblack text-white font-sans">
-const lux = typeof window !== "undefined" && window.sessionStorage
-  ? JSON.parse(sessionStorage.getItem("luxbase_config") || "{}")
-  : {};
----
+
 
 <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
   <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a>

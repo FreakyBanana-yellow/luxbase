@@ -21,21 +21,56 @@ const { title = "Luxbase" } = Astro.props;
     <!-- HEADER -->
     <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
       <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a>
-      <nav class="flex items-center gap-4">
+
+      <!-- Mobile Hamburger -->
+      <button id="mobileMenuBtn" class="md:hidden px-3 py-2 text-luxgold hover:text-white focus:outline-none">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      <!-- Desktop-Nav -->
+      <nav class="hidden md:flex items-center gap-4">
         <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
           Login
         </button>
         <div id="accountMenu" class="relative hidden">
-          <button id="accountBtn" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
-            👤 <span id="username">Account</span>
+          <button id="accountBtn" class="flex items-center space-x-2">
+            <span id="username">Account</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
           </button>
-          <div class="absolute right-0 mt-2 w-48 bg-black border border-luxgray rounded shadow-xl text-sm hidden" id="accountDropdown">
-            <a href="/dashboard" class="block px-4 py-2 hover:bg-luxgray/30">Dashboard</a>
+          <div id="accountDropdown" class="absolute right-0 mt-2 w-48 bg-black border border-luxgray rounded shadow-lg hidden">
+            <a href="/dashboard" class="block px-4 py-2 hover:bg-luxgray/20">Dashboard</a>
+            <a href="/settings" class="block px-4 py-2 hover:bg-luxgray/20">Einstellungen</a>
             <button id="logoutBtn" class="w-full text-left px-4 py-2 hover:bg-red-900/40 text-red-400">Abmelden</button>
           </div>
         </div>
       </nav>
     </header>
+
+    <!-- MOBILE DRAWER -->
+    <div id="mobileDrawer"
+         class="fixed inset-y-0 left-0 w-64 bg-black border-r border-luxgray transform -translate-x-full
+                transition-transform duration-200 ease-in-out z-40 md:hidden overflow-y-auto">
+      <nav class="mt-8 space-y-4 px-4 text-luxgold">
+        <button id="mobileLoginBtn"
+                class="w-full text-left py-3 px-4 border border-luxgold rounded hover:bg-luxgold hover:text-black transition"
+                onclick="toggleMobile()">
+          Login
+        </button>
+        <div id="mobileAccountMenu" class="mt-4 space-y-2">
+          <a href="/dashboard" class="block py-3 px-4 hover:bg-luxgray/30" onclick="toggleMobile()">Dashboard</a>
+          <a href="/settings" class="block py-3 px-4 hover:bg-luxgray/30" onclick="toggleMobile()">Einstellungen</a>
+          <button id="mobileLogoutBtn" class="w-full text-left py-3 px-4 hover:bg-red-900/40 text-red-400"
+                  onclick="toggleMobile()">Abmelden</button>
+        </div>
+      </nav>
+    </div>
+    <div id="drawerOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-30 md:hidden" onclick="toggleMobile()"></div>
 
     <!-- LOGIN MODAL -->
     <div id="loginModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
@@ -56,115 +91,102 @@ const { title = "Luxbase" } = Astro.props;
       </div>
     </div>
 
+    <!-- MAIN CONTENT -->
     <main class="flex-1">
       <slot />
     </main>
 
+    <!-- FOOTER -->
     <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
       © <script>document.write(new Date().getFullYear())</script> Luxbase – Automation with Style.
     </footer>
 
-    <!-- LOGIN + FEATURE-LOGIK -->
+    <!-- SCRIPT: Supabase Auth + Mobile-Drawer -->
     <script type="module">
       import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
       const meta = document.getElementById("supabase-config");
-const supabase = createClient(meta.dataset.url, meta.dataset.key);
+      const supabase = createClient(meta.dataset.url, meta.dataset.key);
 
-
+      // Auth-Elemente
       const openBtn = document.getElementById("openLogin");
       const closeBtn = document.getElementById("closeLogin");
       const modal = document.getElementById("loginModal");
       const form = document.getElementById("popupLoginForm");
       const msg = document.getElementById("popupLoginMsg");
-
       const accountMenu = document.getElementById("accountMenu");
       const accountBtn = document.getElementById("accountBtn");
       const accountDropdown = document.getElementById("accountDropdown");
       const usernameEl = document.getElementById("username");
       const logoutBtn = document.getElementById("logoutBtn");
 
-      const { data: { user } } = await supabase.auth.getUser();
+      // Drawer-Elemente
+      const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+      const mobileDrawer   = document.getElementById("mobileDrawer");
+      const drawerOverlay  = document.getElementById("drawerOverlay");
 
-      if (user) {
-        openBtn?.classList.add("hidden");
-        accountMenu?.classList.remove("hidden");
-
-        const { data: config } = await supabase
-          .from("creator_config")
-          .select("*")
-          .match({ creator_id: user.id })
-          .single();
-
-        const paketFeatures = {
-          basic: { show_selfie_gate: false, can_customize_texts: false },
-          premium: { show_selfie_gate: true, can_customize_texts: true },
-        };
-
-        const mergedConfig = { ...config, ...paketFeatures[config?.bot_paket || "basic"] };
-        sessionStorage.setItem("luxbase_config", JSON.stringify(mergedConfig));
-        usernameEl.textContent = config?.creator_name || "Account";
-
-        accountBtn?.addEventListener("click", () => {
-          accountDropdown.classList.toggle("hidden");
-        });
-
-        logoutBtn?.addEventListener("click", async () => {
-          await supabase.auth.signOut();
-          sessionStorage.clear();
-          location.href = "/";
-        });
-      } else {
-        openBtn?.classList.remove("hidden");
-        accountMenu?.classList.add("hidden");
+      function toggleMobile() {
+        mobileDrawer.classList.toggle("-translate-x-full");
+        drawerOverlay.classList.toggle("hidden");
       }
+      mobileMenuBtn.addEventListener("click", toggleMobile);
+      drawerOverlay.addEventListener("click", toggleMobile);
 
-      openBtn?.addEventListener("click", () => modal.classList.remove("hidden"));
-      closeBtn?.addEventListener("click", () => modal.classList.add("hidden"));
-
-      form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        msg.textContent = "";
-
-        const email = form.email.value.trim();
-        const password = form.password.value.trim();
-
-        const { data: loginData, error } = await supabase.auth.signInWithPassword({ email, password });
-
-        if (error) {
-          msg.textContent = "❌ " + error.message;
-          msg.className = "text-red-400 text-sm text-center";
-        } else {
-          const user = loginData.user;
-
+      // Supabase User-Check
+      (async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          openBtn?.classList.add("hidden");
+          accountMenu?.classList.remove("hidden");
           const { data: config } = await supabase
             .from("creator_config")
             .select("*")
             .match({ creator_id: user.id })
             .single();
-
           const paketFeatures = {
             basic: { show_selfie_gate: false, can_customize_texts: false },
             premium: { show_selfie_gate: true, can_customize_texts: true },
           };
-
           const merged = { ...config, ...paketFeatures[config?.bot_paket || "basic"] };
           sessionStorage.setItem("luxbase_config", JSON.stringify(merged));
+          usernameEl.textContent = config?.creator_name || "Account";
+          accountBtn?.addEventListener("click", () => accountDropdown.classList.toggle("hidden"));
+          logoutBtn?.addEventListener("click", async () => { await supabase.auth.signOut(); sessionStorage.clear(); location.href = "/"; });
+        } else {
+          openBtn?.classList.remove("hidden");
+          accountMenu?.classList.add("hidden");
+        }
+      })();
 
+      // Login-Form-Handling
+      form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        msg.textContent = "";
+        const email = form.email.value.trim();
+        const password = form.password.value.trim();
+        const { data: loginData, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          msg.textContent = "❌ " + error.message;
+          msg.className = "text-red-400 text-sm text-center";
+        } else {
+          const user = loginData.user;
+          const { data: config } = await supabase
+            .from("creator_config")
+            .select("*")
+            .match({ creator_id: user.id })
+            .single();
+          const paketFeatures = {
+            basic: { show_selfie_gate: false, can_customize_texts: false },
+            premium: { show_selfie_gate: true, can_customize_texts: true },
+          };
+          const merged = { ...config, ...paketFeatures[config?.bot_paket || "basic"] };
+          sessionStorage.setItem("luxbase_config", JSON.stringify(merged));
           msg.textContent = "✅ Login erfolgreich – Weiterleitung …";
           msg.className = "text-green-400 text-sm text-center";
-
-          let redirectTo = "/dashboard/index"; // Fallback
-
-const rolle = config?.rolle || "creator";
-
-if (rolle === "admin") {
-  redirectTo = "/admin/index";
-} else if (rolle === "agentur") {
-  redirectTo = "/dashboard-agentur/index";
-}
-
-window.location.href = redirectTo;
-
+          const rolle = config?.rolle || "creator";
+          let redirectTo = "/dashboard/index";
+          if (rolle === "admin") redirectTo = "/admin/index";
+          else if (rolle === "agentur") redirectTo = "/dashboard-agentur/index";
+          window.location.href = redirectTo;
         }
       });
     </script>

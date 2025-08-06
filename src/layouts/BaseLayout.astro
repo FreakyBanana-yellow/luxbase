@@ -100,7 +100,7 @@ const { title = "Luxbase" } = Astro.props;
       © <script>document.write(new Date().getFullYear())</script> Luxbase – Automation with Style.
     </footer>
 
-    <!-- SCRIPT: Supabase Auth + Mobile-Drawer -->
+    <!-- SCRIPT: Supabase Auth + Mobile-Drawer + Telegram sync -->
     <script type="module">
       import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
       const meta = document.getElementById("supabase-config");
@@ -122,7 +122,6 @@ const { title = "Luxbase" } = Astro.props;
       const mobileMenuBtn = document.getElementById("mobileMenuBtn");
       const mobileDrawer   = document.getElementById("mobileDrawer");
       const drawerOverlay  = document.getElementById("drawerOverlay");
-
       function toggleMobile() {
         mobileDrawer.classList.toggle("-translate-x-full");
         drawerOverlay.classList.toggle("hidden");
@@ -136,58 +135,24 @@ const { title = "Luxbase" } = Astro.props;
         if (user) {
           openBtn?.classList.add("hidden");
           accountMenu?.classList.remove("hidden");
-          const { data: config } = await supabase
-            .from("creator_config")
-            .select("*")
-            .match({ creator_id: user.id })
-            .single();
-          const paketFeatures = {
-            basic: { show_selfie_gate: false, can_customize_texts: false },
-            premium: { show_selfie_gate: true, can_customize_texts: true },
-          };
-          const merged = { ...config, ...paketFeatures[config?.bot_paket || "basic"] };
-          sessionStorage.setItem("luxbase_config", JSON.stringify(merged));
-          usernameEl.textContent = config?.creator_name || "Account";
-          accountBtn?.addEventListener("click", () => accountDropdown.classList.toggle("hidden"));
-          logoutBtn?.addEventListener("click", async () => { await supabase.auth.signOut(); sessionStorage.clear(); location.href = "/"; });
-        } else {
-          openBtn?.classList.remove("hidden");
-          accountMenu?.classList.add("hidden");
-        }
-      })();
 
-      // Login-Form-Handling
-      form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        msg.textContent = "";
-        const email = form.email.value.trim();
-        const password = form.password.value.trim();
-        const { data: loginData, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-          msg.textContent = "❌ " + error.message;
-          msg.className = "text-red-400 text-sm text-center";
-        } else {
-          const user = loginData.user;
+          // Config laden
           const { data: config } = await supabase
             .from("creator_config")
             .select("*")
             .match({ creator_id: user.id })
             .single();
+
+          // Telegram-ID sync
+          const telegramId = user.user_metadata?.telegram_id;
+          if (telegramId) {
+            const { error: telErr } = await supabase
+              .from("creator_config")
+              .update({ telegram_id: telegramId })
+              .match({ creator_id: user.id });
+            if (telErr) console.error("Fehler beim Speichern der Telegram-ID:", telErr);
+          }
+
+          // Session store
           const paketFeatures = {
             basic: { show_selfie_gate: false, can_customize_texts: false },
-            premium: { show_selfie_gate: true, can_customize_texts: true },
-          };
-          const merged = { ...config, ...paketFeatures[config?.bot_paket || "basic"] };
-          sessionStorage.setItem("luxbase_config", JSON.stringify(merged));
-          msg.textContent = "✅ Login erfolgreich – Weiterleitung …";
-          msg.className = "text-green-400 text-sm text-center";
-          const rolle = config?.rolle || "creator";
-          let redirectTo = "/dashboard/index";
-          if (rolle === "admin") redirectTo = "/admin/index";
-          else if (rolle === "agentur") redirectTo = "/dashboard-agentur/index";
-          window.location.href = redirectTo;
-        }
-      });
-    </script>
-  </body>
-</html>

@@ -6,7 +6,7 @@ const lux = typeof window !== "undefined" && window.sessionStorage
   ? JSON.parse(sessionStorage.getItem("luxbase_config") || "{}")
   : {};
 ---
----
+
 
 <html lang="de">
   <head>
@@ -20,7 +20,6 @@ const lux = typeof window !== "undefined" && window.sessionStorage
   </head>
 
   <body class="bg-luxblack text-white font-sans">
-
 
 <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
   <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a>
@@ -160,6 +159,18 @@ const lux = typeof window !== "undefined" && window.sessionStorage
       accountMenu?.classList.add("hidden");
     }
   })();
+    // Toggle-Funktion fürs Mobile-Drawer
+  const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+  const mobileDrawer = document.getElementById("mobileDrawer");
+  const drawerOverlay = document.getElementById("drawerOverlay");
+
+  function toggleMobile() {
+    mobileDrawer.classList.toggle("-translate-x-full");
+    drawerOverlay.classList.toggle("hidden");
+  }
+
+  mobileMenuBtn.addEventListener("click", toggleMobile);
+  drawerOverlay.addEventListener("click", toggleMobile);
 </script>
 
   </body>

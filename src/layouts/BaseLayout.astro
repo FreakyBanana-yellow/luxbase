@@ -45,7 +45,7 @@ const { title = "Luxbase" } = Astro.props;
           </button>
           <div id="accountDropdown" class="absolute right-0 mt-2 w-48 bg-black border border-luxgray rounded shadow-lg hidden">
             <a href="/dashboard" class="block px-4 py-2 hover:bg-luxgray/20">Dashboard</a>
-            <a href="/settings" class="block px-4 py-2 hover:bg-luxgray/20">Einstellungen</a>
+            <a href="/dashboard/vipbot-einstellungen" class="block px-4 py-2 hover:bg-luxgray/20">Bot-Einstellungen</a>
             <button id="logoutBtn" class="w-full text-left px-4 py-2 hover:bg-red-900/40 text-red-400">Abmelden</button>
           </div>
         </div>
@@ -64,7 +64,7 @@ const { title = "Luxbase" } = Astro.props;
         </button>
         <div id="mobileAccountMenu" class="mt-4 space-y-2">
           <a href="/dashboard" class="block py-3 px-4 hover:bg-luxgray/30" onclick="toggleMobile()">Dashboard</a>
-          <a href="/settings" class="block py-3 px-4 hover:bg-luxgray/30" onclick="toggleMobile()">Einstellungen</a>
+          <a href="/dashboard/vipbot-einstellungen" class="block py-3 px-4 hover:bg-luxgray/30" onclick="toggleMobile()">Bot-Einstellungen</a>
           <button id="mobileLogoutBtn" class="w-full text-left py-3 px-4 hover:bg-red-900/40 text-red-400"
                   onclick="toggleMobile()">Abmelden</button>
         </div>

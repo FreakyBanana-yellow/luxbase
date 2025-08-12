@@ -76,7 +76,6 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
   import("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"),
 ]);
 const Chart = window.Chart;
-    dbg("✅ Libraries geladen");
 
     const supabase = createClient(meta.dataset.url, meta.dataset.key);
 
@@ -103,7 +102,7 @@ const Chart = window.Chart;
       window.location.href = "/";
       throw new Error("redirect");
     }
-    dbg("👤 User:", { id: user.id, email: user.email });
+  
 
     // 3) creator_config
     const { data: cfg, error: cfgErr } = await supabase
@@ -112,7 +111,6 @@ const Chart = window.Chart;
       .eq("creator_id", user.id)
       .maybeSingle();
     if (cfgErr) dbg("⚠️ creator_config error:", cfgErr);
-    dbg("📦 creator_config:", cfg);
 
     const preis = Number(cfg?.preis || 0);
     const vipDauer = Number(cfg?.vip_dauer || 30);
@@ -123,7 +121,6 @@ const Chart = window.Chart;
       .select("letzter_kontakt, vip_bis, status")
       .eq("creator_id", user.id);
     if (vipErr) dbg("⚠️ vip_users error:", vipErr);
-    dbg("📊 vip_users rows:", vipData?.length ?? 0);
 
     let vipRows = vipData || [];
 
@@ -139,7 +136,6 @@ const Chart = window.Chart;
       el("kpiRevenueNote").textContent = "Demo-Schätzung (keine echten Datensätze oder keine Leserechte)";
       el("kpiActiveNote").textContent = "Demo-Daten";
       el("kpiNewNote").textContent = "Demo-Daten";
-      dbg("ℹ️ Demo-Daten aktiviert");
     }
 
     // 6) Aggregation
@@ -171,7 +167,7 @@ const Chart = window.Chart;
     const revCanvas = el("revChart");
     const vipCanvas = el("vipChart");
     if (!revCanvas || !vipCanvas) {
-      dbg("❌ Canvas nicht gefunden");
+
     } else {
       new Chart(revCanvas.getContext("2d"), {
         type: "line",
@@ -197,11 +193,8 @@ const Chart = window.Chart;
           },
         },
       });
-
-      dbg("✅ Charts gezeichnet");
     }
   } catch (e) {
-    dbg("💥 Fehler:", e?.message || e);
   }
 </script>
 </DashboardLayout>

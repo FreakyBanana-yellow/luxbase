@@ -77,29 +77,29 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
 
     // Creator-Preis / Dauer
-    const { data: cfg } = await supabase
+    const { data: cfg, error: cfgErr } = await supabase
       .from("creator_config")
       .select("preis, vip_dauer")
       .eq("creator_id", user.id)
       .maybeSingle();
+    if (cfgErr) console.warn("creator_config error:", cfgErr);
 
     const preis = Number(cfg?.preis || 0);
     const vipDauer = Number(cfg?.vip_dauer || 30);
 
     // VIP-Daten
     let vipRows = [];
-    try {
-      const { data } = await supabase
-        .from("vip_user")
-        .select("created_at, VIP_bis, Status")
-        .eq("creator_id", user.id);
-      vipRows = data || [];
-    } catch {
-      // ignore
+    const { data: vipData, error: vipErr } = await supabase
+      .from("vip_user")
+      .select("created_at, VIP_bis, Status")
+      .eq("creator_id", user.id);
+    if (vipErr) {
+      console.warn("vip_user error:", vipErr);
     }
+    vipRows = vipData || [];
 
     // Fallback-Demo
-    if (!vipRows?.length) {
+    if (!vipRows.length) {
       const base = new Date();
       const mk = (offset, days=vipDauer) => ({
         created_at: new Date(base.getTime() - offset*86400000).toISOString(),
@@ -107,7 +107,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         Status: "active",
       });
       vipRows = [mk(1), mk(2), mk(2), mk(5), mk(7), mk(8), mk(9), mk(10), mk(12), mk(15), mk(20), mk(21), mk(25)];
-      el("kpiRevenueNote").textContent = "Demo‑Schätzung (keine echten Transaktionen gefunden)";
+      el("kpiRevenueNote").textContent = "Demo‑Schätzung (keine echten Transaktionen gefunden oder keine Leserechte)";
       el("kpiActiveNote").textContent = "Demo‑Daten";
       el("kpiNewNote").textContent = "Demo‑Daten";
     }

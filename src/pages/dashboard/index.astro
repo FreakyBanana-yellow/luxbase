@@ -51,20 +51,22 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     <pre id="debugBox" class="bg-black/40 border border-luxgray/50 rounded-xl p-3 text-xs text-white/70 overflow-auto"></pre>
   </section>
 
-  <script type="module">
-   const dbg = (...args) => {
-  console.log(...args);
-  const el = document.getElementById("debugBox");
-  if (el) {
-    el.textContent += args.map(a => {
+  <<script type="module">
+  const dbg = (...args) => {
+    // Message bauen – komplett ohne "return" in Callbacks
+    const parts = [];
+    for (const a of args) {
       try {
-        return typeof a === "string" ? a : JSON.stringify(a, null, 2);
+        parts.push(typeof a === "string" ? a : JSON.stringify(a, null, 2));
       } catch {
-        return String(a);
+        parts.push(String(a));
       }
-    }).join(" ") + "\n";
-  }
-};
+    }
+    const msg = parts.join(" ");
+    console.log(...args);
+    const box = document.getElementById("debugBox");
+    if (box) box.textContent += msg + "\n";
+  };
 
 
     try {

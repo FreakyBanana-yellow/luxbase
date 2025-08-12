@@ -1,14 +1,28 @@
-<aside class="w-64 min-h-screen bg-black text-white border-r border-luxgray p-6 space-y-4 hidden md:block">
-  <h2 class="text-luxgold font-serif text-2xl mb-8">LUXBASE</h2>
+<div class="flex min-h-screen">
+  <div class="hidden md:block"><AdminSidebar /></div>
+  <main class="flex-1 p-4 md:p-6 pb-24">
+    <slot />
+  </main>
+</div>
 
-  <nav class="space-y-3 text-sm">
-    <a href="/admin" class="block hover:text-luxgold">👥 Creator-Übersicht</a>
-    <a href="/admin/pakete/" class="block hover:text-luxgold">🛠 Pakete & Funktionen</a>
-    <a href="/admin/mail" class="block hover:text-luxgold">📬 Direktnachrichten</a>
-    <a href="/admin/aktivität" class="block hover:text-luxgold">📅 Letzte Aktivität</a>
-    <a href="/admin/notizen" class="block hover:text-luxgold">📝 Kommentare & Notizen</a>
-    <a href="/admin/botlinks" class="block hover:text-luxgold">🚀 Bot-Zugänge</a>
-    <a href="/admin/einstellungen" class="block hover:text-luxgold">⚙️ Einstellungen</a>
-    <a href="/admin/stats" class="block hover:text-luxgold">📊 Statistik & Insights</a>
-  </nav>
-</aside>
+<!-- Mobile Bottom Tab-Bar (Admin) -->
+<nav class="fixed bottom-0 inset-x-0 md:hidden bg-black/90 backdrop-blur border-t border-luxgray z-50">
+  <div class="grid grid-cols-4 text-center text-xs">
+    <a href="/admin" class="py-3 flex flex-col items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      <span>Übersicht</span>
+    </a>
+    <a href="/admin/pakete" class="py-3 flex flex-col items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M20 6H4l8-4 8 4zm0 2H4v10h16V8zM6 10h5v6H6v-6z"/></svg>
+      <span>Pakete</span>
+    </a>
+    <a href="/admin/mail" class="py-3 flex flex-col items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      <span>Mail</span>
+    </a>
+    <a href="/admin/stats" class="py-3 flex flex-col items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17h2v-7H3v7zm4 0h2V7H7v10zm4 0h2v-4h-2v4zm4 0h2V4h-2v13zm4 0h2v-9h-2v9z"/></svg>
+      <span>Stats</span>
+    </a>
+  </div>
+</nav>

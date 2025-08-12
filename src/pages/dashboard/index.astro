@@ -91,7 +91,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     let vipRows = [];
     const { data: vipData, error: vipErr } = await supabase
       .from("vip_user")
-      .select("created_at, VIP_bis, Status")
+      .select("letzter_kontakt, vip_bis, status")
       .eq("creator_id", user.id);
     if (vipErr) {
       console.warn("vip_user error:", vipErr);
@@ -116,10 +116,10 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     const labels = labelsLastNDays(30);
 
     const newVipByDay = Object.fromEntries(labels.map(d => [d, 0]));
-    vipRows.forEach(r => {
-      const d = (r.created_at || "").slice(0,10);
-      if (newVipByDay[d] !== undefined) newVipByDay[d] += 1;
-    });
+   vipRows.forEach(r => {
+  const d = (r.letzter_kontakt || "").slice(0,10);
+  if (newVipByDay[d] !== undefined) newVipByDay[d] += 1;
+});
     const newVipSeries = labels.map(d => newVipByDay[d]);
 
     const revenueByDay = labels.map((_, i) => (preis > 0 ? newVipSeries[i] * preis : 0));

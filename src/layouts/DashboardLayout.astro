@@ -1,3 +1,4 @@
+# File: src/layouts/DashboardLayout.astro
 ---
 import Sidebar from "../components/Sidebar.astro";
 const role = "creator";
@@ -25,7 +26,7 @@ const name = "Creator";
     </button>
     <div class="absolute right-0 mt-2 w-56 bg-black border border-luxgray rounded-xl shadow-xl text-sm hidden" id="accountDropdown">
       <a href="/dashboard" class="block px-4 py-3 hover:bg-luxgray/30">Dashboard</a>
-      <a href="/settings" class="block px-4 py-3 hover:bg-luxgray/30">Bot‑Einstellungen</a>
+      <a href="/dashboard/vipbot-einstellungen" class="block px-4 py-3 hover:bg-luxgray/30">Bot‑Einstellungen</a>
       <a href="/logs" class="block px-4 py-3 hover:bg-luxgray/30">Logs</a>
       <button id="logoutBtn" class="w-full text-left px-4 py-3 hover:bg-red-900/40 text-red-400">Abmelden</button>
     </div>
@@ -54,7 +55,7 @@ const name = "Creator";
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
       <span>Start</span>
     </a>
-    <a href="/settings" class="py-3 flex flex-col items-center gap-1">
+    <a href="/dashboard/vipbot-einstellungen" class="py-3 flex flex-col items-center gap-1">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94a7.43,7.43,0,0,0,.05-1,7.43,7.43,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.45,7.45,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,12.5,1h-4a.5.5,0,0,0-.49.42L7.63,4.07a7.45,7.45,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L3.14,10a7.43,7.43,0,0,0-.05,1,7.43,7.43,0,0,0,.05,1L1,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.45,7.45,0,0,0,1.73,1l.38,2.65A.5.5,0,0,0,8.5,22h4a.5.5,0,0,0,.49-.42l.38-2.65a7.45,7.45,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64Z"/></svg>
       <span>Bot</span>
     </a>
@@ -105,198 +106,137 @@ const name = "Creator";
 
   </body>
 </html>
-```astro
+
+
+# File: src/pages/dashboard/index.astro
 ---
-import Sidebar from "../components/Sidebar.astro";
-const role = "creator";
-const name = "Creator";
-const lux = typeof window !== "undefined" && window.sessionStorage
-  ? JSON.parse(sessionStorage.getItem("luxbase_config") || "{}")
-  : {};
+layout: ../../layouts/DashboardLayout.astro
+title: "Dein Dashboard"
 ---
 
-<html lang="de">
-  <head>
-    <title>{Astro.props.title || "Luxbase Dashboard"}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta charset="utf-8" />
-    <meta name="theme-color" content="#0d0d0d" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta id="supabase-config"
-      data-url={`${import.meta.env.PUBLIC_SUPABASE_URL}`}
-      data-key={`${import.meta.env.PUBLIC_SUPABASE_ANON_KEY}`} />
-  </head>
+<section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
+    <h2 class="text-lg font-semibold text-luxgold mb-2">Quick‑Stats</h2>
+    <p class="text-white/70">Hier erscheinen deine Umsätze, VIP‑Zahlen und KPIs.</p>
+  </article>
 
-  <body class="bg-luxblack text-white font-sans">
+  <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
+    <h2 class="text-lg font-semibold text-luxgold mb-2">Letzte Aktionen</h2>
+    <p class="text-white/70">Kürzlich geplante Posts, neue VIPs, Systemmeldungen.</p>
+  </article>
+</section>
 
-<header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
-  <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a>
-  <!-- Mobile Hamburger -->
-  <button id="mobileMenuBtn" class="md:hidden p-2 rounded text-luxgold hover:text-white focus:outline-none focus:ring-2 focus:ring-luxgold/50">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  </button>
-  <nav id="mainNav" class="hidden md:flex items-center gap-3">
-    <button id="openLogin" class="h-11 px-5 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition hidden">
-      Login
-    </button>
-    <div id="accountMenu" class="relative hidden">
-      <button id="accountBtn" class="h-11 px-4 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
-        👤 <span id="username">Account</span>
-      </button>
-      <div class="absolute right-0 mt-2 w-56 bg-black border border-luxgray rounded-xl shadow-xl text-sm hidden" id="accountDropdown">
-        <a href="/dashboard" class="block px-4 py-3 hover:bg-luxgray/30">Dashboard</a>
-        <a href="/settings" class="block px-4 py-3 hover:bg-luxgray/30">Bot‑Einstellungen</a>
-        <a href="/logs" class="block px-4 py-3 hover:bg-luxgray/30">Logs</a>
-        <button id="logoutBtn" class="w-full text-left px-4 py-3 hover:bg-red-900/40 text-red-400">Abmelden</button>
-      </div>
+
+# File: src/pages/dashboard/vipbot-einstellungen.astro
+---
+layout: ../../layouts/DashboardLayout.astro
+title: "VIP‑Bot Einstellungen"
+---
+
+<section class="space-y-4">
+  <header class="flex items-center justify-between">
+    <h2 class="text-xl font-semibold text-luxgold">VIP‑Bot</h2>
+    <a href="/dashboard" class="text-sm text-luxgold underline">Zurück zum Dashboard</a>
+  </header>
+
+  <form id="vipForm" class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-3">
+    <div>
+      <label class="block text-sm mb-1">Preis (€/Monat)</label>
+      <input name="preis" type="number" step="0.01" class="w-full h-11 px-3 bg-black border border-zinc-700 rounded-xl" />
     </div>
-  </nav>
-</header>
+    <div>
+      <label class="block text-sm mb-1">VIP‑Dauer (Tage)</label>
+      <input name="vip_dauer" type="number" class="w-full h-11 px-3 bg-black border border-zinc-700 rounded-xl" />
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Gruppenlink</label>
+      <input name="gruppe_link" type="url" class="w-full h-11 px-3 bg-black border border-zinc-700 rounded-xl" />
+    </div>
+    <div>
+      <label class="block text-sm mb-1">Welcome‑Text</label>
+      <textarea name="welcome_text" rows="4" class="w-full px-3 py-2 bg-black border border-zinc-700 rounded-xl"></textarea>
+    </div>
 
-<!-- Mobile Drawer -->
-<div id="mobileDrawer" class="fixed inset-y-0 left-0 w-72 bg-black border-r border-luxgray transform -translate-x-full transition-transform duration-200 ease-in-out z-40 md:hidden">
-  <nav class="mt-8 space-y-1 px-4 text-luxgold">
-    <a href="/dashboard" class="block px-3 py-3 rounded hover:bg-luxgray/30" onclick="toggleMobile()">Dashboard</a>
-    <a href="/settings" class="block px-3 py-3 rounded hover:bg-luxgray/30" onclick="toggleMobile()">Bot‑Einstellungen</a>
-    <a href="/logs" class="block px-3 py-3 rounded hover:bg-luxgray/30" onclick="toggleMobile()">Logs</a>
-    <hr class="border-luxgray/40 my-2">
-    <button id="mobileLoginBtn" class="w-full text-left px-3 py-3 border border-luxgold rounded-xl hover:bg-luxgold hover:text-black transition" onclick="toggleMobile()">Login</button>
-  </nav>
-</div>
-<!-- Overlay -->
-<div id="drawerOverlay" class="fixed inset-0 bg-black/60 hidden z-30 md:hidden" onclick="toggleMobile()"></div>
+    <button type="submit" class="w-full h-12 bg-luxgold text-black font-bold rounded-xl">Speichern</button>
+    <p id="saveMsg" class="text-sm text-center text-luxgold/80 min-h-[1.25rem]"></p>
+  </form>
+</section>
 
-<!-- Login Modal -->
-<div id="loginModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-  <div class="bg-zinc-900 border border-luxgold p-6 rounded-2xl w-[92vw] max-w-sm relative text-white shadow-xl">
-    <button id="closeLogin" class="absolute top-3 right-4 text-white text-2xl hover:text-luxgold" aria-label="Login schließen">&times;</button>
-    <h2 class="text-xl font-serif font-bold text-luxgold text-center mb-5">Login</h2>
-    <form id="popupLoginForm" class="space-y-3">
-      <input type="email" name="email" placeholder="E‑Mail" required class="w-full h-12 px-4 bg-black border border-zinc-600 rounded-xl" />
-      <input type="password" name="password" placeholder="Passwort" required class="w-full h-12 px-4 bg-black border border-zinc-600 rounded-xl" />
-      <button type="submit" class="w-full h-12 bg-luxgold text-black font-bold rounded-xl hover:bg-yellow-400 transition">
-        Einloggen
-      </button>
-    </form>
-    <p id="popupLoginMsg" class="text-sm text-center text-red-400 mt-2 min-h-[1.25rem]"></p>
-    <p class="text-center text-sm mt-4 text-gray-400">
-      Noch kein Account? <a href="/register" class="text-luxgold hover:underline">Jetzt registrieren</a>
-    </p>
-  </div>
-</div>
-
-<!-- BODY -->
-<div class="flex min-h-screen">
-  <!-- Sidebar: erst ab md sichtbar -->
-  <div class="hidden md:block">
-    <Sidebar role={role} />
-  </div>
-
-  <!-- Main: Mobile-first mit Platz für Tab-Bar unten -->
-  <main class="flex-1 p-4 md:p-6 pb-24" id="dashboardRoot">
-    <slot name="header" />
-    <h1 class="text-2xl md:text-3xl font-bold text-luxgold mb-6 md:mb-8" id="welcomeHeadline">
-      Willkommen zurück, {name}! 👋
-    </h1>
-    <slot />
-  </main>
-</div>
-
-<!-- Mobile Bottom Tab-Bar -->
-<nav class="fixed bottom-0 inset-x-0 md:hidden bg-black/90 backdrop-blur border-t border-luxgray z-50">
-  <div class="grid grid-cols-4 text-center text-xs">
-    <a href="/dashboard" class="py-3 flex flex-col items-center gap-1">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-      <span>Start</span>
-    </a>
-    <a href="/settings" class="py-3 flex flex-col items-center gap-1">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94a7.43,7.43,0,0,0,.05-1,7.43,7.43,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.45,7.45,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,12.5,1h-4a.5.5,0,0,0-.49.42L7.63,4.07a7.45,7.45,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L3.14,10a7.43,7.43,0,0,0-.05,1,7.43,7.43,0,0,0,.05,1L1,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.45,7.45,0,0,0,1.73,1l.38,2.65A.5.5,0,0,0,8.5,22h4a.5.5,0,0,0,.49-.42l.38-2.65a7.45,7.45,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64Z"/></svg>
-      <span>Bot</span>
-    </a>
-    <a href="/logs" class="py-3 flex flex-col items-center gap-1">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z"/></svg>
-      <span>Logs</span>
-    </a>
-    <a href="/profile" class="py-3 flex flex-col items-center gap-1">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
-      <span>Profil</span>
-    </a>
-  </div>
-</nav>
-
-<!-- CLIENTSIDE LOGIC -->
 <script type="module">
-  import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  const meta = document.getElementById("supabase-config");
+  const supabase = createClient(meta.dataset.url, meta.dataset.key);
+
+  const form = document.getElementById("vipForm");
+  const saveMsg = document.getElementById("saveMsg");
 
   (async () => {
-    const meta = document.getElementById("supabase-config");
-    const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
-
-    const openBtn = document.getElementById("openLogin");
-    const accountMenu = document.getElementById("accountMenu");
-    const accountBtn = document.getElementById("accountBtn");
-    const accountDropdown = document.getElementById("accountDropdown");
-    const usernameEl = document.getElementById("username");
-    const logoutBtn = document.getElementById("logoutBtn");
-
-    const welcomeHeadline = document.getElementById("welcomeHeadline");
-    const root = document.getElementById("dashboardRoot");
-
-    const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
-
-    // 🔐 Kein Creator eingeloggt?
-    if (!lux?.creator_id) {
-      root.innerHTML = `
-        <div class="text-red-400 text-center">❌ Nicht eingeloggt oder keine gültige Konfiguration gefunden.</div>`;
-      return;
-    }
-
-    // 🧠 Fallback-Name bestimmen
-    const fallbackName = lux.role === "agentur" ? "deine Agentur" : "dein Creator‑Profil";
-    const anzeigeName = lux.creator_name?.trim() || fallbackName;
-    if (welcomeHeadline) welcomeHeadline.textContent = `Willkommen zurück, ${anzeigeName}! 👋`;
-
-    // 🤖 VIP‑Bot prüfen
-    if (!lux?.has_vipbot && root) {
-      root.innerHTML += `<p class=\"text-center text-gray-400 mt-6\">Der VIP‑Bot ist für deinen Account nicht aktiviert.</p>`;
-    }
-
-    // 🔐 Login-Status prüfen
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      openBtn?.classList.add("hidden");
-      accountMenu?.classList.remove("hidden");
-      usernameEl.textContent = lux?.creator_name || "Account";
+    if (!user) { window.location.href = "/"; return; }
 
-      accountBtn?.addEventListener("click", () => {
-        accountDropdown.classList.toggle("hidden");
-      });
+    // Bestehende Config laden
+    const { data: cfg } = await supabase
+      .from("creator_config")
+      .select("preis, vip_dauer, gruppe_link, welcome_text")
+      .eq("creator_id", user.id)
+      .maybeSingle();
 
-      logoutBtn?.addEventListener("click", async () => {
-        await supabase.auth.signOut();
-        sessionStorage.clear();
-        location.href = "/";
-      });
-    } else {
-      openBtn?.classList.remove("hidden");
-      accountMenu?.classList.add("hidden");
+    if (cfg) {
+      form.preis.value = cfg.preis ?? "";
+      form.vip_dauer.value = cfg.vip_dauer ?? "";
+      form.gruppe_link.value = cfg.gruppe_link ?? "";
+      form.welcome_text.value = cfg.welcome_text ?? "";
     }
   })();
 
-  // Toggle-Funktion fürs Mobile-Drawer
-  const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-  const mobileDrawer = document.getElementById("mobileDrawer");
-  const drawerOverlay = document.getElementById("drawerOverlay");
-  function toggleMobile() {
-    mobileDrawer.classList.toggle("-translate-x-full");
-    drawerOverlay.classList.toggle("hidden");
-  }
-  mobileMenuBtn?.addEventListener("click", toggleMobile);
-  drawerOverlay?.addEventListener("click", toggleMobile);
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    saveMsg.textContent = "";
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { window.location.href = "/"; return; }
+
+    const payload = {
+      preis: Number(form.preis.value || 0),
+      vip_dauer: Number(form.vip_dauer.value || 0),
+      gruppe_link: form.gruppe_link.value || null,
+      welcome_text: form.welcome_text.value || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+      .from("creator_config")
+      .update(payload)
+      .eq("creator_id", user.id);
+
+    saveMsg.textContent = error ? `❌ ${error.message}` : "✅ Gespeichert";
+  });
 </script>
 
-  </body>
-</html>
+
+# File: src/pages/logs.astro
+---
+layout: ../layouts/DashboardLayout.astro
+title: "Logs"
+---
+
+<section class="space-y-4">
+  <h2 class="text-xl font-semibold text-luxgold">System‑Logs</h2>
+  <div class="bg-black/60 border border-luxgray rounded-2xl p-4">
+    <p class="text-white/70">Hier erscheinen demnächst deine letzten Aktionen, Fehler und Webhook‑Events.</p>
+  </div>
+</section>
+
+
+# File: src/pages/profile.astro
+---
+layout: ../layouts/DashboardLayout.astro
+title: "Profil"
+---
+
+<section class="space-y-4">
+  <h2 class="text-xl font-semibold text-luxgold">Dein Profil</h2>
+  <div class="bg-black/60 border border-luxgray rounded-2xl p-4">
+    <p class="text-white/70">Profil‑Infos und Account‑Einstellungen folgen.</p>
+  </div>
+</section>

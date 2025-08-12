@@ -35,7 +35,6 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
           <h3 class="text-sm font-semibold text-luxgold">Umsatzverlauf (30 Tage)</h3>
           <span class="text-[11px] text-white/50" id="revMeta">–</span>
         </header>
-        <!-- Feste Höhe für Canvas -->
         <div style="height: 240px"><canvas id="revChart"></canvas></div>
       </article>
 
@@ -59,7 +58,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       if (el) el.textContent += args.map(a => {
         try { return typeof a === "string" ? a : JSON.stringify(a, null, 2); }
         catch { return String(a); }
-      }).join(" ") + "\\n";
+      }).join(" ") + "\n";
     };
 
     try {
@@ -72,7 +71,6 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       // 1) Libraries laden
       const [{ createClient }, Chart] = await Promise.all([
         import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"),
-        // Auto-Build registriert alle Controller automatisch
         import("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/auto/auto.js").then(m => m.default),
       ]);
       dbg("✅ Libraries geladen");
@@ -80,7 +78,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       const supabase = createClient(meta.dataset.url, meta.dataset.key);
 
       const el = (id) => document.getElementById(id);
-      const fmt€ = (n) => (typeof n === "number" ? n : Number(n || 0))
+      const fmtEUR = (n) => (typeof n === "number" ? n : Number(n || 0))
         .toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 
       const today = new Date();
@@ -156,13 +154,13 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       const new7 = last7.reduce((sum, d) => sum + (newVipByDay[d] || 0), 0);
 
       // 7) KPIs
-      el("kpiRevenue").textContent = fmt€(revenue30);
+      el("kpiRevenue").textContent = fmtEUR(revenue30);
       el("kpiActive").textContent = String(active);
       el("kpiNew").textContent = String(new7);
-      el("revMeta").textContent = preis > 0 ? `Basis: Preis ${fmt€(preis)} × neue VIPs` : "Kein Preis in creator_config";
+      el("revMeta").textContent = preis > 0 ? `Basis: Preis ${fmtEUR(preis)} × neue VIPs` : "Kein Preis in creator_config";
       el("vipMeta").textContent = `Zeitraum: ${labels[0]} – ${labels[labels.length-1]}`;
 
-      // 8) Charts (mit sichtbarem Fallback, falls Canvas fehlt)
+      // 8) Charts
       const revCanvas = el("revChart");
       const vipCanvas = el("vipChart");
       if (!revCanvas || !vipCanvas) { dbg("❌ Canvas nicht gefunden"); return; }
@@ -172,10 +170,10 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         data: { labels, datasets: [{ label: "Umsatz", data: revenueByDay, tension: 0.35, borderWidth: 2, pointRadius: 0 }] },
         options: {
           responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => fmt€(ctx.parsed.y) } } },
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => fmtEUR(ctx.parsed.y) } } },
           scales: {
             x: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)", maxTicksLimit: 6 } },
-            y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)", callback: (v) => fmt€(v) } },
+            y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)", callback: (v) => fmtEUR(v) } },
           },
         },
       });

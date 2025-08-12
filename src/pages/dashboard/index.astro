@@ -53,16 +53,21 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
   <script type="module">
   const dbg = (...args) => {
-    const parts = [];
-    for (const a of args) {
-      try { parts.push(typeof a === "string" ? a : JSON.stringify(a, null, 2)); }
-      catch { parts.push(String(a)); }
+  const parts = [];
+  for (const a of args) {
+    try {
+      parts.push(typeof a === "string" ? a : JSON.stringify(a, null, 2));
+    } catch {
+      parts.push(String(a));
     }
-    const msg = parts.join(" ");
-    console.log(...args);
-    const box = document.getElementById("debugBox");
-    if (box) box.textContent += msg + "\n";
-  };
+  }
+  const msg = parts.join(" ");
+  console.log(...args);
+  const box = document.getElementById("debugBox");
+  if (box) {
+    box.textContent += msg + "\n";
+  }
+};
 
   try {
     const meta = document.getElementById("supabase-config");

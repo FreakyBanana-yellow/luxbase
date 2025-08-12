@@ -53,21 +53,16 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
   <script type="module">
   const dbg = (...args) => {
-  const parts = [];
-  for (const a of args) {
-    try {
-      parts.push(typeof a === "string" ? a : JSON.stringify(a, null, 2));
-    } catch {
-      parts.push(String(a));
+    const parts = [];
+    for (const a of args) {
+      try { parts.push(typeof a === "string" ? a : JSON.stringify(a, null, 2)); }
+      catch { parts.push(String(a)); }
     }
-  }
-  const msg = parts.join(" ");
-  console.log(...args);
-  const box = document.getElementById("debugBox");
-  if (box) {
-    box.textContent += msg + "\n";
-  }
-};
+    const msg = parts.join(" ");
+    console.log(...args);
+    const box = document.getElementById("debugBox");
+    if (box) box.textContent += msg + "\n";
+  };
 
   try {
     const meta = document.getElementById("supabase-config");
@@ -76,7 +71,6 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       throw new Error("Supabase ENV fehlt");
     }
 
-    // 1) Libraries laden
     const [{ createClient }, Chart] = await Promise.all([
       import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"),
       import("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/auto/auto.js").then(m => m.default),
@@ -103,7 +97,11 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     // 2) Auth
     const { data: { user }, error: userErr } = await supabase.auth.getUser();
     if (userErr) dbg("⚠️ getUser error:", userErr);
-    if (!user) { dbg("❌ Kein User – redirect /"); window.location.href = "/"; return; }
+    if (!user) {
+      dbg("❌ Kein User – redirect /");
+      window.location.href = "/";
+      throw new Error("redirect");
+    }
     dbg("👤 User:", { id: user.id, email: user.email });
 
     // 3) creator_config
@@ -171,36 +169,38 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     // 8) Charts
     const revCanvas = el("revChart");
     const vipCanvas = el("vipChart");
-    if (!revCanvas || !vipCanvas) { dbg("❌ Canvas nicht gefunden"); return; }
-
-    new Chart(revCanvas.getContext("2d"), {
-      type: "line",
-      data: { labels, datasets: [{ label: "Umsatz", data: revenueByDay, tension: 0.35, borderWidth: 2, pointRadius: 0 }] },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => fmtEUR(ctx.parsed.y) } } },
-        scales: {
-          x: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)", maxTicksLimit: 6 } },
-          y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)", callback: (v) => fmtEUR(v) } },
+    if (!revCanvas || !vipCanvas) {
+      dbg("❌ Canvas nicht gefunden");
+    } else {
+      new Chart(revCanvas.getContext("2d"), {
+        type: "line",
+        data: { labels, datasets: [{ label: "Umsatz", data: revenueByDay, tension: 0.35, borderWidth: 2, pointRadius: 0 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => fmtEUR(ctx.parsed.y) } } },
+          scales: {
+            x: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)", maxTicksLimit: 6 } },
+            y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)", callback: (v) => fmtEUR(v) } },
+          },
         },
-      },
-    });
+      });
 
-    new Chart(vipCanvas.getContext("2d"), {
-      type: "bar",
-      data: { labels, datasets: [{ label: "Neue VIPs", data: newVipSeries }] },
-      options: {
-        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-        scales: {
-          x: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)", maxTicksLimit: 6 } },
-          y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)" }, beginAtZero: true, },
+      new Chart(vipCanvas.getContext("2d"), {
+        type: "bar",
+        data: { labels, datasets: [{ label: "Neue VIPs", data: newVipSeries }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)", maxTicksLimit: 6 } },
+            y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)" }, beginAtZero: true },
+          },
         },
-      },
-    });
+      });
 
-    dbg("✅ Charts gezeichnet");
+      dbg("✅ Charts gezeichnet");
+    }
   } catch (e) {
     dbg("💥 Fehler:", e?.message || e);
   }
-  </script>
+</script>
 </DashboardLayout>

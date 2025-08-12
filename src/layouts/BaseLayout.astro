@@ -7,8 +7,10 @@ const { title = "Luxbase" } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <title>{title}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0d0d0d" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
 
     <!-- Supabase Keys via Meta-Tag -->
@@ -18,35 +20,31 @@ const { title = "Luxbase" } = Astro.props;
   </head>
 
   <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans">
-    <!-- HEADER -->
-    <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
-      <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a>
-
+    <!-- HEADER (Mobile-first) -->
+    <header class="w-full flex items-center justify-between gap-2 p-4 bg-black border-b border-luxgray sticky top-0 z-50">
+      <a href="/" class="text-luxgold font-serif text-xl leading-none">LUXBASE</a>
       <!-- Mobile Hamburger -->
-      <button id="mobileMenuBtn" class="md:hidden px-3 py-2 text-luxgold hover:text-white focus:outline-none">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
-             viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 6h16M4 12h16M4 18h16" />
+      <button id="mobileMenuBtn" aria-label="Menü öffnen" class="md:hidden p-2 rounded text-luxgold hover:text-white focus:outline-none focus:ring-2 focus:ring-luxgold/50">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
-
       <!-- Desktop-Nav -->
-      <nav class="hidden md:flex items-center gap-4">
-        <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+      <nav class="hidden md:flex items-center gap-3">
+        <button id="openLogin" class="h-11 px-5 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
           Login
         </button>
         <div id="accountMenu" class="relative hidden">
-          <button id="accountBtn" class="flex items-center space-x-2">
+          <button id="accountBtn" class="h-11 px-4 flex items-center gap-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
             <span id="username">Account</span>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-          <div id="accountDropdown" class="absolute right-0 mt-2 w-48 bg-black border border-luxgray rounded shadow-lg hidden">
-            <a href="/dashboard" class="block px-4 py-2 hover:bg-luxgray/20">Dashboard</a>
-            <a href="/dashboard/vipbot-einstellungen" class="block px-4 py-2 hover:bg-luxgray/20">Bot-Einstellungen</a>
-            <button id="logoutBtn" class="w-full text-left px-4 py-2 hover:bg-red-900/40 text-red-400">Abmelden</button>
+          <div id="accountDropdown" class="absolute right-0 mt-2 w-56 bg-black border border-luxgray rounded-xl shadow-lg hidden">
+            <a href="/dashboard" class="block px-4 py-3 hover:bg-luxgray/20">Dashboard</a>
+            <a href="/dashboard/vipbot-einstellungen" class="block px-4 py-3 hover:bg-luxgray/20">Bot‑Einstellungen</a>
+            <button id="logoutBtn" class="w-full text-left px-4 py-3 hover:bg-red-900/40 text-red-400">Abmelden</button>
           </div>
         </div>
       </nav>
@@ -54,53 +52,70 @@ const { title = "Luxbase" } = Astro.props;
 
     <!-- MOBILE DRAWER -->
     <div id="mobileDrawer"
-         class="fixed inset-y-0 left-0 w-64 bg-black border-r border-luxgray transform -translate-x-full
-                transition-transform duration-200 ease-in-out z-40 md:hidden overflow-y-auto">
-      <nav class="mt-8 space-y-4 px-4 text-luxgold">
+         class="fixed inset-y-0 left-0 w-72 bg-black border-r border-luxgray transform -translate-x-full transition-transform duration-200 ease-in-out z-40 md:hidden overflow-y-auto">
+      <nav class="mt-8 space-y-2 px-4 text-luxgold">
         <button id="mobileLoginBtn"
-                class="w-full text-left py-3 px-4 border border-luxgold rounded hover:bg-luxgold hover:text-black transition"
+                class="w-full text-left py-3 px-4 border border-luxgold rounded-xl hover:bg-luxgold hover:text-black transition"
                 onclick="toggleMobile()">
           Login
         </button>
-        <div id="mobileAccountMenu" class="mt-4 space-y-2">
-          <a href="/dashboard" class="block py-3 px-4 hover:bg-luxgray/30" onclick="toggleMobile()">Dashboard</a>
-          <a href="/dashboard/vipbot-einstellungen" class="block py-3 px-4 hover:bg-luxgray/30" onclick="toggleMobile()">Bot-Einstellungen</a>
-          <button id="mobileLogoutBtn" class="w-full text-left py-3 px-4 hover:bg-red-900/40 text-red-400" onclick="toggleMobile()">Abmelden</button>
+        <div id="mobileAccountMenu" class="mt-2 space-y-1">
+          <a href="/dashboard" class="block py-3 px-4 rounded hover:bg-luxgray/30" onclick="toggleMobile()">Dashboard</a>
+          <a href="/dashboard/vipbot-einstellungen" class="block py-3 px-4 rounded hover:bg-luxgray/30" onclick="toggleMobile()">Bot‑Einstellungen</a>
+          <button id="mobileLogoutBtn" class="w-full text-left py-3 px-4 rounded hover:bg-red-900/40 text-red-400" onclick="toggleMobile()">Abmelden</button>
         </div>
       </nav>
     </div>
-    <div id="drawerOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-30 md:hidden" onclick="toggleMobile()"></div>
+    <div id="drawerOverlay" class="fixed inset-0 bg-black/60 hidden z-30 md:hidden" onclick="toggleMobile()"></div>
 
     <!-- LOGIN MODAL -->
     <div id="loginModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-      <div class="bg-zinc-900 border border-luxgold p-8 rounded-xl w-96 relative text-white shadow-xl">
-        <button id="closeLogin" class="absolute top-3 right-4 text-white text-xl hover:text-luxgold">&times;</button>
-        <h2 class="text-xl font-serif font-bold text-luxgold text-center mb-6">Login</h2>
-        <form id="popupLoginForm" class="space-y-4">
-          <input type="email" name="email" placeholder="E‑Mail" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded" />
-          <input type="password" name="password" placeholder="Passwort" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded" />
-          <button type="submit" class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition">
+      <div class="bg-zinc-900 border border-luxgold p-6 rounded-2xl w-[92vw] max-w-sm relative text-white shadow-xl">
+        <button id="closeLogin" class="absolute top-3 right-4 text-white text-2xl leading-none hover:text-luxgold" aria-label="Login schließen">&times;</button>
+        <h2 class="text-xl font-serif font-bold text-luxgold text-center mb-5">Login</h2>
+        <form id="popupLoginForm" class="space-y-3">
+          <input type="email" name="email" placeholder="E‑Mail" required class="w-full h-12 px-4 bg-black border border-zinc-600 rounded-xl" />
+          <input type="password" name="password" placeholder="Passwort" required class="w-full h-12 px-4 bg-black border border-zinc-600 rounded-xl" />
+          <button type="submit" class="w-full h-12 bg-luxgold text-black font-bold rounded-xl hover:bg-yellow-400 transition">
             Einloggen
           </button>
         </form>
         <p id="popupLoginMsg" class="text-sm text-center text-red-400 mt-2 min-h-[1.25rem]"></p>
-        <p class="text-center text-sm mt-6 text-gray-400">
+        <p class="text-center text-sm mt-4 text-gray-400">
           Noch kein Account? <a href="/register" class="text-luxgold hover:underline">Jetzt registrieren</a>
         </p>
       </div>
     </div>
 
     <!-- MAIN CONTENT -->
-    <main class="flex-1">
+    <main class="flex-1 pb-20">
       <slot />
     </main>
 
+    <!-- (Optional) Mobile Bottom Bar für Public Pages: nur Login / Account -->
+    <nav class="fixed bottom-0 inset-x-0 md:hidden bg-black/90 backdrop-blur border-t border-luxgray z-50">
+      <div class="grid grid-cols-3 text-center text-sm">
+        <a href="/" class="py-3 flex flex-col items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6 text-luxgold" aria-hidden="true"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"/></svg>
+          <span>Home</span>
+        </a>
+        <button id="openLoginBottom" class="py-3 flex flex-col items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10z"/></svg>
+          <span>Login</span>
+        </button>
+        <a href="/dashboard" class="py-3 flex flex-col items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+          <span>Dashboard</span>
+        </a>
+      </div>
+    </nav>
+
     <!-- FOOTER -->
-    <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
+    <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray hidden md:block">
       © <script>document.write(new Date().getFullYear())</script> Luxbase – Automation with Style.
     </footer>
 
-    <!-- SCRIPT: Supabase Auth + Mobile-Drawer + Telegram sync -->
+    <!-- SCRIPT: Supabase Auth + Mobile-Drawer -->
     <script type="module">
       import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
       const meta = document.getElementById("supabase-config");
@@ -108,6 +123,7 @@ const { title = "Luxbase" } = Astro.props;
 
       // Auth-Elemente
       const openBtn = document.getElementById("openLogin");
+      const openBtnBottom = document.getElementById("openLoginBottom");
       const closeBtn = document.getElementById("closeLogin");
       const modal = document.getElementById("loginModal");
       const form = document.getElementById("popupLoginForm");
@@ -126,8 +142,15 @@ const { title = "Luxbase" } = Astro.props;
         mobileDrawer.classList.toggle("-translate-x-full");
         drawerOverlay.classList.toggle("hidden");
       }
-      mobileMenuBtn.addEventListener("click", toggleMobile);
-      drawerOverlay.addEventListener("click", toggleMobile);
+      mobileMenuBtn?.addEventListener("click", toggleMobile);
+      drawerOverlay?.addEventListener("click", toggleMobile);
+
+      // Modal helpers
+      function openLogin() { modal?.classList.remove("hidden"); }
+      function closeLogin() { modal?.classList.add("hidden"); }
+      openBtn?.addEventListener("click", openLogin);
+      openBtnBottom?.addEventListener("click", openLogin);
+      closeBtn?.addEventListener("click", closeLogin);
 
       // Supabase User-Check
       (async () => {
@@ -135,24 +158,9 @@ const { title = "Luxbase" } = Astro.props;
         if (user) {
           openBtn?.classList.add("hidden");
           accountMenu?.classList.remove("hidden");
-
-          // Config laden
-          const { data: config } = await supabase
-            .from("creator_config")
-            .select("*")
-            .match({ creator_id: user.id })
-            .single();
-
-          // Telegram-ID sync
-          const telegramId = user.user_metadata?.telegram_id;
-          if (telegramId) {
-            const { error: telErr } = await supabase
-              .from("creator_config")
-              .update({ telegram_id: telegramId })
-              .match({ creator_id: user.id });
-            if (telErr) console.error("Fehler beim Speichern der Telegram-ID:", telErr);
-          }
-
-          // Session store
-          const paketFeatures = {
-            basic: { show_selfie_gate: false, can_customize_texts: false },
+          usernameEl.textContent = user.email || "Account";
+        }
+      })();
+    </script>
+  </body>
+</html>

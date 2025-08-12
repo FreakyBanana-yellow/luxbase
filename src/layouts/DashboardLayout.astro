@@ -7,13 +7,14 @@ const lux = typeof window !== "undefined" && window.sessionStorage
   : {};
 ---
 
-
 <html lang="de">
   <head>
     <title>{Astro.props.title || "Luxbase Dashboard"}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta charset="utf-8" />
     <meta name="theme-color" content="#0d0d0d" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta id="supabase-config"
       data-url={`${import.meta.env.PUBLIC_SUPABASE_URL}`}
       data-key={`${import.meta.env.PUBLIC_SUPABASE_ANON_KEY}`} />
@@ -24,75 +25,102 @@ const lux = typeof window !== "undefined" && window.sessionStorage
 <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
   <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a>
   <!-- Mobile Hamburger -->
-  <button id="mobileMenuBtn" class="md:hidden px-3 py-2 text-luxgold hover:text-white focus:outline-none">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <button id="mobileMenuBtn" class="md:hidden p-2 rounded text-luxgold hover:text-white focus:outline-none focus:ring-2 focus:ring-luxgold/50">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
     </svg>
   </button>
-  <nav id="mainNav" class="hidden md:flex items-center gap-4">
-    <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition hidden">
+  <nav id="mainNav" class="hidden md:flex items-center gap-3">
+    <button id="openLogin" class="h-11 px-5 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition hidden">
       Login
     </button>
     <div id="accountMenu" class="relative hidden">
-      <button id="accountBtn" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+      <button id="accountBtn" class="h-11 px-4 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
         👤 <span id="username">Account</span>
       </button>
-      <div class="absolute right-0 mt-2 w-48 bg-black border border-luxgray rounded shadow-xl text-sm hidden" id="accountDropdown">
-        <a href="/dashboard" class="block px-4 py-2 hover:bg-luxgray/30">Dashboard</a>
-        <a href="/settings" class="block px-4 py-2 hover:bg-luxgray/30">Bot-Einstellungen</a>
-        <a href="/logs" class="block px-4 py-2 hover:bg-luxgray/30">Logs</a>
-        <button id="logoutBtn" class="w-full text-left px-4 py-2 hover:bg-red-900/40 text-red-400">Abmelden</button>
+      <div class="absolute right-0 mt-2 w-56 bg-black border border-luxgray rounded-xl shadow-xl text-sm hidden" id="accountDropdown">
+        <a href="/dashboard" class="block px-4 py-3 hover:bg-luxgray/30">Dashboard</a>
+        <a href="/settings" class="block px-4 py-3 hover:bg-luxgray/30">Bot‑Einstellungen</a>
+        <a href="/logs" class="block px-4 py-3 hover:bg-luxgray/30">Logs</a>
+        <button id="logoutBtn" class="w-full text-left px-4 py-3 hover:bg-red-900/40 text-red-400">Abmelden</button>
       </div>
     </div>
   </nav>
 </header>
 
 <!-- Mobile Drawer -->
-<div id="mobileDrawer" class="fixed inset-y-0 left-0 w-64 bg-black border-r border-luxgray transform -translate-x-full transition-transform duration-200 ease-in-out z-40 md:hidden">
-  <nav class="mt-8 space-y-4 px-4 text-luxgold">
-    <a href="/" class="block px-2 py-2 hover:bg-luxgray/30" onclick="toggleMobile()">Dashboard</a>
-    <a href="/settings" class="block px-2 py-2 hover:bg-luxgray/30" onclick="toggleMobile()">Bot-Einstellungen</a>
-    <a href="/logs" class="block px-2 py-2 hover:bg-luxgray/30" onclick="toggleMobile()">Logs</a>
-    <hr class="border-luxgray">
-    <button id="mobileLoginBtn" class="w-full text-left px-2 py-2 border border-luxgold rounded hover:bg-luxgold hover:text-black transition" onclick="toggleMobile()">Login</button>
+<div id="mobileDrawer" class="fixed inset-y-0 left-0 w-72 bg-black border-r border-luxgray transform -translate-x-full transition-transform duration-200 ease-in-out z-40 md:hidden">
+  <nav class="mt-8 space-y-1 px-4 text-luxgold">
+    <a href="/dashboard" class="block px-3 py-3 rounded hover:bg-luxgray/30" onclick="toggleMobile()">Dashboard</a>
+    <a href="/settings" class="block px-3 py-3 rounded hover:bg-luxgray/30" onclick="toggleMobile()">Bot‑Einstellungen</a>
+    <a href="/logs" class="block px-3 py-3 rounded hover:bg-luxgray/30" onclick="toggleMobile()">Logs</a>
+    <hr class="border-luxgray/40 my-2">
+    <button id="mobileLoginBtn" class="w-full text-left px-3 py-3 border border-luxgold rounded-xl hover:bg-luxgold hover:text-black transition" onclick="toggleMobile()">Login</button>
   </nav>
 </div>
 <!-- Overlay -->
-<div id="drawerOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden z-30 md:hidden" onclick="toggleMobile()"></div>
+<div id="drawerOverlay" class="fixed inset-0 bg-black/60 hidden z-30 md:hidden" onclick="toggleMobile()"></div>
 
 <!-- Login Modal -->
 <div id="loginModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
-  <div class="bg-zinc-900 border border-luxgold p-8 rounded-xl w-96 relative text-white shadow-xl">
-    <button id="closeLogin" class="absolute top-3 right-4 text-white text-xl hover:text-luxgold">&times;</button>
-    <h2 class="text-xl font-serif font-bold text-luxgold text-center mb-6">Login</h2>
-    <form id="popupLoginForm" class="space-y-4">
-      <input type="email" name="email" placeholder="E-Mail" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded" />
-      <input type="password" name="password" placeholder="Passwort" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded" />
-      <button type="submit" class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition">
+  <div class="bg-zinc-900 border border-luxgold p-6 rounded-2xl w-[92vw] max-w-sm relative text-white shadow-xl">
+    <button id="closeLogin" class="absolute top-3 right-4 text-white text-2xl hover:text-luxgold" aria-label="Login schließen">&times;</button>
+    <h2 class="text-xl font-serif font-bold text-luxgold text-center mb-5">Login</h2>
+    <form id="popupLoginForm" class="space-y-3">
+      <input type="email" name="email" placeholder="E‑Mail" required class="w-full h-12 px-4 bg-black border border-zinc-600 rounded-xl" />
+      <input type="password" name="password" placeholder="Passwort" required class="w-full h-12 px-4 bg-black border border-zinc-600 rounded-xl" />
+      <button type="submit" class="w-full h-12 bg-luxgold text-black font-bold rounded-xl hover:bg-yellow-400 transition">
         Einloggen
       </button>
     </form>
     <p id="popupLoginMsg" class="text-sm text-center text-red-400 mt-2 min-h-[1.25rem]"></p>
-    <p class="text-center text-sm mt-6 text-gray-400">
+    <p class="text-center text-sm mt-4 text-gray-400">
       Noch kein Account? <a href="/register" class="text-luxgold hover:underline">Jetzt registrieren</a>
     </p>
   </div>
 </div>
 
-    <!-- BODY -->
-    <div class="flex min-h-screen">
-      <Sidebar role={role} />
-      <main class="flex-1 p-6">
-        <slot name="header" />
-        <h1 class="text-3xl font-bold text-luxgold mb-8" id="welcomeHeadline">
-          Willkommen zurück, {name}! 👋
-        </h1>
-        <slot />
-      </main>
-    </div>
+<!-- BODY -->
+<div class="flex min-h-screen">
+  <!-- Sidebar: erst ab md sichtbar -->
+  <div class="hidden md:block">
+    <Sidebar role={role} />
+  </div>
 
-    <!-- CLIENTSIDE LOGIC -->
-    <script type="module">
+  <!-- Main: Mobile-first mit Platz für Tab-Bar unten -->
+  <main class="flex-1 p-4 md:p-6 pb-24" id="dashboardRoot">
+    <slot name="header" />
+    <h1 class="text-2xl md:text-3xl font-bold text-luxgold mb-6 md:mb-8" id="welcomeHeadline">
+      Willkommen zurück, {name}! 👋
+    </h1>
+    <slot />
+  </main>
+</div>
+
+<!-- Mobile Bottom Tab-Bar -->
+<nav class="fixed bottom-0 inset-x-0 md:hidden bg-black/90 backdrop-blur border-t border-luxgray z-50">
+  <div class="grid grid-cols-4 text-center text-xs">
+    <a href="/dashboard" class="py-3 flex flex-col items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      <span>Start</span>
+    </a>
+    <a href="/settings" class="py-3 flex flex-col items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94a7.43,7.43,0,0,0,.05-1,7.43,7.43,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.45,7.45,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,12.5,1h-4a.5.5,0,0,0-.49.42L7.63,4.07a7.45,7.45,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L3.14,10a7.43,7.43,0,0,0-.05,1,7.43,7.43,0,0,0,.05,1L1,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.45,7.45,0,0,0,1.73,1l.38,2.65A.5.5,0,0,0,8.5,22h4a.5.5,0,0,0,.49-.42l.38-2.65a7.45,7.45,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64Z"/></svg>
+      <span>Bot</span>
+    </a>
+    <a href="/logs" class="py-3 flex flex-col items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z"/></svg>
+      <span>Logs</span>
+    </a>
+    <a href="/profile" class="py-3 flex flex-col items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
+      <span>Profil</span>
+    </a>
+  </div>
+</nav>
+
+<!-- CLIENTSIDE LOGIC -->
+<script type="module">
   import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
   (async () => {
@@ -110,36 +138,26 @@ const lux = typeof window !== "undefined" && window.sessionStorage
     const root = document.getElementById("dashboardRoot");
 
     const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
-    console.log("LUX-KONFIGURATION:", lux); // Debug-Hilfe
 
     // 🔐 Kein Creator eingeloggt?
     if (!lux?.creator_id) {
       root.innerHTML = `
-        <div class="text-red-400 text-center">
-          ❌ Nicht eingeloggt oder keine gültige Konfiguration gefunden.
-        </div>`;
+        <div class="text-red-400 text-center">❌ Nicht eingeloggt oder keine gültige Konfiguration gefunden.</div>`;
       return;
     }
 
     // 🧠 Fallback-Name bestimmen
-    const fallbackName = lux.role === "agentur" ? "deine Agentur" : "dein Creator-Profil";
+    const fallbackName = lux.role === "agentur" ? "deine Agentur" : "dein Creator‑Profil";
     const anzeigeName = lux.creator_name?.trim() || fallbackName;
+    if (welcomeHeadline) welcomeHeadline.textContent = `Willkommen zurück, ${anzeigeName}! 👋`;
 
-    if (welcomeHeadline) {
-      welcomeHeadline.textContent = `Willkommen zurück, ${anzeigeName}! 👋`;
-    }
-
-    // 🤖 VIP-Bot prüfen
+    // 🤖 VIP‑Bot prüfen
     if (!lux?.has_vipbot && root) {
-      root.innerHTML += `
-        <p class="text-center text-gray-400 mt-6">
-          Der VIP‑Bot ist für deinen Account nicht aktiviert.
-        </p>`;
+      root.innerHTML += `<p class=\"text-center text-gray-400 mt-6\">Der VIP‑Bot ist für deinen Account nicht aktiviert.</p>`;
     }
 
     // 🔐 Login-Status prüfen
     const { data: { user } } = await supabase.auth.getUser();
-
     if (user) {
       openBtn?.classList.add("hidden");
       accountMenu?.classList.remove("hidden");
@@ -159,18 +177,17 @@ const lux = typeof window !== "undefined" && window.sessionStorage
       accountMenu?.classList.add("hidden");
     }
   })();
-    // Toggle-Funktion fürs Mobile-Drawer
+
+  // Toggle-Funktion fürs Mobile-Drawer
   const mobileMenuBtn = document.getElementById("mobileMenuBtn");
   const mobileDrawer = document.getElementById("mobileDrawer");
   const drawerOverlay = document.getElementById("drawerOverlay");
-
   function toggleMobile() {
     mobileDrawer.classList.toggle("-translate-x-full");
     drawerOverlay.classList.toggle("hidden");
   }
-
-  mobileMenuBtn.addEventListener("click", toggleMobile);
-  drawerOverlay.addEventListener("click", toggleMobile);
+  mobileMenuBtn?.addEventListener("click", toggleMobile);
+  drawerOverlay?.addEventListener("click", toggleMobile);
 </script>
 
   </body>

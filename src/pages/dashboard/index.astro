@@ -1,212 +1,167 @@
 ---
-layout: ../../layouts/DashboardLayout.astro
-title: "Dein Luxbase Dashboard"
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
 ---
 
-<section class="max-w-6xl mx-auto px-4 py-6 space-y-6" id="dashboardRoot">
-  <!-- KPI Cards -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-    <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
-      <h3 class="text-xs text-white/60 mb-2">Umsatz (30 Tage)</h3>
-      <p class="text-2xl font-semibold text-luxgold" id="kpiRevenue">–</p>
-      <p class="text-[11px] text-white/50" id="kpiRevenueNote"></p>
-    </article>
-    <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
-      <h3 class="text-xs text-white/60 mb-2">Aktive VIPs</h3>
-      <p class="text-2xl font-semibold text-luxgold" id="kpiActive">–</p>
-      <p class="text-[11px] text-white/50" id="kpiActiveNote"></p>
-    </article>
-    <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
-      <h3 class="text-xs text-white/60 mb-2">Neue VIPs (7 Tage)</h3>
-      <p class="text-2xl font-semibold text-luxgold" id="kpiNew">–</p>
-      <p class="text-[11px] text-white/50" id="kpiNewNote"></p>
-    </article>
-    <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
-      <h3 class="text-xs text-white/60 mb-2">Conversion (Demo)</h3>
-      <p class="text-2xl font-semibold text-luxgold" id="kpiConv">–</p>
-      <p class="text-[11px] text-white/50">Platzhalter – an Datenquelle anbindbar</p>
-    </article>
-  </div>
+<DashboardLayout title="Dein Luxbase Dashboard">
+  <section class="max-w-6xl mx-auto px-4 py-6 space-y-6" id="dashboardRoot">
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
+        <h3 class="text-xs text-white/60 mb-2">Umsatz (30 Tage)</h3>
+        <p class="text-2xl font-semibold text-luxgold" id="kpiRevenue">–</p>
+        <p class="text-[11px] text-white/50" id="kpiRevenueNote"></p>
+      </article>
+      <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
+        <h3 class="text-xs text-white/60 mb-2">Aktive VIPs</h3>
+        <p class="text-2xl font-semibold text-luxgold" id="kpiActive">–</p>
+        <p class="text-[11px] text-white/50" id="kpiActiveNote"></p>
+      </article>
+      <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
+        <h3 class="text-xs text-white/60 mb-2">Neue VIPs (7 Tage)</h3>
+        <p class="text-2xl font-semibold text-luxgold" id="kpiNew">–</p>
+        <p class="text-[11px] text-white/50" id="kpiNewNote"></p>
+      </article>
+      <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
+        <h3 class="text-xs text-white/60 mb-2">Conversion (Demo)</h3>
+        <p class="text-2xl font-semibold text-luxgold" id="kpiConv">–</p>
+        <p class="text-[11px] text-white/50">Platzhalter – an Datenquelle anbindbar</p>
+      </article>
+    </div>
 
-  <!-- Charts -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
-      <header class="flex items-center justify-between mb-2">
-        <h3 class="text-sm font-semibold text-luxgold">Umsatzverlauf (30 Tage)</h3>
-        <span class="text-[11px] text-white/50" id="revMeta">–</span>
-      </header>
-      <canvas id="revChart" class="w-full h-48"></canvas>
-    </article>
+    <!-- Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
+        <header class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-semibold text-luxgold">Umsatzverlauf (30 Tage)</h3>
+          <span class="text-[11px] text-white/50" id="revMeta">–</span>
+        </header>
+        <canvas id="revChart" class="w-full h-48"></canvas>
+      </article>
 
-    <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
-      <header class="flex items-center justify-between mb-2">
-        <h3 class="text-sm font-semibold text-luxgold">Neue VIPs / Tag</h3>
-        <span class="text-[11px] text-white/50" id="vipMeta">–</span>
-      </header>
-      <canvas id="vipChart" class="w-full h-48"></canvas>
-    </article>
-  </div>
-</section>
+      <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
+        <header class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-semibold text-luxgold">Neue VIPs / Tag</h3>
+          <span class="text-[11px] text-white/50" id="vipMeta">–</span>
+        </header>
+        <canvas id="vipChart" class="w-full h-48"></canvas>
+      </article>
+    </div>
+  </section>
 
-<!-- Charts + Daten aus Supabase -->
-<script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-  import { Chart, registerables } from "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.esm.js";
-  Chart.register(...registerables);
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    import { Chart, registerables } from "https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.esm.js";
+    Chart.register(...registerables);
 
-  const meta = document.getElementById("supabase-config");
-  const supabase = createClient(meta.dataset.url, meta.dataset.key);
+    const meta = document.getElementById("supabase-config");
+    const supabase = createClient(meta.dataset.url, meta.dataset.key);
 
-  const el = (id) => document.getElementById(id);
-
-  const fmt€ = (n) =>
-    (typeof n === "number" ? n : Number(n || 0))
+    const el = (id) => document.getElementById(id);
+    const fmt€ = (n) => (typeof n === "number" ? n : Number(n || 0))
       .toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 
-  // Hilfsfunktionen
-  const today = new Date();
-  const daysAgo = (d) => new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - d));
-
-  function labelsLastNDays(n=30) {
-    const arr = [];
-    for (let i = n - 1; i >= 0; i--) {
-      const dt = daysAgo(i);
-      arr.push(dt.toISOString().slice(0,10));
+    // Helpers
+    const today = new Date();
+    const daysAgo = (d) => new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - d));
+    function labelsLastNDays(n=30) {
+      const arr = [];
+      for (let i = n - 1; i >= 0; i--) {
+        const dt = daysAgo(i);
+        arr.push(dt.toISOString().slice(0,10));
+      }
+      return arr;
     }
-    return arr;
-  }
 
-  // Daten laden
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
+    // Auth
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
 
-  // Creator-Preis aus creator_config (Fallback 0)
-  const { data: cfg } = await supabase
-    .from("creator_config")
-    .select("preis, vip_dauer")
-    .eq("creator_id", user.id)
-    .maybeSingle();
+    // Creator-Preis / Dauer
+    const { data: cfg } = await supabase
+      .from("creator_config")
+      .select("preis, vip_dauer")
+      .eq("creator_id", user.id)
+      .maybeSingle();
 
-  const preis = Number(cfg?.preis || 0);
-  const vipDauer = Number(cfg?.vip_dauer || 30); // Fallback 30 Tage
+    const preis = Number(cfg?.preis || 0);
+    const vipDauer = Number(cfg?.vip_dauer || 30);
 
-  // VIP-Daten: Annahme Tabelle 'vip_user'
-  // Erwartete Spalten (laut früheren Snippets): Telegram_ID, Username, VIP_bis, Status, Beitritt/created_at
-  let vipRows = [];
-  try {
-    const { data } = await supabase
-      .from("vip_user")
-      .select("created_at, VIP_bis, Status")
-      .eq("creator_id", user.id);
-    vipRows = data || [];
-  } catch (e) {
-    console.warn("vip_user nicht gefunden – verwende Demo-Daten.");
-  }
+    // VIP-Daten
+    let vipRows = [];
+    try {
+      const { data } = await supabase
+        .from("vip_user")
+        .select("created_at, VIP_bis, Status")
+        .eq("creator_id", user.id);
+      vipRows = data || [];
+    } catch {
+      // ignore
+    }
 
-  // Fallback Demo-Daten wenn leer
-  if (!vipRows?.length) {
-    const base = new Date();
-    const mk = (offset, days=vipDauer) => ({
-      created_at: new Date(base.getTime() - offset*86400000).toISOString(),
-      VIP_bis: new Date(base.getTime() + (days-offset)*86400000).toISOString(),
-      Status: "active",
+    // Fallback-Demo
+    if (!vipRows?.length) {
+      const base = new Date();
+      const mk = (offset, days=vipDauer) => ({
+        created_at: new Date(base.getTime() - offset*86400000).toISOString(),
+        VIP_bis: new Date(base.getTime() + (days-offset)*86400000).toISOString(),
+        Status: "active",
+      });
+      vipRows = [mk(1), mk(2), mk(2), mk(5), mk(7), mk(8), mk(9), mk(10), mk(12), mk(15), mk(20), mk(21), mk(25)];
+      el("kpiRevenueNote").textContent = "Demo‑Schätzung (keine echten Transaktionen gefunden)";
+      el("kpiActiveNote").textContent = "Demo‑Daten";
+      el("kpiNewNote").textContent = "Demo‑Daten";
+    }
+
+    // Aggregation
+    const labels = labelsLastNDays(30);
+
+    const newVipByDay = Object.fromEntries(labels.map(d => [d, 0]));
+    vipRows.forEach(r => {
+      const d = (r.created_at || "").slice(0,10);
+      if (newVipByDay[d] !== undefined) newVipByDay[d] += 1;
     });
-    vipRows = [mk(1), mk(2), mk(2), mk(5), mk(7), mk(8), mk(9), mk(10), mk(12), mk(15), mk(20), mk(21), mk(25)];
-    el("kpiRevenueNote").textContent = "Demo‑Schätzung (keine echten Transaktionen gefunden)";
-    el("kpiActiveNote").textContent = "Demo‑Daten";
-    el("kpiNewNote").textContent = "Demo‑Daten";
-  }
+    const newVipSeries = labels.map(d => newVipByDay[d]);
 
-  // Aggregation
-  const labels = labelsLastNDays(30);
+    const revenueByDay = labels.map((_, i) => (preis > 0 ? newVipSeries[i] * preis : 0));
+    const revenue30 = revenueByDay.reduce((a,b) => a + b, 0);
 
-  // neue VIPs je Tag
-  const newVipByDay = Object.fromEntries(labels.map(d => [d, 0]));
-  vipRows.forEach(r => {
-    const d = (r.created_at || "").slice(0,10);
-    if (newVipByDay[d] !== undefined) newVipByDay[d] += 1;
-  });
-  const newVipSeries = labels.map(d => newVipByDay[d]);
+    const todayISO = new Date().toISOString().slice(0,10);
+    const active = vipRows.filter(r => (r.VIP_bis || "").slice(0,10) >= todayISO).length;
 
-  // Umsatz grob abschätzen: neue VIPs * Preis (falls Preis vorhanden)
-  const revenueByDay = labels.map((_, i) => (preis > 0 ? newVipSeries[i] * preis : 0));
-  const revenue30 = revenueByDay.reduce((a,b) => a + b, 0);
+    const last7 = labels.slice(-7);
+    const new7 = last7.reduce((sum, d) => sum + (newVipByDay[d] || 0), 0);
 
-  // aktive VIPs: VIP_bis >= heute (UTC)
-  const todayISO = new Date().toISOString().slice(0,10);
-  const active = vipRows.filter(r => (r.VIP_bis || "").slice(0,10) >= todayISO).length;
+    // KPIs
+    el("kpiRevenue").textContent = fmt€(revenue30);
+    el("kpiActive").textContent = String(active);
+    el("kpiNew").textContent = String(new7);
+    el("revMeta").textContent = preis > 0 ? `Basis: Preis ${fmt€(preis)} × neue VIPs` : "Kein Preis in creator_config";
+    el("vipMeta").textContent = `Zeitraum: ${labels[0]} – ${labels[labels.length-1]}`;
 
-  // neue VIPs 7 Tage
-  const last7 = labels.slice(-7);
-  const new7 = last7.reduce((sum, d) => sum + (newVipByDay[d] || 0), 0);
+    // Charts
+    const grid = { color: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.08)" };
+    const tick = { color: "rgba(255,255,255,0.6)", font: { size: 10 } };
 
-  // KPIs setzen
-  el("kpiRevenue").textContent = fmt€(revenue30);
-  el("kpiActive").textContent = String(active);
-  el("kpiNew").textContent = String(new7);
-  el("revMeta").textContent = preis > 0 ? `Basis: Preis ${fmt€(preis)} × neue VIPs` : "Kein Preis in creator_config";
-  el("vipMeta").textContent = `Zeitraum: ${labels[0]} – ${labels[labels.length-1]}`;
-
-  // Charts zeichnen
-  const baseGrid = {
-    color: "rgba(255,255,255,0.08)",
-    borderColor: "rgba(255,255,255,0.08)",
-  };
-  const baseTick = {
-    color: "rgba(255,255,255,0.6)",
-    font: { size: 10 },
-  };
-
-  // Umsatz (Line)
-  new Chart(el("revChart"), {
-    type: "line",
-    data: {
-      labels,
-      datasets: [{
-        label: "Umsatz",
-        data: revenueByDay,
-        tension: 0.35,
-        borderWidth: 2,
-        pointRadius: 0,
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: (ctx) => fmt€(ctx.parsed.y) } },
+    new Chart(el("revChart"), {
+      type: "line",
+      data: { labels, datasets: [{ label: "Umsatz", data: revenueByDay, tension: 0.35, borderWidth: 2, pointRadius: 0 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => fmt€(ctx.parsed.y) } } },
+        scales: { x: { grid, ticks: { ...tick, maxTicksLimit: 6 } }, y: { grid, ticks: { ...tick, callback: (v) => fmt€(v) } } },
       },
-      scales: {
-        x: { grid: baseGrid, ticks: { ...baseTick, maxTicksLimit: 6 } },
-        y: { grid: baseGrid, ticks: { ...baseTick, callback: (v) => fmt€(v) } },
-      },
-    },
-  });
+    });
 
-  // Neue VIPs (Bar)
-  new Chart(el("vipChart"), {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [{
-        label: "Neue VIPs",
-        data: newVipSeries,
-        borderWidth: 0,
-      }],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: baseGrid, ticks: { ...baseTick, maxTicksLimit: 6 } },
-        y: { grid: baseGrid, ticks: baseTick, beginAtZero: true, precision: 0 },
+    new Chart(el("vipChart"), {
+      type: "bar",
+      data: { labels, datasets: [{ label: "Neue VIPs", data: newVipSeries, borderWidth: 0 }] },
+      options: {
+        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+        scales: { x: { grid, ticks: { ...tick, maxTicksLimit: 6 } }, y: { grid, ticks: tick, beginAtZero: true, precision: 0 } },
       },
-    },
-  });
+    });
 
-  // Optional: Conversion (Demo)
-  const conv = (new7 / Math.max(active, 1)) * 100;
-  el("kpiConv").textContent = isFinite(conv) ? conv.toFixed(1) + "%" : "–";
-</script>
+    const conv = (new7 / Math.max(active, 1)) * 100;
+    el("kpiConv").textContent = isFinite(conv) ? conv.toFixed(1) + "%" : "–";
+  </script>
+</DashboardLayout>

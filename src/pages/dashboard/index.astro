@@ -60,7 +60,6 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     const fmt€ = (n) => (typeof n === "number" ? n : Number(n || 0))
       .toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 
-    // Helpers
     const today = new Date();
     const daysAgo = (d) => new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - d));
     function labelsLastNDays(n=30) {
@@ -72,61 +71,58 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       return arr;
     }
 
-    // Auth
+    // Auth check
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
 
-    // Creator-Preis / Dauer
-    const { data: cfg, error: cfgErr } = await supabase
+    // Preis & VIP-Dauer laden
+    const { data: cfg } = await supabase
       .from("creator_config")
       .select("preis, vip_dauer")
       .eq("creator_id", user.id)
       .maybeSingle();
-    if (cfgErr) console.warn("creator_config error:", cfgErr);
 
     const preis = Number(cfg?.preis || 0);
     const vipDauer = Number(cfg?.vip_dauer || 30);
 
-    // VIP-Daten
+    // VIP-Daten laden (jetzt mit letzter_kontakt)
     let vipRows = [];
     const { data: vipData, error: vipErr } = await supabase
-      .from("vip_user")
+      .from("vip_users")
       .select("letzter_kontakt, vip_bis, status")
       .eq("creator_id", user.id);
-    if (vipErr) {
-      console.warn("vip_user error:", vipErr);
-    }
+
+    if (vipErr) console.warn("vip_users error:", vipErr);
     vipRows = vipData || [];
 
-    // Fallback-Demo
+    // Demo-Daten fallback
     if (!vipRows.length) {
       const base = new Date();
       const mk = (offset, days=vipDauer) => ({
-        created_at: new Date(base.getTime() - offset*86400000).toISOString(),
-        VIP_bis: new Date(base.getTime() + (days-offset)*86400000).toISOString(),
-        Status: "active",
+        letzter_kontakt: new Date(base.getTime() - offset*86400000).toISOString(),
+        vip_bis: new Date(base.getTime() + (days-offset)*86400000).toISOString(),
+        status: "active",
       });
-      vipRows = [mk(1), mk(2), mk(2), mk(5), mk(7), mk(8), mk(9), mk(10), mk(12), mk(15), mk(20), mk(21), mk(25)];
-      el("kpiRevenueNote").textContent = "Demo‑Schätzung (keine echten Transaktionen gefunden oder keine Leserechte)";
-      el("kpiActiveNote").textContent = "Demo‑Daten";
-      el("kpiNewNote").textContent = "Demo‑Daten";
+      vipRows = [mk(1), mk(2), mk(5), mk(7), mk(8), mk(10), mk(15)];
+      el("kpiRevenueNote").textContent = "Demo-Schätzung (keine echten Transaktionen gefunden)";
+      el("kpiActiveNote").textContent = "Demo-Daten";
+      el("kpiNewNote").textContent = "Demo-Daten";
     }
 
     // Aggregation
     const labels = labelsLastNDays(30);
-
     const newVipByDay = Object.fromEntries(labels.map(d => [d, 0]));
-   vipRows.forEach(r => {
-  const d = (r.letzter_kontakt || "").slice(0,10);
-  if (newVipByDay[d] !== undefined) newVipByDay[d] += 1;
-});
+    vipRows.forEach(r => {
+      const d = (r.letzter_kontakt || "").slice(0,10);
+      if (newVipByDay[d] !== undefined) newVipByDay[d] += 1;
+    });
     const newVipSeries = labels.map(d => newVipByDay[d]);
 
     const revenueByDay = labels.map((_, i) => (preis > 0 ? newVipSeries[i] * preis : 0));
     const revenue30 = revenueByDay.reduce((a,b) => a + b, 0);
 
     const todayISO = new Date().toISOString().slice(0,10);
-    const active = vipRows.filter(r => (r.VIP_bis || "").slice(0,10) >= todayISO).length;
+    const active = vipRows.filter(r => String(r.vip_bis || "").slice(0,10) >= todayISO).length;
 
     const last7 = labels.slice(-7);
     const new7 = last7.reduce((sum, d) => sum + (newVipByDay[d] || 0), 0);

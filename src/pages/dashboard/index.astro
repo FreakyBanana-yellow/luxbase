@@ -71,10 +71,11 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       throw new Error("Supabase ENV fehlt");
     }
 
-    const [{ createClient }, Chart] = await Promise.all([
-      import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"),
-      import("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/auto/auto.js").then(m => m.default),
-    ]);
+   const [{ createClient }] = await Promise.all([
+  import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"),
+  import("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"),
+]);
+const Chart = window.Chart;
     dbg("✅ Libraries geladen");
 
     const supabase = createClient(meta.dataset.url, meta.dataset.key);

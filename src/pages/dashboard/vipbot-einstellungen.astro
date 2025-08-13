@@ -1,5 +1,6 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
+const BOT_USERNAME = "LuxBot"; // <-- ohne @ ; hier euren festen Bot-Namen eintragen
 ---
 
 <DashboardLayout title="VIP‑Bot Einstellungen">
@@ -7,16 +8,6 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     <form id="botForm" class="space-y-5">
       <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-4">
         <h2 class="text-luxgold text-lg font-semibold">Basis</h2>
-
-        <label class="block">
-          <span class="text-sm text-white/70">Telegram Start‑Parameter (z. B. dein Handle oder custom Slug)</span>
-          <input id="telegramlink" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="z.B. @deinhandle oder lux_anna" />
-        </label>
-
-        <label class="block">
-          <span class="text-sm text-white/70">Bot‑Username (ohne @)</span>
-          <input id="bot_username" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="z.B. luxbase_vip_bot" />
-        </label>
 
         <div class="grid grid-cols-2 gap-3">
           <label class="block">
@@ -39,16 +30,16 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         </label>
 
         <label class="block">
-          <span class="text-sm text-white/70">Gruppen‑Chat‑ID (empfohlen für Auto‑Invite & Kick)</span>
+          <span class="text-sm text-white/70">Gruppen‑Chat‑ID (für Auto‑Invite & Kick)</span>
           <input id="group_chat_id" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="-1001234567890" />
         </label>
       </div>
 
       <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-4">
-        <h2 class="text-luxgold text-lg font-semibold">Zahlung (Stripe)</h2>
+        <h2 class="text-luxgold text-lg font-semibold">Stripe</h2>
 
         <label class="block">
-          <span class="text-sm text-white/70">Stripe Price ID (optional – sonst Preis aus oben)</span>
+          <span class="text-sm text-white/70">Stripe Price ID (optional – sonst Preis von oben)</span>
           <input id="stripe_price_id" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="price_123..." />
         </label>
       </div>
@@ -69,7 +60,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
       <div class="flex items-center gap-3">
         <button id="saveBtn" type="submit" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3">Speichern</button>
-        <button id="testLinkBtn" type="button" class="px-4 py-3 border border-luxgray rounded-xl">Start‑Link kopieren</button>
+        <button id="copyLinkBtn" type="button" class="px-4 py-3 border border-luxgray rounded-xl">Start‑Link kopieren</button>
       </div>
 
       <p id="hint" class="text-xs text-white/60"></p>
@@ -79,26 +70,24 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+    const BOT_USERNAME = ${JSON.stringify(BOT_USERNAME)};
     const meta = document.getElementById("supabase-config");
     const supabase = createClient(meta.dataset.url, meta.dataset.key);
 
     const $ = (id) => document.getElementById(id);
-    const fields = ["telegramlink","bot_username","preis","vip_days","gruppe_link","group_chat_id","stripe_price_id","welcome_text","regeln_text"];
+    const fields = ["preis","vip_days","gruppe_link","group_chat_id","stripe_price_id","welcome_text","regeln_text"];
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
 
     // Laden
-    const { data: cfg, error: err } = await supabase
+    const { data: cfg } = await supabase
       .from("creator_config")
       .select(fields.join(","))
       .eq("creator_id", user.id)
       .maybeSingle();
 
-    if (err) console.warn(err);
-    if (cfg) {
-      for (const k of fields) if ($(k)) $(k).value = cfg[k] ?? "";
-    }
+    if (cfg) for (const k of fields) if ($(k)) $(k).value = cfg[k] ?? "";
 
     // Speichern
     $("botForm").addEventListener("submit", async (e) => {
@@ -108,25 +97,18 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       const payload = { creator_id: user.id };
       for (const k of fields) payload[k] = $(k)?.value ?? null;
 
-      // Nummern sauber casten
       payload.preis = Number(payload.preis || 0);
       payload.vip_days = Number(payload.vip_days || 30);
 
-      const { error: upErr } = await supabase
-        .from("creator_config")
-        .upsert(payload, { onConflict: "creator_id" });
-
+      const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
       $("saveBtn").disabled = false;
-      $("hint").textContent = upErr ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
+      $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
     });
 
-    // Start‑Link bauen & kopieren
-    $("testLinkBtn").addEventListener("click", async () => {
-      const bot = $("bot_username").value?.replace(/^@/, "");
-      const slug = $("telegramlink").value?.trim();
-      const deeplink = bot && slug
-        ? `https://t.me/${bot}?start=${encodeURIComponent(slug.startsWith("creator_") ? slug : "creator_"+slug)}`
-        : "Bitte Bot‑Username & Start‑Parameter ausfüllen.";
+    // Start-Link automatisch aus creator_id: t.me/LuxBot?start=creator_<creator_id>
+    $("copyLinkBtn").addEventListener("click", async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const deeplink = `https://t.me/${BOT_USERNAME}?start=${encodeURIComponent("creator_"+user.id)}`;
       await navigator.clipboard.writeText(deeplink);
       $("hint").textContent = "🔗 Start‑Link kopiert: " + deeplink;
     });

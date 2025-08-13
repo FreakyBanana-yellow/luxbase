@@ -1,66 +1,111 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
-const BOT_USERNAME = "LuxBot"; // <-- ohne @ ; hier euren festen Bot-Namen eintragen
+
+/** Fester Telegram‑Bot Username (ohne @) */
+const BOT_USERNAME = "Luxbot";
 ---
 
 <DashboardLayout title="VIP‑Bot Einstellungen">
   <section class="max-w-3xl mx-auto px-4 py-6 space-y-6">
+    <!-- Status -->
+    <div id="statusBox" class="hidden bg-black/60 border border-luxgray rounded-2xl p-4 text-sm text-white/80"></div>
+
     <form id="botForm" class="space-y-5">
+      <!-- Basis -->
       <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-4">
         <h2 class="text-luxgold text-lg font-semibold">Basis</h2>
 
         <div class="grid grid-cols-2 gap-3">
           <label class="block">
             <span class="text-sm text-white/70">Preis (€)</span>
-            <input id="preis" type="number" step="1" min="0" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="29" />
+            <input id="preis" type="number" inputmode="numeric" step="1" min="0"
+              class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+              placeholder="29" />
           </label>
           <label class="block">
             <span class="text-sm text-white/70">VIP‑Dauer (Tage)</span>
-            <input id="vip_days" type="number" step="1" min="1" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="30" />
+            <input id="vip_days" type="number" inputmode="numeric" step="1" min="1"
+              class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+              placeholder="30" />
           </label>
         </div>
       </div>
 
+      <!-- Gruppe -->
       <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-4">
         <h2 class="text-luxgold text-lg font-semibold">Gruppe</h2>
 
         <label class="block">
           <span class="text-sm text-white/70">Gruppen‑Link (Fallback, statisch)</span>
-          <input id="gruppe_link" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="https://t.me/+abcdef..." />
+          <input id="gruppe_link"
+            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+            placeholder="https://t.me/+abcdef..." />
         </label>
 
         <label class="block">
-          <span class="text-sm text-white/70">Gruppen‑Chat‑ID (für Auto‑Invite & Kick)</span>
-          <input id="group_chat_id" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="-1001234567890" />
+          <span class="text-sm text-white/70">Gruppen‑Chat‑ID (wird automatisch gesetzt, wenn du „Gruppe verbinden“ nutzt)</span>
+          <input id="group_chat_id" disabled
+            class="mt-1 w-full bg-black/20 border border-luxgray/60 rounded-xl px-3 py-2"
+            placeholder="-1001234567890" />
         </label>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button id="copyStartLinkBtn" type="button"
+            class="w-full border border-luxgray rounded-xl py-3">Start‑Link kopieren</button>
+          <button id="bindGroupBtn" type="button"
+            class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">Gruppe verbinden</button>
+        </div>
+
+        <!-- Live-Preview der Links -->
+        <div class="text-xs text-white/60 space-y-1">
+          <div>Start‑Link Vorschau: <span id="previewStart" class="text-white/80 break-all">—</span></div>
+          <div>Startgroup‑Link Vorschau: <span id="previewGroup" class="text-white/80 break-all">—</span></div>
+        </div>
+
+        <p class="text-xs text-white/60 leading-5">
+          <b>So verbindest du die Gruppe:</b> Tippe auf „Gruppe verbinden“ → Telegram öffnet „Bot zu Gruppe hinzufügen“. Wähle deine VIP‑Gruppe,
+          bestätige den Start. Der Bot speichert automatisch die <i>group_chat_id</i>. Gib dem Bot Admin‑Rechte,
+          damit Einladungen & Kicks funktionieren.
+        </p>
       </div>
 
+      <!-- Stripe -->
       <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-4">
         <h2 class="text-luxgold text-lg font-semibold">Stripe</h2>
 
         <label class="block">
-          <span class="text-sm text-white/70">Stripe Price ID (optional – sonst Preis von oben)</span>
-          <input id="stripe_price_id" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="price_123..." />
+          <span class="text-sm text-white/70">Stripe Price ID (optional – sonst wird der Preis von oben verwendet)</span>
+          <input id="stripe_price_id"
+            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+            placeholder="price_123..." />
         </label>
       </div>
 
+      <!-- Texte -->
       <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-4">
         <h2 class="text-luxgold text-lg font-semibold">Texte</h2>
 
         <label class="block">
           <span class="text-sm text-white/70">Welcome‑Text</span>
-          <textarea id="welcome_text" rows="3" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="👋 Willkommen im VIP! ..."></textarea>
+          <textarea id="welcome_text" rows="3"
+            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+            placeholder="👋 Willkommen im VIP! ..."></textarea>
         </label>
 
         <label class="block">
           <span class="text-sm text-white/70">Regeln‑Text</span>
-          <textarea id="regeln_text" rows="3" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="📜 Regeln ..."></textarea>
+          <textarea id="regeln_text" rows="3"
+            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+            placeholder="📜 Regeln ..."></textarea>
         </label>
       </div>
 
+      <!-- Actions -->
       <div class="flex items-center gap-3">
-        <button id="saveBtn" type="submit" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3">Speichern</button>
-        <button id="copyLinkBtn" type="button" class="px-4 py-3 border border-luxgray rounded-xl">Start‑Link kopieren</button>
+        <button id="saveBtn" type="submit"
+          class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3">Speichern</button>
+        <button id="refreshBtn" type="button"
+          class="px-4 py-3 border border-luxgray rounded-xl">Neu laden</button>
       </div>
 
       <p id="hint" class="text-xs text-white/60"></p>
@@ -77,19 +122,55 @@ const BOT_USERNAME = "LuxBot"; // <-- ohne @ ; hier euren festen Bot-Namen eintr
     const $ = (id) => document.getElementById(id);
     const fields = ["preis","vip_days","gruppe_link","group_chat_id","stripe_price_id","welcome_text","regeln_text"];
 
+    function setStatus(msg, ok=true) {
+      const box = $("statusBox");
+      box.classList.remove("hidden");
+      box.textContent = msg;
+      box.classList.toggle("border-green-600", ok);
+      box.classList.toggle("border-red-600", !ok);
+    }
+
+    // auth
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
 
-    // Laden
-    const { data: cfg } = await supabase
-      .from("creator_config")
-      .select(fields.join(","))
-      .eq("creator_id", user.id)
-      .maybeSingle();
+    const startLink = () => `https://t.me/${BOT_USERNAME}?start=${encodeURIComponent("creator_"+user.id)}`;
+    const groupLink = () => `https://t.me/${BOT_USERNAME}?startgroup=${encodeURIComponent("creator_"+user.id)}`;
 
-    if (cfg) for (const k of fields) if ($(k)) $(k).value = cfg[k] ?? "";
+    function updatePreviews() {
+      $("previewStart").textContent = startLink();
+      $("previewGroup").textContent = groupLink();
+    }
 
-    // Speichern
+    async function loadCfg() {
+      const { data, error } = await supabase
+        .from("creator_config")
+        .select(fields.join(","))
+        .eq("creator_id", user.id)
+        .maybeSingle();
+
+      if (error) setStatus("❌ Konnte Einstellungen nicht laden.", false);
+
+      // Felder vorfüllen (persistente Anzeige)
+      if (data) {
+        for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
+        if (data.group_chat_id) {
+          setStatus(\`✅ Gruppe verbunden (Chat ID: \${data.group_chat_id}). Bot sollte Admin sein.\`);
+        } else {
+          setStatus("⚠️ Keine Gruppe verbunden. Klicke „Gruppe verbinden“.", false);
+        }
+      } else {
+        // leere Defaults anzeigen
+        for (const k of fields) if ($(k)) $(k).value = "";
+        setStatus("ℹ️ Noch keine Einstellungen gespeichert. Bitte ausfüllen und speichern.", false);
+      }
+
+      updatePreviews();
+    }
+
+    await loadCfg();
+
+    // speichern
     $("botForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       $("saveBtn").disabled = true;
@@ -100,17 +181,30 @@ const BOT_USERNAME = "LuxBot"; // <-- ohne @ ; hier euren festen Bot-Namen eintr
       payload.preis = Number(payload.preis || 0);
       payload.vip_days = Number(payload.vip_days || 30);
 
-      const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
+      const { error } = await supabase
+        .from("creator_config")
+        .upsert(payload, { onConflict: "creator_id" });
+
       $("saveBtn").disabled = false;
       $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
+      if (!error) await loadCfg();
     });
 
-    // Start-Link automatisch aus creator_id: t.me/LuxBot?start=creator_<creator_id>
-    $("copyLinkBtn").addEventListener("click", async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      const deeplink = `https://t.me/${BOT_USERNAME}?start=${encodeURIComponent("creator_"+user.id)}`;
-      await navigator.clipboard.writeText(deeplink);
-      $("hint").textContent = "🔗 Start‑Link kopiert: " + deeplink;
+    // neu laden
+    $("refreshBtn").addEventListener("click", loadCfg);
+
+    // Start-Link (DM)
+    $("copyStartLinkBtn").addEventListener("click", async () => {
+      const link = startLink();
+      await navigator.clipboard.writeText(link);
+      $("hint").textContent = "🔗 Start‑Link kopiert: " + link;
+    });
+
+    // Gruppe verbinden (startgroup Flow)
+    $("bindGroupBtn").addEventListener("click", async () => {
+      const link = groupLink();
+      window.open(link, "_blank");
+      $("hint").textContent = "Öffne Telegram → wähle die Gruppe → Bot starten → Admin‑Rechte geben.";
     });
   </script>
 </DashboardLayout>

@@ -79,6 +79,19 @@ const BOT_USERNAME = "Luxbot";
             class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
             placeholder="price_123..." />
         </label>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button id="connectStripeBtn" type="button"
+            class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">
+            Stripe verbinden
+          </button>
+          <button id="refreshStripeBtn" type="button"
+            class="w-full border border-luxgray rounded-xl py-3">
+            Status prüfen
+          </button>
+        </div>
+
+        <p id="stripeStatus" class="text-xs text-white/60"></p>
       </div>
 
       <!-- Texte -->
@@ -116,6 +129,8 @@ const BOT_USERNAME = "Luxbot";
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
     const BOT_USERNAME = ${JSON.stringify(BOT_USERNAME)};
+    const BOT_API = import.meta.env.PUBLIC_BOT_API_BASE || ""; // z.B. https://dein-render.onrender.com
+
     const meta = document.getElementById("supabase-config");
     const supabase = createClient(meta.dataset.url, meta.dataset.key);
 
@@ -145,7 +160,7 @@ const BOT_USERNAME = "Luxbot";
     async function loadCfg() {
       const { data, error } = await supabase
         .from("creator_config")
-        .select(fields.join(","))
+        .select(fields.join(",") + ", stripe_account_id, application_fee_pct")
         .eq("creator_id", user.id)
         .maybeSingle();
 
@@ -155,13 +170,17 @@ const BOT_USERNAME = "Luxbot";
       if (data) {
         for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
         if (data.group_chat_id) {
-          setStatus(\`✅ Gruppe verbunden (Chat ID: \${data.group_chat_id}). Bot sollte Admin sein.\`);
+          setStatus(`✅ Gruppe verbunden (Chat ID: ${data.group_chat_id}). Bot sollte Admin sein.`);
         } else {
           setStatus("⚠️ Keine Gruppe verbunden. Klicke „Gruppe verbinden“.", false);
         }
+        // Stripe Status
+        $("stripeStatus").textContent = data.stripe_account_id
+          ? `✅ Stripe verbunden (Account: ${data.stripe_account_id}).`
+          : "⚠️ Stripe noch nicht verbunden.";
       } else {
-        // leere Defaults anzeigen
         for (const k of fields) if ($(k)) $(k).value = "";
+        $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
         setStatus("ℹ️ Noch keine Einstellungen gespeichert. Bitte ausfüllen und speichern.", false);
       }
 
@@ -206,5 +225,21 @@ const BOT_USERNAME = "Luxbot";
       window.open(link, "_blank");
       $("hint").textContent = "Öffne Telegram → wähle die Gruppe → Bot starten → Admin‑Rechte geben.";
     });
+
+    // Stripe verbinden (Connect Express Onboarding)
+    $("connectStripeBtn").addEventListener("click", async () => {
+      if (!BOT_API) { alert("API‑Basis (PUBLIC_BOT_API_BASE) ist nicht konfiguriert."); return; }
+      try {
+        const r = await fetch(`${BOT_API}/api/stripe/connect-link?creator_id=${encodeURIComponent(user.id)}`);
+        const { url, error } = await r.json();
+        if (error || !url) throw new Error(error || "No URL");
+        window.location.href = url;
+      } catch (e) {
+        alert("Stripe‑Connect Fehler. Bitte später erneut versuchen.");
+      }
+    });
+
+    // Stripe Status prüfen/aktualisieren
+    $("refreshStripeBtn").addEventListener("click", loadCfg);
   </script>
 </DashboardLayout>

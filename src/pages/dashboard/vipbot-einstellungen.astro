@@ -6,7 +6,7 @@ const BOT_USERNAME = "Luxbot";
 ---
 
 <DashboardLayout title="VIP‑Bot Einstellungen">
-  <section class="max-w-3xl mx-auto px-4 py-6 space-y-6">
+  <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative z-[10] space-y-6">
     <!-- Status -->
     <div id="statusBox" class="hidden bg-black/60 border border-luxgray rounded-2xl p-4 text-sm text-white/80"></div>
 
@@ -49,11 +49,11 @@ const BOT_USERNAME = "Luxbot";
             placeholder="-1001234567890" />
         </label>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-[60] pointer-events-auto">
           <button id="copyStartLinkBtn" type="button"
-            class="w-full border border-luxgray rounded-xl py-3">Start‑Link kopieren</button>
+            class="w-full border border-luxgray rounded-xl py-3 cursor-pointer">Start‑Link kopieren</button>
           <button id="bindGroupBtn" type="button"
-            class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">Gruppe verbinden</button>
+            class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3 cursor-pointer">Gruppe verbinden</button>
         </div>
 
         <!-- Live-Preview der Links -->
@@ -80,13 +80,13 @@ const BOT_USERNAME = "Luxbot";
             placeholder="price_123..." />
         </label>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-[60] pointer-events-auto">
           <button id="connectStripeBtn" type="button"
-            class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">
+            class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3 cursor-pointer">
             Stripe verbinden
           </button>
           <button id="refreshStripeBtn" type="button"
-            class="w-full border border-luxgray rounded-xl py-3">
+            class="w-full border border-luxgray rounded-xl py-3 cursor-pointer">
             Status prüfen
           </button>
         </div>
@@ -125,27 +125,47 @@ const BOT_USERNAME = "Luxbot";
     </form>
   </section>
 
+  <style is:global>
+    /* Safety: falls irgendwo pointer-events deaktiviert sind */
+    #botForm, #botForm * { pointer-events: auto; }
+  </style>
+
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
     const BOT_USERNAME = ${JSON.stringify(BOT_USERNAME)};
-    const BOT_API = import.meta.env.PUBLIC_BOT_API_BASE || ""; // z.B. https://dein-render.onrender.com
-
-    const meta = document.getElementById("supabase-config");
-    const supabase = createClient(meta.dataset.url, meta.dataset.key);
+    const BOT_API = import.meta.env.PUBLIC_BOT_API_BASE || ""; // z.B. https://luxentry.onrender.com
 
     const $ = (id) => document.getElementById(id);
-    const fields = ["preis","vip_days","gruppe_link","group_chat_id","stripe_price_id","welcome_text","regeln_text"];
+    const elCopy    = $("copyStartLinkBtn");
+    const elGroup   = $("bindGroupBtn");
+    const elConnect = $("connectStripeBtn");
+    const elRStripe = $("refreshStripeBtn");
 
     function setStatus(msg, ok=true) {
       const box = $("statusBox");
+      if (!box) return;
       box.classList.remove("hidden");
       box.textContent = msg;
       box.classList.toggle("border-green-600", ok);
       box.classList.toggle("border-red-600", !ok);
     }
 
-    // auth
+    // Vorab: einfache Click-Handler → zeigt zumindest Debug-Info
+    if (elCopy)  elCopy.addEventListener("click", () => setStatus("🔔 Klick: Start‑Link …", true));
+    if (elGroup) elGroup.addEventListener("click", () => setStatus("🔔 Klick: Gruppe verbinden …", true));
+    if (elConnect) elConnect.addEventListener("click", () => {
+      if (!BOT_API) setStatus("⚠️ PUBLIC_BOT_API_BASE fehlt – bitte in Astro ENV setzen.", false);
+    });
+    if (elRStripe) elRStripe.addEventListener("click", () => setStatus("🔄 Stripe‑Status wird aktualisiert…", true));
+
+    // Supabase init
+    const meta = document.getElementById("supabase-config");
+    const supabase = createClient(meta.dataset.url, meta.dataset.key);
+
+    const fields = ["preis","vip_days","gruppe_link","group_chat_id","stripe_price_id","welcome_text","regeln_text"];
+
+    // Auth
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
 
@@ -153,8 +173,9 @@ const BOT_USERNAME = "Luxbot";
     const groupLink = () => `https://t.me/${BOT_USERNAME}?startgroup=${encodeURIComponent("creator_"+user.id)}`;
 
     function updatePreviews() {
-      $("previewStart").textContent = startLink();
-      $("previewGroup").textContent = groupLink();
+      const pS = $("previewStart"), pG = $("previewGroup");
+      if (pS) pS.textContent = startLink();
+      if (pG) pG.textContent = groupLink();
     }
 
     async function loadCfg() {
@@ -166,7 +187,6 @@ const BOT_USERNAME = "Luxbot";
 
       if (error) setStatus("❌ Konnte Einstellungen nicht laden.", false);
 
-      // Felder vorfüllen (persistente Anzeige)
       if (data) {
         for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
         if (data.group_chat_id) {
@@ -174,29 +194,28 @@ const BOT_USERNAME = "Luxbot";
         } else {
           setStatus("⚠️ Keine Gruppe verbunden. Klicke „Gruppe verbinden“.", false);
         }
-        // Stripe Status
-        $("stripeStatus").textContent = data.stripe_account_id
+        const s = $("stripeStatus");
+        if (s) s.textContent = data.stripe_account_id
           ? `✅ Stripe verbunden (Account: ${data.stripe_account_id}).`
           : "⚠️ Stripe noch nicht verbunden.";
       } else {
         for (const k of fields) if ($(k)) $(k).value = "";
-        $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
         setStatus("ℹ️ Noch keine Einstellungen gespeichert. Bitte ausfüllen und speichern.", false);
+        const s = $("stripeStatus");
+        if (s) s.textContent = "⚠️ Stripe noch nicht verbunden.";
       }
-
       updatePreviews();
     }
 
     await loadCfg();
 
-    // speichern
+    // Speichern
     $("botForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       $("saveBtn").disabled = true;
 
       const payload = { creator_id: user.id };
       for (const k of fields) payload[k] = $(k)?.value ?? null;
-
       payload.preis = Number(payload.preis || 0);
       payload.vip_days = Number(payload.vip_days || 30);
 
@@ -209,37 +228,37 @@ const BOT_USERNAME = "Luxbot";
       if (!error) await loadCfg();
     });
 
-    // neu laden
-    $("refreshBtn").addEventListener("click", loadCfg);
-
-    // Start-Link (DM)
-    $("copyStartLinkBtn").addEventListener("click", async () => {
+    // Start‑Link (DM)
+    if (elCopy) elCopy.addEventListener("click", async () => {
       const link = startLink();
-      await navigator.clipboard.writeText(link);
+      try { await navigator.clipboard.writeText(link); } catch {}
       $("hint").textContent = "🔗 Start‑Link kopiert: " + link;
     });
 
     // Gruppe verbinden (startgroup Flow)
-    $("bindGroupBtn").addEventListener("click", async () => {
+    if (elGroup) elGroup.addEventListener("click", () => {
       const link = groupLink();
       window.open(link, "_blank");
       $("hint").textContent = "Öffne Telegram → wähle die Gruppe → Bot starten → Admin‑Rechte geben.";
     });
 
     // Stripe verbinden (Connect Express Onboarding)
-    $("connectStripeBtn").addEventListener("click", async () => {
+    if (elConnect) elConnect.addEventListener("click", async () => {
       if (!BOT_API) { alert("API‑Basis (PUBLIC_BOT_API_BASE) ist nicht konfiguriert."); return; }
       try {
         const r = await fetch(`${BOT_API}/api/stripe/connect-link?creator_id=${encodeURIComponent(user.id)}`);
         const { url, error } = await r.json();
         if (error || !url) throw new Error(error || "No URL");
         window.location.href = url;
-      } catch (e) {
+      } catch {
         alert("Stripe‑Connect Fehler. Bitte später erneut versuchen.");
       }
     });
 
     // Stripe Status prüfen/aktualisieren
-    $("refreshStripeBtn").addEventListener("click", loadCfg);
+    if (elRStripe) elRStripe.addEventListener("click", loadCfg);
+
+    // Neu laden
+    $("refreshBtn").addEventListener("click", loadCfg);
   </script>
 </DashboardLayout>

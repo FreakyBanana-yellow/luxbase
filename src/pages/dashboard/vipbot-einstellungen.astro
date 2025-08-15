@@ -1,12 +1,10 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
-
-/** Fester Telegram‑Bot Username (ohne @) */
 const BOT_USERNAME = "Luxbot";
 ---
 
 <DashboardLayout title="VIP‑Bot Einstellungen">
-  <section id="vip-settings-root" class="max-w-3xl mx-auto px-4 py-6 pb-28 relative z-[20] space-y-6 pointer-events-auto">
+  <section class="max-w-3xl mx-auto px-4 py-6 pb-44 space-y-6 relative">
     <!-- Status -->
     <div id="statusBox" class="hidden bg-black/60 border border-luxgray rounded-2xl p-4 text-sm text-white/80"></div>
 
@@ -19,14 +17,12 @@ const BOT_USERNAME = "Luxbot";
           <label class="block">
             <span class="text-sm text-white/70">Preis (€)</span>
             <input id="preis" type="number" inputmode="numeric" step="1" min="0"
-              class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
-              placeholder="29" />
+                   class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="29" />
           </label>
           <label class="block">
             <span class="text-sm text-white/70">VIP‑Dauer (Tage)</span>
             <input id="vip_days" type="number" inputmode="numeric" step="1" min="1"
-              class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
-              placeholder="30" />
+                   class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="30" />
           </label>
         </div>
       </div>
@@ -38,35 +34,29 @@ const BOT_USERNAME = "Luxbot";
         <label class="block">
           <span class="text-sm text-white/70">Gruppen‑Link (Fallback, statisch)</span>
           <input id="gruppe_link"
-            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
-            placeholder="https://t.me/+abcdef..." />
+                 class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+                 placeholder="https://t.me/+abcdef..." />
         </label>
 
         <label class="block">
-          <span class="text-sm text-white/70">Gruppen‑Chat‑ID (wird automatisch gesetzt, wenn du „Gruppe verbinden“ nutzt)</span>
+          <span class="text-sm text-white/70">Gruppen‑Chat‑ID (automatisch, sobald „Gruppe verbinden“ genutzt)</span>
           <input id="group_chat_id" disabled
-            class="mt-1 w-full bg-black/20 border border-luxgray/60 rounded-xl px-3 py-2"
-            placeholder="-1001234567890" />
+                 class="mt-1 w-full bg-black/20 border border-luxgray/60 rounded-xl px-3 py-2"
+                 placeholder="-1001234567890" />
         </label>
 
-        <!-- Button-Zeile: z-max + pointer-events erzwingen -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-[9999] pointer-events-auto">
-          <button id="copyStartLinkBtn" type="button"
-            class="w-full border border-luxgray rounded-xl py-3 cursor-pointer">Start‑Link kopieren</button>
-          <button id="bindGroupBtn" type="button"
-            class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3 cursor-pointer">Gruppe verbinden</button>
-        </div>
-
-        <!-- Live-Preview der Links -->
-        <div class="text-xs text-white/60 space-y-1">
-          <div>Start‑Link Vorschau: <span id="previewStart" class="text-white/80 break-all">—</span></div>
-          <div>Startgroup‑Link Vorschau: <span id="previewGroup" class="text-white/80 break-all">—</span></div>
+        <!-- Previews als anklick-/kopierbare Textlinks -->
+        <div class="text-xs text-white/60 space-y-2">
+          <div>Start‑Link: <a id="previewStart" class="underline break-all" target="_blank" rel="noreferrer">—</a></div>
+          <div>Startgroup‑Link: <a id="previewGroup" class="underline break-all" target="_blank" rel="noreferrer">—</a></div>
+          <div class="mt-2">Zum Kopieren (ohne Klick):</div>
+          <input id="previewStartInput" readonly class="w-full bg-black/30 border border-luxgray rounded-lg px-2 py-1 text-[12px] select-all" />
+          <input id="previewGroupInput" readonly class="w-full bg-black/30 border border-luxgray rounded-lg px-2 py-1 text-[12px] select-all" />
         </div>
 
         <p class="text-xs text-white/60 leading-5">
-          <b>So verbindest du die Gruppe:</b> Tippe auf „Gruppe verbinden“ → Telegram öffnet „Bot zu Gruppe hinzufügen“. Wähle deine VIP‑Gruppe,
-          bestätige den Start. Der Bot speichert automatisch die <i>group_chat_id</i>. Gib dem Bot Admin‑Rechte,
-          damit Einladungen & Kicks funktionieren.
+          <b>Gruppe verbinden:</b> Öffne den Startgroup‑Link → wähle deine VIP‑Gruppe → Bot starten → Bot in der Gruppe zum Admin machen.
+          Die <i>group_chat_id</i> wird automatisch gespeichert.
         </p>
       </div>
 
@@ -75,25 +65,21 @@ const BOT_USERNAME = "Luxbot";
         <h2 class="text-luxgold text-lg font-semibold">Stripe</h2>
 
         <label class="block">
-          <span class="text-sm text-white/70">Stripe Price ID (optional – sonst wird der Preis von oben verwendet)</span>
+          <span class="text-sm text-white/70">Stripe Price ID (optional – sonst Preis von oben)</span>
           <input id="stripe_price_id"
-            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
-            placeholder="price_123..." />
+                 class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+                 placeholder="price_123..." />
         </label>
 
-        <!-- Button-Zeile: z-max + pointer-events erzwingen -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-[9999] pointer-events-auto">
-          <button id="connectStripeBtn" type="button"
-            class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3 cursor-pointer">
-            Stripe verbinden
-          </button>
-          <button id="refreshStripeBtn" type="button"
-            class="w-full border border-luxgray rounded-xl py-3 cursor-pointer">
-            Status prüfen
-          </button>
-        </div>
-
         <p id="stripeStatus" class="text-xs text-white/60"></p>
+        <!-- Sichtbarer Connect-Link als <a> (kein Button) -->
+        <div class="text-sm">
+          <a id="connectLink"
+             class="inline-flex items-center px-4 py-3 rounded-xl font-semibold bg-luxgold/90 text-black"
+             target="_blank" rel="noreferrer">
+            Stripe verbinden
+          </a>
+        </div>
       </div>
 
       <!-- Texte -->
@@ -103,49 +89,55 @@ const BOT_USERNAME = "Luxbot";
         <label class="block">
           <span class="text-sm text-white/70">Welcome‑Text</span>
           <textarea id="welcome_text" rows="3"
-            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
-            placeholder="👋 Willkommen im VIP! ..."></textarea>
+                    class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+                    placeholder="👋 Willkommen im VIP! ..."></textarea>
         </label>
 
         <label class="block">
           <span class="text-sm text-white/70">Regeln‑Text</span>
           <textarea id="regeln_text" rows="3"
-            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
-            placeholder="📜 Regeln ..."></textarea>
+                    class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+                    placeholder="📜 Regeln ..."></textarea>
         </label>
       </div>
 
-      <!-- Actions -->
+      <!-- Speichern -->
       <div class="flex items-center gap-3">
         <button id="saveBtn" type="submit"
-          class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3 cursor-pointer">Speichern</button>
+                class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3">Speichern</button>
         <button id="refreshBtn" type="button"
-          class="px-4 py-3 border border-luxgray rounded-xl cursor-pointer">Neu laden</button>
+                class="px-4 py-3 border border-luxgray rounded-xl">Neu laden</button>
       </div>
 
       <p id="hint" class="text-xs text-white/60"></p>
     </form>
   </section>
 
-  <!-- Hard-Fixes gegen Overlays -->
+  <!-- FIXED ACTION BAR – echte Links, ganz oben drüber -->
+  <nav
+    class="fixed bottom-3 left-1/2 -translate-x-1/2 w-[94%] max-w-md
+           bg-black/80 backdrop-blur border border-luxgray rounded-2xl
+           p-3 z-[2147483647]">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+      <a id="actionCopy"   class="block text-center border border-luxgray rounded-xl py-3 text-sm select-none" href="#" role="button">Start‑Link kopieren</a>
+      <a id="actionGroup"  class="block text-center bg-luxgold/90 text-black font-semibold rounded-xl py-3 text-sm select-none" href="#" role="button" target="_blank" rel="noreferrer">Gruppe verbinden</a>
+      <a id="actionStripe" class="block text-center border border-luxgray rounded-xl py-3 text-sm select-none" href="#" role="button" target="_blank" rel="noreferrer">Stripe verbinden</a>
+    </div>
+  </nav>
+
   <style is:global>
-    #vip-settings-root, #vip-settings-root * { pointer-events: auto; }
-    /* Falls eine Bottom-Nav überlappt, z.B. .mobile-nav: */
-    .mobile-nav, .app-bottom-bar, .bottom-nav { z-index: 30; } /* Buttons sind z-9999 */
+    /* Verhindere dass andere Overlays Klicks fressen */
+    nav[role="navigation"], nav[role="navigation"] * { pointer-events: auto !important; }
+    .select-all:focus { outline: 1px dashed #aaa; }
   </style>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    const BOT_USERNAME = ${JSON.stringify(BOT_USERNAME)};
+    const BOT = ${JSON.stringify(BOT_USERNAME)};
     const BOT_API = import.meta.env.PUBLIC_BOT_API_BASE || ""; // z.B. https://luxentry.onrender.com
 
     const $ = (id) => document.getElementById(id);
-    const elCopy    = $("copyStartLinkBtn");
-    const elGroup   = $("bindGroupBtn");
-    const elConnect = $("connectStripeBtn");
-    const elRStripe = $("refreshStripeBtn");
-
     function setStatus(msg, ok=true) {
       const box = $("statusBox");
       if (!box) return;
@@ -155,44 +147,55 @@ const BOT_USERNAME = "Luxbot";
       box.classList.toggle("border-red-600", !ok);
     }
 
-    // 🔎 Diagnose: Wenn ein Klick NICHT auf dem Button ankommt, markieren wir den Blocker rot
-    function markBlockerOnNextClick(btn) {
-      btn?.addEventListener("click", (ev) => {
-        const x = ev.clientX, y = ev.clientY;
-        const top = document.elementFromPoint(x, y);
-        if (top && top !== btn && !btn.contains(top)) {
-          top.style.outline = "2px solid red";
-          top.style.outlineOffset = "2px";
-          setStatus("⚠️ Ein Element blockiert Klicks (rot markiert). Klassen: " + (top.className || "(keine)"), false);
-          console.warn("Blocking element:", top);
-        }
-      }, { once: true });
-    }
-    [elCopy, elGroup, elConnect, elRStripe].forEach(markBlockerOnNextClick);
-
-    // Supabase init
+    // Supabase
     const meta = document.getElementById("supabase-config");
     const supabase = createClient(meta.dataset.url, meta.dataset.key);
-
     const fields = ["preis","vip_days","gruppe_link","group_chat_id","stripe_price_id","welcome_text","regeln_text"];
 
     // Auth
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
 
-    const startLink = () => `https://t.me/${BOT_USERNAME}?start=${encodeURIComponent("creator_"+user.id)}`;
-    const groupLink = () => `https://t.me/${BOT_USERNAME}?startgroup=${encodeURIComponent("creator_"+user.id)}`;
+    // Links berechnen
+    const startLink = () => `https://t.me/${BOT}?start=${encodeURIComponent("creator_"+user.id)}`;
+    const groupLink = () => `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+user.id)}`;
 
+    // Previews (sichtbarer Text + klickbare <a>)
     function updatePreviews() {
-      const pS = $("previewStart"), pG = $("previewGroup");
-      if (pS) pS.textContent = startLink();
-      if (pG) pG.textContent = groupLink();
+      const s = startLink(), g = groupLink();
+      const aS = $("previewStart"), aG = $("previewGroup");
+      const iS = $("previewStartInput"), iG = $("previewGroupInput");
+      if (aS) { aS.href = s; aS.textContent = s; }
+      if (aG) { aG.href = g; aG.textContent = g; }
+      if (iS) iS.value = s;
+      if (iG) iG.value = g;
+
+      // Fixed Action Bar – echte Links setzen
+      const actCopy = $("actionCopy");
+      const actGroup = $("actionGroup");
+      const actStripe = $("actionStripe");
+      if (actGroup) actGroup.href = g;
+      if (actStripe) actStripe.href = BOT_API ? `${BOT_API}/api/stripe/connect-link?creator_id=${encodeURIComponent(user.id)}` : "#";
+      if (!BOT_API && actStripe) actStripe.addEventListener("click", (e)=>{ e.preventDefault(); alert("PUBLIC_BOT_API_BASE ist nicht gesetzt."); });
+      if (actCopy) actCopy.addEventListener("click", async (e) => {
+        e.preventDefault();
+        try { await navigator.clipboard.writeText(s); $("hint").textContent = "🔗 Start‑Link kopiert: " + s; }
+        catch { $("previewStartInput").select(); document.execCommand("copy"); $("hint").textContent = "🔗 Start‑Link markiert – bitte manuell kopieren."; }
+      }, { passive: false });
+
+      // „Stripe verbinden“ als sichtbarer Link (oben in Stripe‑Section)
+      const connectLink = $("connectLink");
+      if (connectLink) {
+        connectLink.href = BOT_API ? `${BOT_API}/api/stripe/connect-link?creator_id=${encodeURIComponent(user.id)}` : "#";
+        if (!BOT_API) connectLink.addEventListener("click", (e)=>{ e.preventDefault(); alert("PUBLIC_BOT_API_BASE ist nicht gesetzt."); });
+      }
     }
 
+    // Laden & Prefill
     async function loadCfg() {
       const { data, error } = await supabase
         .from("creator_config")
-        .select(fields.join(",") + ", stripe_account_id, application_fee_pct")
+        .select(fields.join(",") + ", stripe_account_id")
         .eq("creator_id", user.id)
         .maybeSingle();
 
@@ -200,21 +203,18 @@ const BOT_USERNAME = "Luxbot";
 
       if (data) {
         for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
-        if (data.group_chat_id) {
-          setStatus(`✅ Gruppe verbunden (Chat ID: ${data.group_chat_id}). Bot sollte Admin sein.`);
-        } else {
-          setStatus("⚠️ Keine Gruppe verbunden. Klicke „Gruppe verbinden“.", false);
-        }
-        const s = $("stripeStatus");
-        if (s) s.textContent = data.stripe_account_id
+        if (data.group_chat_id) setStatus(`✅ Gruppe verbunden (Chat ID: ${data.group_chat_id}). Bot sollte Admin sein.`);
+        else setStatus("⚠️ Keine Gruppe verbunden. Nutze „Gruppe verbinden“.", false);
+
+        $("stripeStatus").textContent = data.stripe_account_id
           ? `✅ Stripe verbunden (Account: ${data.stripe_account_id}).`
           : "⚠️ Stripe noch nicht verbunden.";
       } else {
         for (const k of fields) if ($(k)) $(k).value = "";
         setStatus("ℹ️ Noch keine Einstellungen gespeichert. Bitte ausfüllen und speichern.", false);
-        const s = $("stripeStatus");
-        if (s) s.textContent = "⚠️ Stripe noch nicht verbunden.";
+        $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
       }
+
       updatePreviews();
     }
 
@@ -230,46 +230,14 @@ const BOT_USERNAME = "Luxbot";
       payload.preis = Number(payload.preis || 0);
       payload.vip_days = Number(payload.vip_days || 30);
 
-      const { error } = await supabase
-        .from("creator_config")
-        .upsert(payload, { onConflict: "creator_id" });
+      const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
 
       $("saveBtn").disabled = false;
       $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
       if (!error) await loadCfg();
     });
 
-    // Start‑Link (DM)
-    elCopy?.addEventListener("click", async () => {
-      const link = startLink();
-      try { await navigator.clipboard.writeText(link); } catch {}
-      $("hint").textContent = "🔗 Start‑Link kopiert: " + link;
-    });
-
-    // Gruppe verbinden (startgroup Flow)
-    elGroup?.addEventListener("click", () => {
-      const link = groupLink();
-      window.open(link, "_blank");
-      $("hint").textContent = "Öffne Telegram → wähle die Gruppe → Bot starten → Admin‑Rechte geben.";
-    });
-
-    // Stripe verbinden (Connect Express Onboarding)
-    elConnect?.addEventListener("click", async () => {
-      if (!BOT_API) { alert("API‑Basis (PUBLIC_BOT_API_BASE) ist nicht konfiguriert."); return; }
-      try {
-        const r = await fetch(`${BOT_API}/api/stripe/connect-link?creator_id=${encodeURIComponent(user.id)}`);
-        const { url, error } = await r.json();
-        if (error || !url) throw new Error(error || "No URL");
-        window.location.href = url;
-      } catch {
-        alert("Stripe‑Connect Fehler. Bitte später erneut versuchen.");
-      }
-    });
-
-    // Stripe Status prüfen/aktualisieren
-    elRStripe?.addEventListener("click", loadCfg);
-
-    // Neu laden
+    // Refresh
     $("refreshBtn").addEventListener("click", loadCfg);
   </script>
 </DashboardLayout>

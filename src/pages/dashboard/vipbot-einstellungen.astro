@@ -1,384 +1,223 @@
-// Luxbot @ Render – Telegram Webhook + Stripe Webhook + Daily Cron
-import express from "express";
-import dotenv from "dotenv";
-import TelegramBot from "node-telegram-bot-api";
-import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
-import bodyParser from "body-parser";
-import fetch from "node-fetch";
-import cron from "node-cron";
+---
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
-dotenv.config();
+/** Fester Telegram‑Bot Username (ohne @) */
+const BOT_USERNAME = "Luxbot";
+---
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+<DashboardLayout title="VIP‑Bot Einstellungen">
+  <!-- Übergabe für Script: kein JS-Interpolation-Trick, sondern Data-Attribut -->
+  <div id="lux-meta" data-bot={BOT_USERNAME} class="hidden"></div>
 
-// ENV
-const BOT_TOKEN = process.env.BOT_TOKEN;                      // z.B. 8457:AAA...
-const BASE_URL  = process.env.BASE_URL;                       // https://luxbasebot.onrender.com (oder Custom Domain)
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-const STRIPE_WEBHOOK_SECRET = process.env.SIGNAL_STRIPE_WEBHOOK_SECRET || process.env.STRIPE_WEBHOOK_SECRET;
+  <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative space-y-6">
+    <!-- Status -->
+    <div id="statusBox" class="hidden bg-black/60 border border-luxgray rounded-2xl p-4 text-sm text-white/80"></div>
 
-if (!BOT_TOKEN || !BASE_URL || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error("❌ ENV fehlt. Bitte BOT_TOKEN, BASE_URL, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY setzen.");
-  process.exit(1);
-}
+    <form id="botForm" class="space-y-5">
+      <!-- Basis -->
+      <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-4">
+        <h2 class="text-luxgold text-lg font-semibold">Basis</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block">
+            <span class="text-sm text-white/70">Preis (€)</span>
+            <input id="preis" type="number" inputmode="numeric" step="1" min="0"
+              class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="29" />
+          </label>
+          <label class="block">
+            <span class="text-sm text-white/70">VIP‑Dauer (Tage)</span>
+            <input id="vip_days" type="number" inputmode="numeric" step="1" min="1"
+              class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="30" />
+          </label>
+        </div>
+      </div>
 
-// Clients
-const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" }) : null;
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+      <!-- Gruppe -->
+      <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-4">
+        <h2 class="text-luxgold text-lg font-semibold">Gruppe</h2>
 
-// Webhook-URLs
-const telegramPath = `/bot${BOT_TOKEN}`;
-const telegramWebhook = `${BASE_URL}${telegramPath}`;
+        <label class="block">
+          <span class="text-sm text-white/70">Gruppen‑Link (Fallback, statisch)</span>
+          <input id="gruppe_link" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="https://t.me/+abcdef..." />
+        </label>
 
-// --- CORS (für Aufrufe vom Astro-Frontend) ---
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*"); // wenn du einschränken willst: deine Netlify-Domain hier eintragen
-  res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  if (req.method === "OPTIONS") return res.sendStatus(200);
-  next();
-});
+        <label class="block">
+          <span class="text-sm text-white/70">Gruppen‑Chat‑ID (automatisch nach „Gruppe verbinden“)</span>
+          <input id="group_chat_id" disabled class="mt-1 w-full bg-black/20 border border-luxgray/60 rounded-xl px-3 py-2" placeholder="-1001234567890" />
+        </label>
 
-// Middlewares (Stripe braucht RAW, Rest JSON)
-app.use((req, res, next) => {
-  if (req.originalUrl.startsWith("/stripe/webhook")) {
-    return bodyParser.raw({ type: "application/json" })(req, res, next);
-  }
-  return bodyParser.json()(req, res, next);
-});
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button id="copyStartLinkBtn" type="button" class="w-full border border-luxgray rounded-xl py-3">Start‑Link kopieren</button>
+          <button id="bindGroupBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">Gruppe verbinden</button>
+        </div>
 
-// Telegram Bot (Webhook-Mode)
-const bot = new TelegramBot(BOT_TOKEN);
-await bot.setWebHook(telegramWebhook);
-console.log("✅ Telegram Webhook:", telegramWebhook);
+        <!-- Previews -->
+        <div class="text-xs text-white/60 space-y-2">
+          <div>Start‑Link: <a id="previewStart" class="underline break-all" target="_blank" rel="noreferrer">—</a></div>
+          <div>Startgroup‑Link: <a id="previewGroup" class="underline break-all" target="_blank" rel="noreferrer">—</a></div>
+          <div class="mt-2">Zum Kopieren:</div>
+          <input id="previewStartInput" readonly class="w-full bg-black/30 border border-luxgray rounded-lg px-2 py-1 text-[12px] select-all" />
+          <input id="previewGroupInput" readonly class="w-full bg-black/30 border border-luxgray rounded-lg px-2 py-1 text-[12px] select-all" />
+        </div>
+      </div>
 
-// Telegram Webhook Endpoint
-app.post(telegramPath, (req, res) => {
-  bot.processUpdate(req.body);
-  res.sendStatus(200);
-});
+      <!-- Stripe -->
+      <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-4">
+        <h2 class="text-luxgold text-lg font-semibold">Stripe</h2>
+        <label class="block">
+          <span class="text-sm text-white/70">Stripe Price ID (optional – sonst Preis von oben)</span>
+          <input id="stripe_price_id" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="price_123..." />
+        </label>
 
-// Helpers
-const nowTS = () => new Date().toISOString().replace("T"," ").replace("Z","");
-const todayISO = () => new Date().toISOString().slice(0,10);
-const addDaysISO = (d) => new Date(Date.now()+d*864e5).toISOString().slice(0,10);
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button id="connectStripeBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">Stripe verbinden</button>
+          <button id="refreshStripeBtn" type="button" class="w-full border border-luxgray rounded-xl py-3">Status prüfen</button>
+        </div>
 
-async function getCreatorCfg(param) {
-  if (!param) return null;
+        <p id="stripeStatus" class="text-xs text-white/60"></p>
+      </div>
 
-  // Direkt über creator_id laden
-  let { data } = await supabase.from("creator_config")
-    .select("creator_id, preis, vip_days, gruppe_link, group_chat_id, stripe_price_id, welcome_text, regeln_text, stripe_account_id, application_fee_pct")
-    .eq("creator_id", param).maybeSingle();
-  if (data) return data;
+      <!-- Texte -->
+      <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-4">
+        <h2 class="text-luxgold text-lg font-semibold">Texte</h2>
+        <label class="block">
+          <span class="text-sm text-white/70">Welcome‑Text</span>
+          <textarea id="welcome_text" rows="3" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="👋 Willkommen im VIP! ..."></textarea>
+        </label>
+        <label class="block">
+          <span class="text-sm text-white/70">Regeln‑Text</span>
+          <textarea id="regeln_text" rows="3" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="📜 Regeln ..."></textarea>
+        </label>
+      </div>
 
-  // Fallback: falls du noch ein altes Feld (telegramlink) nutzt
-  const q2 = await supabase.from("creator_config")
-    .select("creator_id, preis, vip_days, gruppe_link, group_chat_id, stripe_price_id, welcome_text, regeln_text, stripe_account_id, application_fee_pct")
-    .eq("telegramlink", param).maybeSingle();
-  return q2.data || null;
-}
+      <!-- Actions -->
+      <div class="flex items-center gap-3">
+        <button id="saveBtn" type="submit" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3">Speichern</button>
+        <button id="refreshBtn" type="button" class="px-4 py-3 border border-luxgray rounded-xl">Neu laden</button>
+      </div>
 
-async function sendDynamicInvite(group_chat_id, chat_id_or_user_id) {
-  if (!group_chat_id) return false;
-  try {
-    const resp = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/createChatInviteLink`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: group_chat_id,
-        expire_date: Math.floor(Date.now()/1000) + 3600,
-        member_limit: 1
-      })
-    }).then(r => r.json());
+      <p id="hint" class="text-xs text-white/60"></p>
+    </form>
+  </section>
 
-    if (resp?.ok && resp?.result?.invite_link) {
-      await bot.sendMessage(Number(chat_id_or_user_id), `🎟️ Dein VIP‑Zugang: ${resp.result.invite_link}`);
-      return true;
-    }
-  } catch (e) { console.error("InviteLink error:", e.message); }
-  return false;
-}
+  <style is:global>
+    /* Safety: falls irgendwo pointer-events deaktiviert wurden */
+    #botForm, #botForm * { pointer-events: auto; }
+  </style>
 
-// /start in DM ODER Gruppe (startgroup)
-bot.onText(/\/start(?:\s+(.+))?/, async (msg, match) => {
-  const payload = (match?.[1] || "").trim();
-  const m = /^creator_(.+)$/i.exec(payload);
-  const creator_id = m ? m[1] : null;
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-  // In Gruppe gestartet → Gruppe binden
-  if (msg.chat.type === "group" || msg.chat.type === "supergroup") {
-    if (!creator_id) {
-      await bot.sendMessage(msg.chat.id, "❓ Kein Creator‑Payload. Bitte den „Gruppe verbinden“-Link aus den Einstellungen benutzen.");
-      return;
-    }
-    await supabase.from("creator_config").update({ group_chat_id: String(msg.chat.id) }).eq("creator_id", creator_id);
-    await bot.sendMessage(msg.chat.id, "✅ Gruppe verbunden! Gib mir Admin‑Rechte, damit Einladungen & Kicks funktionieren.");
-    return;
-  }
+    // ⚠️ Statt Astro-Interpolation ziehen wir BOT aus dem DOM:
+    const BOT_USERNAME = document.getElementById("lux-meta")?.dataset?.bot || "Luxbot";
+    const BOT_API = import.meta.env.PUBLIC_BOT_API_BASE || ""; // z.B. https://luxbasebot.onrender.com
 
-  // DM‑Flow
-  if (!creator_id) {
-    await bot.sendMessage(msg.chat.id, "❌ Ungültiger Start‑Link. Nutze bitte den Link aus deinen VIP‑Einstellungen.");
-    return;
-  }
-
-  const creator = await getCreatorCfg(creator_id);
-  if (!creator) {
-    await bot.sendMessage(msg.chat.id, "❌ Creator‑Konfiguration nicht gefunden.");
-    return;
-  }
-
-  await supabase.from("vip_users").upsert({
-    creator_id,
-    telegram_id: String(msg.from.id),
-    chat_id: String(msg.chat.id),
-    username: msg.from.username || null,
-    status: "gestartet",
-    letzter_kontakt: nowTS()
-  }, { onConflict: "creator_id,telegram_id" });
-
-  await bot.sendMessage(
-    msg.chat.id,
-    `👋 Willkommen, ${msg.from.first_name}!\n\n` +
-    `Preis: ${Number(creator.preis || 0).toFixed(0)} €\nDauer: ${creator.vip_days || 30} Tage`,
-    { reply_markup: { inline_keyboard: [[{ text: "Jetzt bezahlen", callback_data: "pay_now" }]] } }
-  );
-});
-
-// Inline‑Button „Jetzt bezahlen“
-bot.on("callback_query", async (q) => {
-  if (q.data !== "pay_now") return;
-  const chatId = q.message.chat.id;
-  const userId = String(q.from.id);
-
-  const { data: row } = await supabase.from("vip_users")
-    .select("creator_id").eq("telegram_id", userId)
-    .order("letzter_kontakt", { ascending: false }).limit(1).maybeSingle();
-  if (!row?.creator_id) {
-    await bot.answerCallbackQuery(q.id, { text: "Bitte zuerst /start nutzen." });
-    return;
-  }
-
-  const creator = await getCreatorCfg(row.creator_id);
-  if (!creator) {
-    await bot.answerCallbackQuery(q.id, { text: "Konfiguration fehlt." });
-    return;
-  }
-
-  if (!stripe) {
-    await bot.answerCallbackQuery(q.id, { text: "Stripe nicht konfiguriert." });
-    return;
-  }
-
-  if (!creator.stripe_account_id) {
-    await bot.answerCallbackQuery(q.id, { text: "Stripe Account fehlt. Bitte zuerst in den VIP‑Einstellungen „Stripe verbinden“." });
-    return;
-  }
-
-  try {
-    // Line Item
-    let lineItem;
-    if (creator.stripe_price_id) {
-      lineItem = { price: creator.stripe_price_id, quantity: 1 };
-    } else {
-      const amount = Math.max(0, Math.round(Number(creator.preis || 0) * 100));
-      lineItem = {
-        price_data: {
-          currency: "eur",
-          product_data: { name: `VIP ${row.creator_id.slice(0,8)}` },
-          unit_amount: amount
-        },
-        quantity: 1
-      };
+    const $ = (id) => document.getElementById(id);
+    function setStatus(msg, ok=true) {
+      const box = $("statusBox");
+      if (!box) return;
+      box.classList.remove("hidden");
+      box.textContent = msg;
+      box.classList.toggle("border-green-600", ok);
+      box.classList.toggle("border-red-600", !ok);
     }
 
-    // Plattform-Gebühr (optional, Pct in DB)
-    const unitAmount = lineItem.price ? null : lineItem.price_data.unit_amount;
-    const baseAmount = unitAmount ?? 0;
-    const fee = creator.application_fee_pct
-      ? Math.round(baseAmount * (Number(creator.application_fee_pct) / 100))
-      : 0;
+    // Supabase
+    const meta = document.getElementById("supabase-config");
+    const supabase = createClient(meta.dataset.url, meta.dataset.key);
+    const fields = ["preis","vip_days","gruppe_link","group_chat_id","stripe_price_id","welcome_text","regeln_text"];
 
-    // Connect Destination Charge → Geld direkt an Model
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      line_items: [lineItem],
-      success_url: `${BASE_URL}/stripe/success`,
-      cancel_url: `${BASE_URL}/stripe/cancel`,
-      metadata: { creator_id: row.creator_id, telegram_id: userId, chat_id: String(chatId) },
-      payment_intent_data: {
-        transfer_data: { destination: creator.stripe_account_id },
-        ...(fee > 0 ? { application_fee_amount: fee } : {})
+    // Auth
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
+
+    // Links
+    const startLink = () => `https://t.me/${BOT_USERNAME}?start=${encodeURIComponent("creator_"+user.id)}`;
+    const groupLink = () => `https://t.me/${BOT_USERNAME}?startgroup=${encodeURIComponent("creator_"+user.id)}`;
+
+    function updatePreviews() {
+      const s = startLink(), g = groupLink();
+      const aS = $("previewStart"), aG = $("previewGroup");
+      const iS = $("previewStartInput"), iG = $("previewGroupInput");
+      if (aS) { aS.href = s; aS.textContent = s; }
+      if (aG) { aG.href = g; aG.textContent = g; }
+      if (iS) iS.value = s;
+      if (iG) iG.value = g;
+    }
+
+    // Config laden & Felder füllen
+    async function loadCfg() {
+      const { data, error } = await supabase
+        .from("creator_config")
+        .select(fields.join(",") + ", stripe_account_id")
+        .eq("creator_id", user.id)
+        .maybeSingle();
+
+      if (error) setStatus("❌ Konnte Einstellungen nicht laden.", false);
+
+      if (data) {
+        for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
+        if (data.group_chat_id) setStatus(`✅ Gruppe verbunden (Chat ID: ${data.group_chat_id}). Bot sollte Admin sein.`);
+        else setStatus("⚠️ Keine Gruppe verbunden. Nutze „Gruppe verbinden“.", false);
+
+        $("stripeStatus").textContent = data.stripe_account_id
+          ? `✅ Stripe verbunden (Account: ${data.stripe_account_id}).`
+          : "⚠️ Stripe noch nicht verbunden.";
+      } else {
+        for (const k of fields) if ($(k)) $(k).value = "";
+        setStatus("ℹ️ Noch keine Einstellungen gespeichert. Bitte ausfüllen und speichern.", false);
+        $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
       }
-    });
 
-    await bot.answerCallbackQuery(q.id);
-    await bot.sendMessage(chatId, "💳 Bezahlung starten:", {
-      reply_markup: { inline_keyboard: [[{ text: "Jetzt bezahlen", url: session.url }]] }
-    });
-  } catch (e) {
-    console.error("Stripe session error:", e.message);
-    await bot.answerCallbackQuery(q.id, { text: "Stripe Fehler. Später erneut versuchen." });
-  }
-});
-
-// /status
-bot.onText(/\/status/, async (msg) => {
-  const userId = String(msg.from.id);
-  const { data: row } = await supabase.from("vip_users")
-    .select("status, vip_bis").eq("telegram_id", userId)
-    .order("letzter_kontakt", { ascending: false }).limit(1).maybeSingle();
-
-  await bot.sendMessage(msg.chat.id,
-    row ? `Status: <b>${row.status||"—"}</b>\nVIP bis: <b>${row.vip_bis||"—"}</b>` : "Noch kein VIP. Nutze /start.",
-    { parse_mode: "HTML" }
-  );
-});
-
-// jede Message → Kontaktzeit aktualisieren
-bot.on("message", async (msg) => {
-  if (!msg?.from) return;
-  await supabase.from("vip_users").update({ letzter_kontakt: nowTS() }).eq("telegram_id", String(msg.from.id));
-});
-
-// --- STEP 2: Stripe-Connect Onboarding Endpoints ---
-app.get("/api/stripe/connect-link", async (req, res) => {
-  try {
-    const creator_id = req.query.creator_id;
-    if (!creator_id) return res.status(400).json({ error: "creator_id fehlt" });
-    if (!stripe) return res.status(500).json({ error: "Stripe nicht konfiguriert" });
-
-    // vorhandene Account-ID holen
-    const { data: cfg } = await supabase
-      .from("creator_config")
-      .select("stripe_account_id")
-      .eq("creator_id", creator_id)
-      .maybeSingle();
-
-    let accountId = cfg?.stripe_account_id;
-    if (!accountId) {
-      const account = await stripe.accounts.create({ type: "express", country: "DE" });
-      accountId = account.id;
-      await supabase.from("creator_config").update({ stripe_account_id: accountId }).eq("creator_id", creator_id);
+      updatePreviews();
     }
 
-    const link = await stripe.accountLinks.create({
-      account: accountId,
-      refresh_url: `${BASE_URL}/stripe/connect/refresh?creator_id=${creator_id}`,
-      return_url:  `${BASE_URL}/stripe/connect/return?creator_id=${creator_id}`,
-      type: "account_onboarding",
+    await loadCfg();
+
+    // Speichern
+    $("botForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      $("saveBtn").disabled = true;
+
+      const payload = { creator_id: user.id };
+      for (const k of fields) payload[k] = $(k)?.value ?? null;
+      payload.preis = Number(payload.preis || 0);
+      payload.vip_days = Number(payload.vip_days || 30);
+
+      const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
+
+      $("saveBtn").disabled = false;
+      $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
+      if (!error) await loadCfg();
     });
 
-    return res.json({ url: link.url });
-  } catch (e) {
-    console.error("connect-link failed:", e.message);
-    return res.status(500).json({ error: "connect-link failed" });
-  }
-});
+    // Start‑Link kopieren
+    $("copyStartLinkBtn").addEventListener("click", async () => {
+      const s = startLink();
+      try { await navigator.clipboard.writeText(s); $("hint").textContent = "🔗 Start‑Link kopiert: " + s; }
+      catch { const i = $("previewStartInput"); i?.select(); document.execCommand("copy"); $("hint").textContent = "🔗 Markiert – bitte manuell kopieren."; }
+    });
 
-app.get("/stripe/connect/return", (req, res) =>
-  res.send("✅ Stripe verbunden. Du kannst dieses Fenster schließen.")
-);
-app.get("/stripe/connect/refresh", (req, res) =>
-  res.send("🔁 Bitte Onboarding erneut starten.")
-);
+    // Gruppe verbinden
+    $("bindGroupBtn").addEventListener("click", () => {
+      window.open(groupLink(), "_blank");
+      $("hint").textContent = "Öffne Telegram → wähle die Gruppe → Bot starten → Admin‑Rechte geben.";
+    });
 
-// Stripe Webhook
-app.post("/stripe/webhook", async (req, res) => {
-  if (!stripe || !STRIPE_WEBHOOK_SECRET) return res.sendStatus(200);
-  let event;
-  try {
-    event = stripe.webhooks.constructEvent(req.body, req.headers["stripe-signature"], STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    console.error("Stripe sig error:", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  if (event.type === "checkout.session.completed") {
-    const s = event.data.object;
-    const creator_id = s.metadata?.creator_id;
-    const telegram_id = s.metadata?.telegram_id;
-    const chat_id = s.metadata?.chat_id;
-
-    try {
-      const { data: cfg } = await supabase.from("creator_config")
-        .select("vip_days, gruppe_link, group_chat_id, welcome_text, regeln_text")
-        .eq("creator_id", creator_id).maybeSingle();
-
-      const vip_bis = addDaysISO(Number(cfg?.vip_days || 30));
-
-      const { data: vipRow } = await supabase.from("vip_users").upsert({
-        creator_id, telegram_id, chat_id, status: "aktiv", vip_bis
-      }, { onConflict: "creator_id,telegram_id" }).select("telegram_id, chat_id").maybeSingle();
-
-      if (cfg?.welcome_text) await bot.sendMessage(Number(chat_id), cfg.welcome_text);
-      if (cfg?.regeln_text)  await bot.sendMessage(Number(chat_id), cfg.regeln_text);
-
-      const ok = await sendDynamicInvite(cfg?.group_chat_id, vipRow?.chat_id || chat_id);
-      if (!ok && cfg?.gruppe_link) {
-        await bot.sendMessage(Number(chat_id), `🎟️ Dein VIP‑Zugang: ${cfg.gruppe_link}`);
-      }
-    } catch (e) { console.error("Fulfill error:", e.message); }
-  }
-  res.json({ received: true });
-});
-
-// Daily Cron (08:00 UTC) – Reminder & Kick
-cron.schedule("0 8 * * *", async () => {
-  const today = todayISO();
-  const warnDate = addDaysISO(5);
-
-  // warnen
-  const { data: warnUsers } = await supabase.from("vip_users")
-    .select("telegram_id, chat_id, vip_bis").gte("vip_bis", today).lte("vip_bis", warnDate).eq("status", "aktiv");
-  for (const u of warnUsers || []) {
-    await bot.sendMessage(Number(u.chat_id || u.telegram_id),
-      `⏰ Dein VIP läuft am ${u.vip_bis} ab. Verlängere rechtzeitig mit /start → „Jetzt bezahlen“.`);
-  }
-
-  // abgelaufen → kicken
-  const { data: expired } = await supabase.from("vip_users")
-    .select("creator_id, telegram_id, chat_id, vip_bis").lt("vip_bis", today).eq("status", "aktiv");
-  if (expired?.length) {
-    const { data: cfgs } = await supabase.from("creator_config").select("creator_id, group_chat_id");
-    const map = new Map((cfgs||[]).map(c => [c.creator_id, c.group_chat_id]));
-    for (const u of expired) {
-      const group = map.get(u.creator_id);
-      if (!group) continue;
+    // Stripe verbinden – per API (kein Direktlink)
+    $("connectStripeBtn").addEventListener("click", async () => {
+      if (!BOT_API) { alert("API‑Basis (PUBLIC_BOT_API_BASE) ist nicht konfiguriert."); return; }
       try {
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/banChatMember`, {
-          method:"POST", headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ chat_id: group, user_id: Number(u.telegram_id) })
-        });
-        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/unbanChatMember`, {
-          method:"POST", headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ chat_id: group, user_id: Number(u.telegram_id), only_if_banned: true })
-        });
+        const r = await fetch(`${BOT_API}/api/stripe/connect-link?creator_id=${encodeURIComponent(user.id)}`);
+        const { url, error } = await r.json();
+        if (error || !url) throw new Error(error || "Keine URL");
+        window.location.href = url; // echte Onboarding-URL von Stripe
       } catch (e) {
-        console.error("Kick error:", e.message);
+        alert("Stripe‑Connect Fehler. Bitte später erneut versuchen.");
       }
-      await supabase.from("vip_users").update({ status: "abgelaufen" })
-        .eq("creator_id", u.creator_id).eq("telegram_id", u.telegram_id);
-      await bot.sendMessage(Number(u.chat_id || u.telegram_id),
-        `❌ Dein VIP ist abgelaufen. Du wurdest aus der Gruppe entfernt. Mit /start → „Jetzt bezahlen“ kannst du jederzeit verlängern.`);
-    }
-  }
-  console.log("⏲️ daily cron done");
-});
+    });
 
-// simple probes
-app.get("/", (_, res) => res.send("Luxbot up"));
-app.get("/stripe/success", (_, res) => res.send("✅ Zahlung erfolgreich. Der Bot sendet dir gleich den Zugang in Telegram."));
-app.get("/stripe/cancel",  (_, res) => res.send("❌ Zahlung abgebrochen."));
-
-process.on("unhandledRejection", (r)=>console.error("UnhandledRejection:", r));
-process.on("uncaughtException", (e)=>console.error("UncaughtException:", e));
-
-app.listen(PORT, () => {
-  console.log(`🚀 on :${PORT}  webhook: ${telegramWebhook}`);
-});
+    // Status refresh
+    $("refreshStripeBtn").addEventListener("click", loadCfg);
+    $("refreshBtn").addEventListener("click", loadCfg);
+  </script>
+</DashboardLayout>

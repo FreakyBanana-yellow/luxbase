@@ -1,16 +1,16 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
-/** Fester Telegram‑Bot Username (ohne @) */
+/** Fix: ENV einmal serverseitig lesen und ins DOM schreiben */
 const BOT_USERNAME = "Luxbot";
+const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || ""; // <- kommt aus Netlify
 ---
 
 <DashboardLayout title="VIP‑Bot Einstellungen">
-  <!-- safer: Übergabe als Data-Attribut -->
-  <div id="lux-meta" data-bot={BOT_USERNAME} class="hidden"></div>
+  <!-- Übergabe an Script via Data-Attr -->
+  <div id="lux-meta" data-bot={BOT_USERNAME} data-bot-api={BOT_API_BASE} class="hidden"></div>
 
   <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative space-y-6">
-    <!-- Status -->
     <div id="statusBox" class="hidden bg-black/60 border border-luxgray rounded-2xl p-4 text-sm text-white/80"></div>
 
     <form id="botForm" class="space-y-5">
@@ -20,13 +20,11 @@ const BOT_USERNAME = "Luxbot";
         <div class="grid grid-cols-2 gap-3">
           <label class="block">
             <span class="text-sm text-white/70">Preis (€)</span>
-            <input id="preis" type="number" inputmode="numeric" step="1" min="0"
-              class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="29" />
+            <input id="preis" type="number" step="1" min="0" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="29" />
           </label>
           <label class="block">
             <span class="text-sm text-white/70">VIP‑Dauer (Tage)</span>
-            <input id="vip_days" type="number" inputmode="numeric" step="1" min="1"
-              class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="30" />
+            <input id="vip_days" type="number" step="1" min="1" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="30" />
           </label>
         </div>
       </div>
@@ -46,14 +44,8 @@ const BOT_USERNAME = "Luxbot";
         </label>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button type="button" class="w-full border border-luxgray rounded-xl py-3"
-                  onclick="window.lux.copyStart()">
-            Start‑Link kopieren
-          </button>
-          <button type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3"
-                  onclick="window.lux.bindGroup()">
-            Gruppe verbinden
-          </button>
+          <button type="button" class="w-full border border-luxgray rounded-xl py-3" onclick="window.lux.copyStart()">Start‑Link kopieren</button>
+          <button type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3" onclick="window.lux.bindGroup()">Gruppe verbinden</button>
         </div>
 
         <!-- Previews -->
@@ -75,15 +67,8 @@ const BOT_USERNAME = "Luxbot";
         </label>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <!-- Dieser Button bekommt per JS zusätzlich ein echtes href auf den Redirect-Endpoint -->
-          <button id="stripeBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3"
-                  onclick="window.lux.connectStripe()">
-            Stripe verbinden
-          </button>
-          <button type="button" class="w-full border border-luxgray rounded-xl py-3"
-                  onclick="window.lux.refresh()">
-            Status prüfen
-          </button>
+          <button id="stripeBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3" onclick="window.lux.connectStripe()">Stripe verbinden</button>
+          <button type="button" class="w-full border border-luxgray rounded-xl py-3" onclick="window.lux.refresh()">Status prüfen</button>
         </div>
 
         <p id="stripeStatus" class="text-xs text-white/60"></p>
@@ -102,16 +87,9 @@ const BOT_USERNAME = "Luxbot";
         </label>
       </div>
 
-      <!-- Actions -->
       <div class="flex items-center gap-3">
-        <button type="button" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3"
-                onclick="window.lux.save()">
-          Speichern
-        </button>
-        <button type="button" class="px-4 py-3 border border-luxgray rounded-xl"
-                onclick="window.lux.refresh()">
-          Neu laden
-        </button>
+        <button type="button" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3" onclick="window.lux.save()">Speichern</button>
+        <button type="button" class="px-4 py-3 border border-luxgray rounded-xl" onclick="window.lux.refresh()">Neu laden</button>
       </div>
 
       <p id="hint" class="text-xs text-white/60"></p>
@@ -119,27 +97,27 @@ const BOT_USERNAME = "Luxbot";
   </section>
 
   <style is:global>
-    /* Safety: falls irgendwo pointer-events deaktiviert sind */
     #botForm, #botForm * { pointer-events: auto; }
   </style>
 
-  <!-- Mini-Fallback: reagiert, falls das Modul später nicht lädt -->
+  <!-- Fallback: zeigt was an, falls Modul nicht lädt -->
   <script>
     window.lux = window.lux || {
-      save(){ alert("Aktion ausgeführt (Fallback). Falls das so bleibt, ist das Haupt‑Script nicht geladen."); },
+      save(){ alert("Aktion (Fallback). Wenn das so bleibt, lädt das Haupt‑Script nicht."); },
       refresh(){ location.reload(); },
       copyStart(){ alert("Start‑Link steht im Feld – bitte manuell kopieren."); },
       bindGroup(){ alert("Nutze den Startgroup‑Link unten direkt."); },
-      connectStripe(){ alert("Stripe benötigt das Backend. Prüfe PUBLIC_BOT_API_BASE."); }
+      connectStripe(){ alert("Stripe benötigt PUBLIC_BOT_API_BASE im Frontend."); }
     };
   </script>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // Meta & ENV
-    const BOT = document.getElementById("lux-meta")?.dataset?.bot || "Luxbot";
-    const BOT_API = import.meta.env.PUBLIC_BOT_API_BASE || ""; // z.B. https://luxbasebot.onrender.com
+    /** Read ENV & Meta aus DOM (statt import.meta.env im Browser) */
+    const META = document.getElementById("lux-meta");
+    const BOT = META?.dataset?.bot || "Luxbot";
+    const BOT_API = META?.dataset?.botApi || "";   // <- **Fix** hier!
 
     const $ = (id) => document.getElementById(id);
     const setStatus = (msg, ok=true) => {
@@ -151,16 +129,19 @@ const BOT_USERNAME = "Luxbot";
       box.classList.toggle("border-red-600", !ok);
     };
 
-    // Supabase
+    // Supabase init (aus Layout bereitgestellt)
     const meta = document.getElementById("supabase-config");
+    if (!meta?.dataset?.url || !meta?.dataset?.key) {
+      $("hint").textContent = "❌ Supabase‑Konfiguration fehlt. (Layout prüfen)";
+      throw new Error("supabase-config-missing");
+    }
     const supabase = createClient(meta.dataset.url, meta.dataset.key);
+
     const fields = ["preis","vip_days","gruppe_link","group_chat_id","stripe_price_id","welcome_text","regeln_text"];
 
-    // Auth
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
 
-    // Links
     const startLink = () => `https://t.me/${BOT}?start=${encodeURIComponent("creator_"+user.id)}`;
     const groupLink = () => `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+user.id)}`;
     const stripeRedirect = () => `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(user.id)}`;
@@ -172,19 +153,18 @@ const BOT_USERNAME = "Luxbot";
       $("previewStartInput").value = s;
       $("previewGroupInput").value = g;
 
-      // Button zusätzlich als echter Link nutzbar (falls JS blockiert ist)
+      // Stripe-Button als echter Link nutzbar
       const btn = document.getElementById("stripeBtn");
       if (btn) {
-        // Wrapper-Link erzeugen
-        let wrapper = btn.closest("a.lx-linkwrap");
-        if (!wrapper) {
-          wrapper = document.createElement("a");
-          wrapper.className = "lx-linkwrap";
-          wrapper.target = "_blank"; wrapper.rel = "noreferrer";
-          btn.parentNode.insertBefore(wrapper, btn);
-          wrapper.appendChild(btn);
+        let wrap = btn.closest("a.lx-linkwrap");
+        if (!wrap) {
+          wrap = document.createElement("a");
+          wrap.className = "lx-linkwrap";
+          wrap.target = "_blank"; wrap.rel = "noreferrer";
+          btn.parentNode.insertBefore(wrap, btn);
+          wrap.appendChild(btn);
         }
-        wrapper.href = BOT_API ? stripeRedirect() : "#";
+        wrap.href = BOT_API ? stripeRedirect() : "#";
       }
     }
 
@@ -213,9 +193,8 @@ const BOT_USERNAME = "Luxbot";
       updatePreviews();
     }
 
-    // Globale Aktionen (überschreiben den Fallback)
     window.lux = {
-      async save() {
+      async save(){
         const payload = { creator_id: user.id };
         for (const k of fields) payload[k] = $(k)?.value ?? null;
         payload.preis = Number(payload.preis || 0);
@@ -237,8 +216,7 @@ const BOT_USERNAME = "Luxbot";
         $("hint").textContent = "Öffne Telegram → wähle die Gruppe → Bot starten → Admin‑Rechte geben.";
       },
       connectStripe(){
-        if (!BOT_API) { alert("PUBLIC_BOT_API_BASE fehlt."); return; }
-        // Bevorzugt: Redirect-Endpoint → kein Popup/JSON nötig
+        if (!BOT_API) { alert("PUBLIC_BOT_API_BASE fehlt im Frontend."); return; }
         window.location.href = stripeRedirect();
       }
     };

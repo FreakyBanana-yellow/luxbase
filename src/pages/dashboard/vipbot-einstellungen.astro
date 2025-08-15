@@ -6,10 +6,10 @@ const BOT_USERNAME = "Luxbot";
 ---
 
 <DashboardLayout title="VIP‑Bot Einstellungen">
-  <!-- Übergabe an Script via Data-Attr (keine problematische Interpolation im <script>) -->
+  <!-- safer: Übergabe als Data-Attribut -->
   <div id="lux-meta" data-bot={BOT_USERNAME} class="hidden"></div>
 
-  <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative space-y-6 z-[9999]">
+  <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative space-y-6">
     <!-- Status -->
     <div id="statusBox" class="hidden bg-black/60 border border-luxgray rounded-2xl p-4 text-sm text-white/80"></div>
 
@@ -45,7 +45,7 @@ const BOT_USERNAME = "Luxbot";
           <input id="group_chat_id" disabled class="mt-1 w-full bg-black/20 border border-luxgray/60 rounded-xl px-3 py-2" placeholder="-1001234567890" />
         </label>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-[2147483647]">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button type="button" class="w-full border border-luxgray rounded-xl py-3"
                   onclick="window.lux.copyStart()">
             Start‑Link kopieren
@@ -74,8 +74,9 @@ const BOT_USERNAME = "Luxbot";
           <input id="stripe_price_id" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="price_123..." />
         </label>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-[2147483647]">
-          <button type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3"
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Dieser Button bekommt per JS zusätzlich ein echtes href auf den Redirect-Endpoint -->
+          <button id="stripeBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3"
                   onclick="window.lux.connectStripe()">
             Stripe verbinden
           </button>
@@ -102,7 +103,7 @@ const BOT_USERNAME = "Luxbot";
       </div>
 
       <!-- Actions -->
-      <div class="flex items-center gap-3 relative z-[2147483647]">
+      <div class="flex items-center gap-3">
         <button type="button" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3"
                 onclick="window.lux.save()">
           Speichern
@@ -118,16 +119,27 @@ const BOT_USERNAME = "Luxbot";
   </section>
 
   <style is:global>
-    /* Falls irgendein Overlay Klicks frisst, heb die Seite drüber */
+    /* Safety: falls irgendwo pointer-events deaktiviert sind */
     #botForm, #botForm * { pointer-events: auto; }
   </style>
+
+  <!-- Mini-Fallback: reagiert, falls das Modul später nicht lädt -->
+  <script>
+    window.lux = window.lux || {
+      save(){ alert("Aktion ausgeführt (Fallback). Falls das so bleibt, ist das Haupt‑Script nicht geladen."); },
+      refresh(){ location.reload(); },
+      copyStart(){ alert("Start‑Link steht im Feld – bitte manuell kopieren."); },
+      bindGroup(){ alert("Nutze den Startgroup‑Link unten direkt."); },
+      connectStripe(){ alert("Stripe benötigt das Backend. Prüfe PUBLIC_BOT_API_BASE."); }
+    };
+  </script>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
     // Meta & ENV
     const BOT = document.getElementById("lux-meta")?.dataset?.bot || "Luxbot";
-    const BOT_API = import.meta.env.PUBLIC_BOT_API_BASE || "";
+    const BOT_API = import.meta.env.PUBLIC_BOT_API_BASE || ""; // z.B. https://luxbasebot.onrender.com
 
     const $ = (id) => document.getElementById(id);
     const setStatus = (msg, ok=true) => {
@@ -139,7 +151,7 @@ const BOT_USERNAME = "Luxbot";
       box.classList.toggle("border-red-600", !ok);
     };
 
-    // Supabase init
+    // Supabase
     const meta = document.getElementById("supabase-config");
     const supabase = createClient(meta.dataset.url, meta.dataset.key);
     const fields = ["preis","vip_days","gruppe_link","group_chat_id","stripe_price_id","welcome_text","regeln_text"];
@@ -148,9 +160,10 @@ const BOT_USERNAME = "Luxbot";
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
 
-    // Helpers
+    // Links
     const startLink = () => `https://t.me/${BOT}?start=${encodeURIComponent("creator_"+user.id)}`;
     const groupLink = () => `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+user.id)}`;
+    const stripeRedirect = () => `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(user.id)}`;
 
     function updatePreviews() {
       const s = startLink(), g = groupLink();
@@ -158,6 +171,21 @@ const BOT_USERNAME = "Luxbot";
       $("previewGroup").href = g; $("previewGroup").textContent = g;
       $("previewStartInput").value = s;
       $("previewGroupInput").value = g;
+
+      // Button zusätzlich als echter Link nutzbar (falls JS blockiert ist)
+      const btn = document.getElementById("stripeBtn");
+      if (btn) {
+        // Wrapper-Link erzeugen
+        let wrapper = btn.closest("a.lx-linkwrap");
+        if (!wrapper) {
+          wrapper = document.createElement("a");
+          wrapper.className = "lx-linkwrap";
+          wrapper.target = "_blank"; wrapper.rel = "noreferrer";
+          btn.parentNode.insertBefore(wrapper, btn);
+          wrapper.appendChild(btn);
+        }
+        wrapper.href = BOT_API ? stripeRedirect() : "#";
+      }
     }
 
     async function loadCfg() {
@@ -185,55 +213,36 @@ const BOT_USERNAME = "Luxbot";
       updatePreviews();
     }
 
-    // ---- Globale Aktionen (inline onclick benutzt diese Funktionen) ----
+    // Globale Aktionen (überschreiben den Fallback)
     window.lux = {
       async save() {
-        try {
-          const payload = { creator_id: user.id };
-          for (const k of fields) payload[k] = $(k)?.value ?? null;
-          payload.preis = Number(payload.preis || 0);
-          payload.vip_days = Number(payload.vip_days || 30);
+        const payload = { creator_id: user.id };
+        for (const k of fields) payload[k] = $(k)?.value ?? null;
+        payload.preis = Number(payload.preis || 0);
+        payload.vip_days = Number(payload.vip_days || 30);
 
-          const { error } = await supabase.from("creator_config")
-            .upsert(payload, { onConflict: "creator_id" });
-
-          $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
-          if (!error) await loadCfg();
-        } catch {
-          $("hint").textContent = "❌ Speichern fehlgeschlagen.";
-        }
+        const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
+        $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
+        if (!error) await loadCfg();
       },
-
-      async refresh() {
-        await loadCfg();
-        $("hint").textContent = "🔄 Aktualisiert.";
-      },
-
-      async copyStart() {
+      async refresh(){ await loadCfg(); $("hint").textContent = "🔄 Aktualisiert."; },
+      async copyStart(){
         const s = startLink();
         try { await navigator.clipboard.writeText(s); $("hint").textContent = "🔗 Start‑Link kopiert: " + s; }
         catch { $("previewStartInput").select(); document.execCommand("copy"); $("hint").textContent = "🔗 Markiert – bitte manuell kopieren."; }
       },
-
-      bindGroup() {
-        window.open(groupLink(), "_blank");
+      bindGroup(){
+        const g = groupLink();
+        window.open(g, "_blank");
         $("hint").textContent = "Öffne Telegram → wähle die Gruppe → Bot starten → Admin‑Rechte geben.";
       },
-
-      async connectStripe() {
-        if (!BOT_API) { alert("API‑Basis (PUBLIC_BOT_API_BASE) ist nicht konfiguriert."); return; }
-        try {
-          const r = await fetch(`${BOT_API}/api/stripe/connect-link?creator_id=${encodeURIComponent(user.id)}`);
-          const { url, error } = await r.json();
-          if (error || !url) throw new Error(error || "Keine URL");
-          window.location.href = url;
-        } catch {
-          alert("Stripe‑Connect Fehler. Bitte später erneut versuchen.");
-        }
+      connectStripe(){
+        if (!BOT_API) { alert("PUBLIC_BOT_API_BASE fehlt."); return; }
+        // Bevorzugt: Redirect-Endpoint → kein Popup/JSON nötig
+        window.location.href = stripeRedirect();
       }
     };
 
-    // Erstes Laden
     await loadCfg();
     setStatus("✅ Seite geladen. Aktionen aktiv.");
   </script>

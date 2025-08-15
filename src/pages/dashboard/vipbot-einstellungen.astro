@@ -6,10 +6,10 @@ const BOT_USERNAME = "Luxbot";
 ---
 
 <DashboardLayout title="VIP‑Bot Einstellungen">
-  <!-- Übergabe für Script: kein JS-Interpolation-Trick, sondern Data-Attribut -->
+  <!-- Übergabe an Script via Data-Attr (keine problematische Interpolation im <script>) -->
   <div id="lux-meta" data-bot={BOT_USERNAME} class="hidden"></div>
 
-  <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative space-y-6">
+  <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative space-y-6 z-[9999]">
     <!-- Status -->
     <div id="statusBox" class="hidden bg-black/60 border border-luxgray rounded-2xl p-4 text-sm text-white/80"></div>
 
@@ -45,9 +45,15 @@ const BOT_USERNAME = "Luxbot";
           <input id="group_chat_id" disabled class="mt-1 w-full bg-black/20 border border-luxgray/60 rounded-xl px-3 py-2" placeholder="-1001234567890" />
         </label>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button id="copyStartLinkBtn" type="button" class="w-full border border-luxgray rounded-xl py-3">Start‑Link kopieren</button>
-          <button id="bindGroupBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">Gruppe verbinden</button>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-[2147483647]">
+          <button type="button" class="w-full border border-luxgray rounded-xl py-3"
+                  onclick="window.lux.copyStart()">
+            Start‑Link kopieren
+          </button>
+          <button type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3"
+                  onclick="window.lux.bindGroup()">
+            Gruppe verbinden
+          </button>
         </div>
 
         <!-- Previews -->
@@ -68,9 +74,15 @@ const BOT_USERNAME = "Luxbot";
           <input id="stripe_price_id" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2" placeholder="price_123..." />
         </label>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button id="connectStripeBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">Stripe verbinden</button>
-          <button id="refreshStripeBtn" type="button" class="w-full border border-luxgray rounded-xl py-3">Status prüfen</button>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-[2147483647]">
+          <button type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3"
+                  onclick="window.lux.connectStripe()">
+            Stripe verbinden
+          </button>
+          <button type="button" class="w-full border border-luxgray rounded-xl py-3"
+                  onclick="window.lux.refresh()">
+            Status prüfen
+          </button>
         </div>
 
         <p id="stripeStatus" class="text-xs text-white/60"></p>
@@ -90,9 +102,15 @@ const BOT_USERNAME = "Luxbot";
       </div>
 
       <!-- Actions -->
-      <div class="flex items-center gap-3">
-        <button id="saveBtn" type="submit" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3">Speichern</button>
-        <button id="refreshBtn" type="button" class="px-4 py-3 border border-luxgray rounded-xl">Neu laden</button>
+      <div class="flex items-center gap-3 relative z-[2147483647]">
+        <button type="button" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3"
+                onclick="window.lux.save()">
+          Speichern
+        </button>
+        <button type="button" class="px-4 py-3 border border-luxgray rounded-xl"
+                onclick="window.lux.refresh()">
+          Neu laden
+        </button>
       </div>
 
       <p id="hint" class="text-xs text-white/60"></p>
@@ -100,28 +118,28 @@ const BOT_USERNAME = "Luxbot";
   </section>
 
   <style is:global>
-    /* Safety: falls irgendwo pointer-events deaktiviert wurden */
+    /* Falls irgendein Overlay Klicks frisst, heb die Seite drüber */
     #botForm, #botForm * { pointer-events: auto; }
   </style>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // ⚠️ Statt Astro-Interpolation ziehen wir BOT aus dem DOM:
-    const BOT_USERNAME = document.getElementById("lux-meta")?.dataset?.bot || "Luxbot";
-    const BOT_API = import.meta.env.PUBLIC_BOT_API_BASE || ""; // z.B. https://luxbasebot.onrender.com
+    // Meta & ENV
+    const BOT = document.getElementById("lux-meta")?.dataset?.bot || "Luxbot";
+    const BOT_API = import.meta.env.PUBLIC_BOT_API_BASE || "";
 
     const $ = (id) => document.getElementById(id);
-    function setStatus(msg, ok=true) {
+    const setStatus = (msg, ok=true) => {
       const box = $("statusBox");
       if (!box) return;
       box.classList.remove("hidden");
       box.textContent = msg;
       box.classList.toggle("border-green-600", ok);
       box.classList.toggle("border-red-600", !ok);
-    }
+    };
 
-    // Supabase
+    // Supabase init
     const meta = document.getElementById("supabase-config");
     const supabase = createClient(meta.dataset.url, meta.dataset.key);
     const fields = ["preis","vip_days","gruppe_link","group_chat_id","stripe_price_id","welcome_text","regeln_text"];
@@ -130,21 +148,18 @@ const BOT_USERNAME = "Luxbot";
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
 
-    // Links
-    const startLink = () => `https://t.me/${BOT_USERNAME}?start=${encodeURIComponent("creator_"+user.id)}`;
-    const groupLink = () => `https://t.me/${BOT_USERNAME}?startgroup=${encodeURIComponent("creator_"+user.id)}`;
+    // Helpers
+    const startLink = () => `https://t.me/${BOT}?start=${encodeURIComponent("creator_"+user.id)}`;
+    const groupLink = () => `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+user.id)}`;
 
     function updatePreviews() {
       const s = startLink(), g = groupLink();
-      const aS = $("previewStart"), aG = $("previewGroup");
-      const iS = $("previewStartInput"), iG = $("previewGroupInput");
-      if (aS) { aS.href = s; aS.textContent = s; }
-      if (aG) { aG.href = g; aG.textContent = g; }
-      if (iS) iS.value = s;
-      if (iG) iG.value = g;
+      $("previewStart").href = s; $("previewStart").textContent = s;
+      $("previewGroup").href = g; $("previewGroup").textContent = g;
+      $("previewStartInput").value = s;
+      $("previewGroupInput").value = g;
     }
 
-    // Config laden & Felder füllen
     async function loadCfg() {
       const { data, error } = await supabase
         .from("creator_config")
@@ -167,57 +182,59 @@ const BOT_USERNAME = "Luxbot";
         setStatus("ℹ️ Noch keine Einstellungen gespeichert. Bitte ausfüllen und speichern.", false);
         $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
       }
-
       updatePreviews();
     }
 
-    await loadCfg();
+    // ---- Globale Aktionen (inline onclick benutzt diese Funktionen) ----
+    window.lux = {
+      async save() {
+        try {
+          const payload = { creator_id: user.id };
+          for (const k of fields) payload[k] = $(k)?.value ?? null;
+          payload.preis = Number(payload.preis || 0);
+          payload.vip_days = Number(payload.vip_days || 30);
 
-    // Speichern
-    $("botForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      $("saveBtn").disabled = true;
+          const { error } = await supabase.from("creator_config")
+            .upsert(payload, { onConflict: "creator_id" });
 
-      const payload = { creator_id: user.id };
-      for (const k of fields) payload[k] = $(k)?.value ?? null;
-      payload.preis = Number(payload.preis || 0);
-      payload.vip_days = Number(payload.vip_days || 30);
+          $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
+          if (!error) await loadCfg();
+        } catch {
+          $("hint").textContent = "❌ Speichern fehlgeschlagen.";
+        }
+      },
 
-      const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
+      async refresh() {
+        await loadCfg();
+        $("hint").textContent = "🔄 Aktualisiert.";
+      },
 
-      $("saveBtn").disabled = false;
-      $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
-      if (!error) await loadCfg();
-    });
+      async copyStart() {
+        const s = startLink();
+        try { await navigator.clipboard.writeText(s); $("hint").textContent = "🔗 Start‑Link kopiert: " + s; }
+        catch { $("previewStartInput").select(); document.execCommand("copy"); $("hint").textContent = "🔗 Markiert – bitte manuell kopieren."; }
+      },
 
-    // Start‑Link kopieren
-    $("copyStartLinkBtn").addEventListener("click", async () => {
-      const s = startLink();
-      try { await navigator.clipboard.writeText(s); $("hint").textContent = "🔗 Start‑Link kopiert: " + s; }
-      catch { const i = $("previewStartInput"); i?.select(); document.execCommand("copy"); $("hint").textContent = "🔗 Markiert – bitte manuell kopieren."; }
-    });
+      bindGroup() {
+        window.open(groupLink(), "_blank");
+        $("hint").textContent = "Öffne Telegram → wähle die Gruppe → Bot starten → Admin‑Rechte geben.";
+      },
 
-    // Gruppe verbinden
-    $("bindGroupBtn").addEventListener("click", () => {
-      window.open(groupLink(), "_blank");
-      $("hint").textContent = "Öffne Telegram → wähle die Gruppe → Bot starten → Admin‑Rechte geben.";
-    });
-
-    // Stripe verbinden – per API (kein Direktlink)
-    $("connectStripeBtn").addEventListener("click", async () => {
-      if (!BOT_API) { alert("API‑Basis (PUBLIC_BOT_API_BASE) ist nicht konfiguriert."); return; }
-      try {
-        const r = await fetch(`${BOT_API}/api/stripe/connect-link?creator_id=${encodeURIComponent(user.id)}`);
-        const { url, error } = await r.json();
-        if (error || !url) throw new Error(error || "Keine URL");
-        window.location.href = url; // echte Onboarding-URL von Stripe
-      } catch (e) {
-        alert("Stripe‑Connect Fehler. Bitte später erneut versuchen.");
+      async connectStripe() {
+        if (!BOT_API) { alert("API‑Basis (PUBLIC_BOT_API_BASE) ist nicht konfiguriert."); return; }
+        try {
+          const r = await fetch(`${BOT_API}/api/stripe/connect-link?creator_id=${encodeURIComponent(user.id)}`);
+          const { url, error } = await r.json();
+          if (error || !url) throw new Error(error || "Keine URL");
+          window.location.href = url;
+        } catch {
+          alert("Stripe‑Connect Fehler. Bitte später erneut versuchen.");
+        }
       }
-    });
+    };
 
-    // Status refresh
-    $("refreshStripeBtn").addEventListener("click", loadCfg);
-    $("refreshBtn").addEventListener("click", loadCfg);
+    // Erstes Laden
+    await loadCfg();
+    setStatus("✅ Seite geladen. Aktionen aktiv.");
   </script>
 </DashboardLayout>

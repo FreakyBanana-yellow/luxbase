@@ -6,7 +6,7 @@ const BOT_USERNAME = "Luxbot";
 ---
 
 <DashboardLayout title="VIP‑Bot Einstellungen">
-  <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative z-[10] space-y-6">
+  <section id="vip-settings-root" class="max-w-3xl mx-auto px-4 py-6 pb-28 relative z-[20] space-y-6 pointer-events-auto">
     <!-- Status -->
     <div id="statusBox" class="hidden bg-black/60 border border-luxgray rounded-2xl p-4 text-sm text-white/80"></div>
 
@@ -49,7 +49,8 @@ const BOT_USERNAME = "Luxbot";
             placeholder="-1001234567890" />
         </label>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-[60] pointer-events-auto">
+        <!-- Button-Zeile: z-max + pointer-events erzwingen -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-[9999] pointer-events-auto">
           <button id="copyStartLinkBtn" type="button"
             class="w-full border border-luxgray rounded-xl py-3 cursor-pointer">Start‑Link kopieren</button>
           <button id="bindGroupBtn" type="button"
@@ -80,7 +81,8 @@ const BOT_USERNAME = "Luxbot";
             placeholder="price_123..." />
         </label>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-[60] pointer-events-auto">
+        <!-- Button-Zeile: z-max + pointer-events erzwingen -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-[9999] pointer-events-auto">
           <button id="connectStripeBtn" type="button"
             class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3 cursor-pointer">
             Stripe verbinden
@@ -116,18 +118,20 @@ const BOT_USERNAME = "Luxbot";
       <!-- Actions -->
       <div class="flex items-center gap-3">
         <button id="saveBtn" type="submit"
-          class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3">Speichern</button>
+          class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3 cursor-pointer">Speichern</button>
         <button id="refreshBtn" type="button"
-          class="px-4 py-3 border border-luxgray rounded-xl">Neu laden</button>
+          class="px-4 py-3 border border-luxgray rounded-xl cursor-pointer">Neu laden</button>
       </div>
 
       <p id="hint" class="text-xs text-white/60"></p>
     </form>
   </section>
 
+  <!-- Hard-Fixes gegen Overlays -->
   <style is:global>
-    /* Safety: falls irgendwo pointer-events deaktiviert sind */
-    #botForm, #botForm * { pointer-events: auto; }
+    #vip-settings-root, #vip-settings-root * { pointer-events: auto; }
+    /* Falls eine Bottom-Nav überlappt, z.B. .mobile-nav: */
+    .mobile-nav, .app-bottom-bar, .bottom-nav { z-index: 30; } /* Buttons sind z-9999 */
   </style>
 
   <script type="module">
@@ -151,13 +155,20 @@ const BOT_USERNAME = "Luxbot";
       box.classList.toggle("border-red-600", !ok);
     }
 
-    // Vorab: einfache Click-Handler → zeigt zumindest Debug-Info
-    if (elCopy)  elCopy.addEventListener("click", () => setStatus("🔔 Klick: Start‑Link …", true));
-    if (elGroup) elGroup.addEventListener("click", () => setStatus("🔔 Klick: Gruppe verbinden …", true));
-    if (elConnect) elConnect.addEventListener("click", () => {
-      if (!BOT_API) setStatus("⚠️ PUBLIC_BOT_API_BASE fehlt – bitte in Astro ENV setzen.", false);
-    });
-    if (elRStripe) elRStripe.addEventListener("click", () => setStatus("🔄 Stripe‑Status wird aktualisiert…", true));
+    // 🔎 Diagnose: Wenn ein Klick NICHT auf dem Button ankommt, markieren wir den Blocker rot
+    function markBlockerOnNextClick(btn) {
+      btn?.addEventListener("click", (ev) => {
+        const x = ev.clientX, y = ev.clientY;
+        const top = document.elementFromPoint(x, y);
+        if (top && top !== btn && !btn.contains(top)) {
+          top.style.outline = "2px solid red";
+          top.style.outlineOffset = "2px";
+          setStatus("⚠️ Ein Element blockiert Klicks (rot markiert). Klassen: " + (top.className || "(keine)"), false);
+          console.warn("Blocking element:", top);
+        }
+      }, { once: true });
+    }
+    [elCopy, elGroup, elConnect, elRStripe].forEach(markBlockerOnNextClick);
 
     // Supabase init
     const meta = document.getElementById("supabase-config");
@@ -229,21 +240,21 @@ const BOT_USERNAME = "Luxbot";
     });
 
     // Start‑Link (DM)
-    if (elCopy) elCopy.addEventListener("click", async () => {
+    elCopy?.addEventListener("click", async () => {
       const link = startLink();
       try { await navigator.clipboard.writeText(link); } catch {}
       $("hint").textContent = "🔗 Start‑Link kopiert: " + link;
     });
 
     // Gruppe verbinden (startgroup Flow)
-    if (elGroup) elGroup.addEventListener("click", () => {
+    elGroup?.addEventListener("click", () => {
       const link = groupLink();
       window.open(link, "_blank");
       $("hint").textContent = "Öffne Telegram → wähle die Gruppe → Bot starten → Admin‑Rechte geben.";
     });
 
     // Stripe verbinden (Connect Express Onboarding)
-    if (elConnect) elConnect.addEventListener("click", async () => {
+    elConnect?.addEventListener("click", async () => {
       if (!BOT_API) { alert("API‑Basis (PUBLIC_BOT_API_BASE) ist nicht konfiguriert."); return; }
       try {
         const r = await fetch(`${BOT_API}/api/stripe/connect-link?creator_id=${encodeURIComponent(user.id)}`);
@@ -256,7 +267,7 @@ const BOT_USERNAME = "Luxbot";
     });
 
     // Stripe Status prüfen/aktualisieren
-    if (elRStripe) elRStripe.addEventListener("click", loadCfg);
+    elRStripe?.addEventListener("click", loadCfg);
 
     // Neu laden
     $("refreshBtn").addEventListener("click", loadCfg);

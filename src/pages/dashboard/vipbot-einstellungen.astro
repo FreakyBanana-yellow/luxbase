@@ -220,6 +220,26 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || ""; // <- kommt aus 
         window.location.href = stripeRedirect();
       }
     };
+    <button id="linkTelegramBtn"
+  type="button"
+  class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">
+  Telegram verbinden
+</button>
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  const meta = document.getElementById("supabase-config");
+  const supabase = createClient(meta.dataset.url, meta.dataset.key);
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const BOT_USERNAME = "Luxbot";
+
+  document.getElementById("linkTelegramBtn")?.addEventListener("click", () => {
+    if (!user?.id) return alert("Nicht eingeloggt.");
+    const link = `https://t.me/${BOT_USERNAME}?start=${encodeURIComponent("link_creator_"+user.id)}`;
+    window.open(link, "_blank");
+  });
+</script>
 
     await loadCfg();
     setStatus("✅ Seite geladen. Aktionen aktiv.");

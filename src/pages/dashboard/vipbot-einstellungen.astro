@@ -1,13 +1,12 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
-/** Fix: ENV einmal serverseitig lesen und ins DOM schreiben */
 const BOT_USERNAME = "Luxbot";
-const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || ""; // <- kommt aus Netlify
+const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
 ---
 
 <DashboardLayout title="VIP‑Bot Einstellungen">
-  <!-- Übergabe an Script via Data-Attr -->
+  <!-- Meta für das Browser‑Script -->
   <div id="lux-meta" data-bot={BOT_USERNAME} data-bot-api={BOT_API_BASE} class="hidden"></div>
 
   <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative space-y-6">
@@ -29,9 +28,20 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || ""; // <- kommt aus 
         </div>
       </div>
 
-      <!-- Gruppe -->
+      <!-- Telegram -->
       <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-4">
-        <h2 class="text-luxgold text-lg font-semibold">Gruppe</h2>
+        <h2 class="text-luxgold text-lg font-semibold">Telegram</h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button id="linkTelegramBtn" type="button"
+            class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">
+            Telegram verbinden
+          </button>
+          <button id="bindGroupBtn" type="button"
+            class="w-full border border-luxgray rounded-xl py-3">
+            Gruppe verbinden
+          </button>
+        </div>
 
         <label class="block">
           <span class="text-sm text-white/70">Gruppen‑Link (Fallback, statisch)</span>
@@ -39,14 +49,9 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || ""; // <- kommt aus 
         </label>
 
         <label class="block">
-          <span class="text-sm text-white/70">Gruppen‑Chat‑ID (automatisch nach „Gruppe verbinden“)</span>
+          <span class="text-sm text-white/70">Gruppen‑Chat‑ID (automatisch nach Hinzufügen)</span>
           <input id="group_chat_id" disabled class="mt-1 w-full bg-black/20 border border-luxgray/60 rounded-xl px-3 py-2" placeholder="-1001234567890" />
         </label>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button type="button" class="w-full border border-luxgray rounded-xl py-3" onclick="window.lux.copyStart()">Start‑Link kopieren</button>
-          <button type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3" onclick="window.lux.bindGroup()">Gruppe verbinden</button>
-        </div>
 
         <!-- Previews -->
         <div class="text-xs text-white/60 space-y-2">
@@ -56,6 +61,11 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || ""; // <- kommt aus 
           <input id="previewStartInput" readonly class="w-full bg-black/30 border border-luxgray rounded-lg px-2 py-1 text-[12px] select-all" />
           <input id="previewGroupInput" readonly class="w-full bg-black/30 border border-luxgray rounded-lg px-2 py-1 text-[12px] select-all" />
         </div>
+
+        <p class="text-xs text-white/60 leading-5">
+          <b>Auto‑Verknüpfung:</b> Zuerst „Telegram verbinden“ (DM mit dem Bot), dann den Bot als Admin in deine VIP‑Gruppe hinzufügen.
+          Der Bot erkennt dich als Admin und setzt die <i>group_chat_id</i> automatisch. Admin‑Rechte sind nötig für Einladungen & Kicks.
+        </p>
       </div>
 
       <!-- Stripe -->
@@ -67,8 +77,12 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || ""; // <- kommt aus 
         </label>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button id="stripeBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3" onclick="window.lux.connectStripe()">Stripe verbinden</button>
-          <button type="button" class="w-full border border-luxgray rounded-xl py-3" onclick="window.lux.refresh()">Status prüfen</button>
+          <a id="stripeLinkWrap" class="w-full" target="_blank" rel="noreferrer">
+            <button id="stripeBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">
+              Stripe verbinden
+            </button>
+          </a>
+          <button type="button" class="w-full border border-luxgray rounded-xl py-3" id="refreshBtn">Status prüfen</button>
         </div>
 
         <p id="stripeStatus" class="text-xs text-white/60"></p>
@@ -88,8 +102,8 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || ""; // <- kommt aus 
       </div>
 
       <div class="flex items-center gap-3">
-        <button type="button" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3" onclick="window.lux.save()">Speichern</button>
-        <button type="button" class="px-4 py-3 border border-luxgray rounded-xl" onclick="window.lux.refresh()">Neu laden</button>
+        <button id="saveBtn" type="button" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3">Speichern</button>
+        <button id="reloadBtn" type="button" class="px-4 py-3 border border-luxgray rounded-xl">Neu laden</button>
       </div>
 
       <p id="hint" class="text-xs text-white/60"></p>
@@ -100,24 +114,12 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || ""; // <- kommt aus 
     #botForm, #botForm * { pointer-events: auto; }
   </style>
 
-  <!-- Fallback: zeigt was an, falls Modul nicht lädt -->
-  <script>
-    window.lux = window.lux || {
-      save(){ alert("Aktion (Fallback). Wenn das so bleibt, lädt das Haupt‑Script nicht."); },
-      refresh(){ location.reload(); },
-      copyStart(){ alert("Start‑Link steht im Feld – bitte manuell kopieren."); },
-      bindGroup(){ alert("Nutze den Startgroup‑Link unten direkt."); },
-      connectStripe(){ alert("Stripe benötigt PUBLIC_BOT_API_BASE im Frontend."); }
-    };
-  </script>
-
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    /** Read ENV & Meta aus DOM (statt import.meta.env im Browser) */
     const META = document.getElementById("lux-meta");
     const BOT = META?.dataset?.bot || "Luxbot";
-    const BOT_API = META?.dataset?.botApi || "";   // <- **Fix** hier!
+    const BOT_API = META?.dataset?.botApi || "";
 
     const $ = (id) => document.getElementById(id);
     const setStatus = (msg, ok=true) => {
@@ -129,7 +131,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || ""; // <- kommt aus 
       box.classList.toggle("border-red-600", !ok);
     };
 
-    // Supabase init (aus Layout bereitgestellt)
+    // Supabase aus Layout
     const meta = document.getElementById("supabase-config");
     if (!meta?.dataset?.url || !meta?.dataset?.key) {
       $("hint").textContent = "❌ Supabase‑Konfiguration fehlt. (Layout prüfen)";
@@ -144,6 +146,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || ""; // <- kommt aus 
 
     const startLink = () => `https://t.me/${BOT}?start=${encodeURIComponent("creator_"+user.id)}`;
     const groupLink = () => `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+user.id)}`;
+    const linkTelegram = () => `https://t.me/${BOT}?start=${encodeURIComponent("link_creator_"+user.id)}`;
     const stripeRedirect = () => `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(user.id)}`;
 
     function updatePreviews() {
@@ -153,19 +156,8 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || ""; // <- kommt aus 
       $("previewStartInput").value = s;
       $("previewGroupInput").value = g;
 
-      // Stripe-Button als echter Link nutzbar
-      const btn = document.getElementById("stripeBtn");
-      if (btn) {
-        let wrap = btn.closest("a.lx-linkwrap");
-        if (!wrap) {
-          wrap = document.createElement("a");
-          wrap.className = "lx-linkwrap";
-          wrap.target = "_blank"; wrap.rel = "noreferrer";
-          btn.parentNode.insertBefore(wrap, btn);
-          wrap.appendChild(btn);
-        }
-        wrap.href = BOT_API ? stripeRedirect() : "#";
-      }
+      const wrap = $("stripeLinkWrap");
+      if (wrap) wrap.href = BOT_API ? stripeRedirect() : "#";
     }
 
     async function loadCfg() {
@@ -193,53 +185,38 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || ""; // <- kommt aus 
       updatePreviews();
     }
 
-    window.lux = {
-      async save(){
-        const payload = { creator_id: user.id };
-        for (const k of fields) payload[k] = $(k)?.value ?? null;
-        payload.preis = Number(payload.preis || 0);
-        payload.vip_days = Number(payload.vip_days || 30);
+    // Actions
+    $("saveBtn").addEventListener("click", async () => {
+      const payload = { creator_id: user.id };
+      for (const k of fields) payload[k] = $(k)?.value ?? null;
+      payload.preis = Number(payload.preis || 0);
+      payload.vip_days = Number(payload.vip_days || 30);
 
-        const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
-        $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
-        if (!error) await loadCfg();
-      },
-      async refresh(){ await loadCfg(); $("hint").textContent = "🔄 Aktualisiert."; },
-      async copyStart(){
-        const s = startLink();
-        try { await navigator.clipboard.writeText(s); $("hint").textContent = "🔗 Start‑Link kopiert: " + s; }
-        catch { $("previewStartInput").select(); document.execCommand("copy"); $("hint").textContent = "🔗 Markiert – bitte manuell kopieren."; }
-      },
-      bindGroup(){
-        const g = groupLink();
-        window.open(g, "_blank");
-        $("hint").textContent = "Öffne Telegram → wähle die Gruppe → Bot starten → Admin‑Rechte geben.";
-      },
-      connectStripe(){
-        if (!BOT_API) { alert("PUBLIC_BOT_API_BASE fehlt im Frontend."); return; }
-        window.location.href = stripeRedirect();
+      const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
+      $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
+      if (!error) await loadCfg();
+    });
+
+    $("reloadBtn").addEventListener("click", loadCfg);
+
+    $("linkTelegramBtn").addEventListener("click", () => {
+      const link = linkTelegram();
+      window.open(link, "_blank");
+      $("hint").textContent = "Telegram öffnen → Bot im DM starten → dann Bot in der Gruppe als Admin hinzufügen.";
+    });
+
+    $("bindGroupBtn").addEventListener("click", () => {
+      const g = groupLink();
+      window.open(g, "_blank");
+      $("hint").textContent = "Telegram → Gruppe auswählen → Bot starten → Admin‑Rechte geben.";
+    });
+
+    $("stripeBtn").addEventListener("click", (e) => {
+      if (!BOT_API) {
+        e.preventDefault();
+        alert("PUBLIC_BOT_API_BASE fehlt im Frontend.");
       }
-    };
-    <button id="linkTelegramBtn"
-  type="button"
-  class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">
-  Telegram verbinden
-</button>
-
-<script type="module">
-  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-  const meta = document.getElementById("supabase-config");
-  const supabase = createClient(meta.dataset.url, meta.dataset.key);
-
-  const { data: { user } } = await supabase.auth.getUser();
-  const BOT_USERNAME = "Luxbot";
-
-  document.getElementById("linkTelegramBtn")?.addEventListener("click", () => {
-    if (!user?.id) return alert("Nicht eingeloggt.");
-    const link = `https://t.me/${BOT_USERNAME}?start=${encodeURIComponent("link_creator_"+user.id)}`;
-    window.open(link, "_blank");
-  });
-</script>
+    });
 
     await loadCfg();
     setStatus("✅ Seite geladen. Aktionen aktiv.");

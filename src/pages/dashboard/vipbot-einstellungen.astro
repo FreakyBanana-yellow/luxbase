@@ -1,7 +1,7 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
-const BOT_USERNAME = "Luxbot";
+const BOT_USERNAME = "GroupLuxBot";
 const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
 ---
 
@@ -118,7 +118,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
     const META = document.getElementById("lux-meta");
-    const BOT = META?.dataset?.bot || "Luxbot";
+    const BOT = META?.dataset?.bot || "GroupLuxBot";
     const BOT_API = META?.dataset?.botApi || "";
 
     const $ = (id) => document.getElementById(id);

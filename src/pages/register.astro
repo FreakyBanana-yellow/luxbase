@@ -127,16 +127,35 @@ const supabase = createClient(meta.dataset.url, meta.dataset.key);
       const userId = data?.user?.id ?? data?.session?.user?.id;
       const { error: configErr } = await supabase
   .from("creator_config")
-  .insert([
+  // 3) Insert creator_config OHNE creator_id, aber mit select() zum Debug
+const { data: row, error: cfgErr } = await supabase
+  .from("creator_config")
+  .upsert(
     {
-      creator_id: userId,
-      creator_name: name,
-      email: email,
-      rolle: role,
-      bot_paket: "basic",
-      has_vipbot: true
-    }
-  ]);
+      creator_name : name,
+      email        : email,
+      rolle        : role,
+      bot_paket    : "basic",
+      has_vipbot   : true,
+      preis        : 29,
+      vip_days     : 30
+    },
+    { onConflict: "creator_id" }
+  )
+  .select("creator_id, email, rolle")   // <-- gibt uns was zurück
+  .single();
+
+if (cfgErr) {
+  console.error("creator_config upsert error:", cfgErr);
+  msg.textContent = "⚠️ Bot-Setup fehlgeschlagen: " + cfgErr.message;
+  msg.classList.add("text-red-400");
+  return;
+}
+
+console.log("creator_config row:", row);
+msg.textContent = "✅ Registrierung erfolgreich – bitte E‑Mail bestätigen.";
+msg.classList.add("text-green-400");
+setTimeout(() => (window.location.href = "/dashboard"), 1500);
 
 if (configErr) {
   msg.textContent = "⚠️ Bot-Setup fehlgeschlagen: " + configErr.message;

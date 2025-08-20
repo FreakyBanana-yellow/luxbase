@@ -128,22 +128,7 @@ const supabase = createClient(meta.dataset.url, meta.dataset.key);
       const { error: configErr } = await supabase
   .from("creator_config")
   // 3) Insert creator_config OHNE creator_id, aber mit select() zum Debug
-const { data: row, error: cfgErr } = await supabase
-  .from("creator_config")
-  .upsert(
-    {
-      creator_name : name,
-      email        : email,
-      rolle        : role,
-      bot_paket    : "basic",
-      has_vipbot   : true,
-      preis        : 29,
-      vip_days     : 30
-    },
-    { onConflict: "creator_id" }
-  )
-  .select("creator_id, email, rolle")   // <-- gibt uns was zurück
-  .single();
+const { data: row, error: cfgErr } = await supabase;
 
 if (cfgErr) {
   console.error("creator_config upsert error:", cfgErr);

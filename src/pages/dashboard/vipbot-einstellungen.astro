@@ -1,143 +1,148 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
+// Fester Bot-Name in der UI
 const BOT_USERNAME = "GroupLuxBot";
+// Render-Backend Basis-URL (für Stripe-Redirect)
 const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
 ---
 
 <DashboardLayout title="VIP‑Einstellungen">
-  <!-- Meta fürs Browser‑Script -->
+  <!-- Meta für Browser‑Script -->
   <div id="lux-meta" data-bot={BOT_USERNAME} data-bot-api={BOT_API_BASE} class="hidden"></div>
 
   <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative space-y-6">
-    <div id="statusBox" class="hidden bg-black/60 border border-luxgray rounded-2xl p-4 text-sm text-white/80"></div>
+    <!-- Basis -->
+    <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
+      <h2 class="text-luxgold text-lg font-semibold">Basis</h2>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block">
+          <span class="text-sm text-white/70">Preis (€)</span>
+          <input id="preis" type="number" step="1" min="0"
+            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+            placeholder="49" />
+        </label>
+        <label class="block">
+          <span class="text-sm text-white/70">VIP‑Dauer (Tage)</span>
+          <input id="vip_days" type="number" step="1" min="1"
+            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+            placeholder="30" />
+        </label>
+      </div>
+    </div>
 
-    <form id="botForm" class="space-y-6">
-      <!-- Basis -->
-      <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
-        <h2 class="text-luxgold text-lg font-semibold">Basis</h2>
-        <div class="grid grid-cols-2 gap-3">
-          <label class="block">
-            <span class="text-sm text-white/70">Preis (€)</span>
-            <input id="preis" type="number" step="1" min="0"
-              class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
-              placeholder="49" />
-          </label>
-          <label class="block">
-            <span class="text-sm text-white/70">VIP‑Dauer (Tage)</span>
-            <input id="vip_days" type="number" step="1" min="1"
-              class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
-              placeholder="30" />
-          </label>
-        </div>
+    <!-- Stripe -->
+    <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
+      <div class="flex items-center gap-2">
+        <h2 class="text-luxgold text-lg font-semibold">Stripe</h2>
+        <button type="button" class="tip-btn" aria-label="Hilfe"
+          data-tip="Verbinde zuerst Stripe, damit Zahlungen funktionieren. Es öffnet sich das Stripe‑Onboarding.">?</button>
       </div>
 
-      <!-- Stripe -->
-      <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
+      <a id="stripeLinkWrap" class="w-full" target="_blank" rel="noreferrer">
+        <button id="stripeBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">
+          Stripe verbinden
+        </button>
+      </a>
+
+      <p id="stripeStatus" class="text-xs text-white/60"></p>
+    </div>
+
+    <!-- Telegram -->
+    <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
+      <h2 class="text-luxgold text-lg font-semibold">Telegram</h2>
+
+      <label class="block">
         <div class="flex items-center gap-2">
-          <h2 class="text-luxgold text-lg font-semibold">Stripe</h2>
-          <button type="button" class="tip-btn" data-tip="Verbinde zuerst Stripe – es öffnet sich das Stripe‑Onboarding.">?</button>
+          <span class="text-sm text-white/70">Gruppen‑Link (Fallback, statisch)</span>
+          <button type="button" class="tip-btn" aria-label="Hilfe"
+            data-tip="Optionaler, statischer Einladungslink deiner Gruppe – wird nur genutzt, wenn der Einmallink nicht erstellt werden kann.">?</button>
         </div>
+        <input id="gruppe_link"
+          class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+          placeholder="https://t.me/+abcdef..." />
+      </label>
 
-        <a id="stripeLinkWrap" class="w-full" target="_blank" rel="noreferrer">
-          <button id="stripeBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">
-            Stripe verbinden
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="relative">
+          <button id="linkTelegramBtn" type="button"
+            class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">
+            Bot aktivieren
           </button>
-        </a>
-        <p id="stripeStatus" class="text-xs text-white/60"></p>
+          <button type="button" class="tip-btn absolute right-2 top-1/2 -translate-y-1/2"
+            data-tip="Öffnet den Bot im DM. Danach bitte den Bot als Admin in deiner VIP‑Gruppe hinzufügen.">?</button>
+        </div>
+
+        <div class="relative">
+          <button id="bindGroupBtn" type="button"
+            class="w-full border border-luxgray rounded-xl py-3">
+            Gruppe verbinden
+          </button>
+          <button type="button" class="tip-btn absolute right-2 top-1/2 -translate-y-1/2"
+            data-tip="Wähle deine VIP‑Gruppe und starte den Bot dort. Er verknüpft die Gruppe und erzeugt später Einladungslinks.">?</button>
+        </div>
       </div>
 
-      <!-- Telegram -->
-      <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
-        <h2 class="text-luxgold text-lg font-semibold">Telegram</h2>
-
-        <label class="block">
+      <!-- Kunden‑Link + QR (zum Teilen) -->
+      <div class="grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start">
+        <div class="space-y-2">
           <div class="flex items-center gap-2">
-            <span class="text-sm text-white/70">Gruppen‑Link (Fallback, statisch)</span>
-            <button type="button" class="tip-btn" data-tip="Optional: statischer Einladungslink – nur falls Einmallink nicht klappt.">?</button>
+            <span class="text-sm text-white/70">Kunden‑Link (zum Teilen)</span>
+            <button type="button" class="tip-btn" aria-label="Hilfe"
+              data-tip="Diesen Link/QR teilst du mit deinen Kunden. Er öffnet den Bot im DM mit deinem Creator‑Payload.">?</button>
           </div>
-          <input id="gruppe_link"
-            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
-            placeholder="https://t.me/+abcdef..." />
-        </label>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="relative">
-            <button id="linkTelegramBtn" type="button"
-              class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">
-              Bot aktivieren
+          <div class="flex gap-2">
+            <input id="customerLinkInput" readonly
+              class="flex-1 bg-black/30 border border-luxgray rounded-lg px-3 py-2 text-[13px] select-all" />
+            <button id="copyCustomerLink" type="button" class="border border-luxgray rounded-lg px-3 text-[13px]">
+              Kopieren
             </button>
-            <button type="button" class="tip-btn absolute right-2 top-1/2 -translate-y-1/2"
-              data-tip="Öffnet den Bot im DM. Danach Bot als Admin in deiner VIP‑Gruppe hinzufügen.">?</button>
           </div>
-
-          <div class="relative">
-            <button id="bindGroupBtn" type="button"
-              class="w-full border border-luxgray rounded-xl py-3">
-              Gruppe verbinden
-            </button>
-            <button type="button" class="tip-btn absolute right-2 top-1/2 -translate-y-1/2"
-              data-tip="Wähle deine VIP‑Gruppe und starte den Bot dort. Er verknüpft automatisch die Gruppe.">?</button>
-          </div>
+          <a id="customerLinkA" class="text-[13px] underline break-all text-white/70" target="_blank" rel="noreferrer">—</a>
         </div>
 
-        <!-- Startgroup‑Link + QR -->
-        <div class="grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start">
-          <div class="space-y-2">
-            <div class="flex items-center gap-2">
-              <span class="text-sm text-white/70">Startgroup‑Link</span>
-              <button type="button" class="tip-btn" data-tip="Scannen oder öffnen – verbindet den Bot mit deiner Gruppe.">?</button>
-            </div>
-            <div class="flex gap-2">
-              <input id="previewGroupInput" readonly
-                class="flex-1 bg-black/30 border border-luxgray rounded-lg px-3 py-2 text-[13px] select-all" />
-              <button id="copyGroup" type="button" class="border border-luxgray rounded-lg px-3 text-[13px]">
-                Kopieren
-              </button>
-            </div>
-            <a id="previewGroup" class="text-[13px] underline break-all text-white/70" target="_blank" rel="noreferrer">—</a>
-          </div>
-
-          <div class="flex flex-col items-center gap-2">
-            <canvas id="qrGroup" width="140" height="140" class="rounded-lg border border-luxgray"></canvas>
-            <button id="downloadQRGroup" type="button"
-              class="text-[12px] px-2 py-1 border border-luxgray rounded-lg text-white/70 hover:text-white">
-              QR herunterladen
-            </button>
-          </div>
+        <div class="flex flex-col items-center gap-2">
+          <canvas id="qrCustomer" width="140" height="140" class="rounded-lg border border-luxgray"></canvas>
+          <button id="downloadQRCustomer" type="button"
+            class="text-[12px] px-2 py-1 border border-luxgray rounded-lg text-white/70 hover:text-white">
+            QR herunterladen
+          </button>
         </div>
-
-        <p id="groupInfo" class="text-xs text-white/60"></p>
       </div>
 
-      <!-- Texte -->
-      <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
-        <h2 class="text-luxgold text-lg font-semibold">Texte</h2>
-        <label class="block">
-          <span class="text-sm text-white/70">Welcome‑Text</span>
-          <textarea id="welcome_text" rows="3"
-            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
-            placeholder="👋 Willkommen im VIP! ..."></textarea>
-        </label>
-        <label class="block">
-          <span class="text-sm text-white/70">Regeln‑Text</span>
-          <textarea id="regeln_text" rows="3"
-            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
-            placeholder="📜 Regeln ..."></textarea>
-        </label>
-      </div>
+      <p class="text-xs text-white/60 leading-5">
+        Reihenfolge: Erst <b>Stripe verbinden</b>, dann <b>Bot aktivieren</b> (DM) und
+        den Bot als Admin in deiner VIP‑Gruppe hinzufügen.
+      </p>
+    </div>
 
-      <div class="flex items-center gap-3">
-        <button id="saveBtn" type="button" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3">
-          Speichern
-        </button>
-        <button id="reloadBtn" type="button" class="px-4 py-3 border border-luxgray rounded-xl">
-          Neu laden
-        </button>
-      </div>
+    <!-- Texte -->
+    <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
+      <h2 class="text-luxgold text-lg font-semibold">Texte</h2>
+      <label class="block">
+        <span class="text-sm text-white/70">Welcome‑Text</span>
+        <textarea id="welcome_text" rows="3"
+          class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+          placeholder="👋 Willkommen im VIP! ..."></textarea>
+      </label>
+      <label class="block">
+        <span class="text-sm text-white/70">Regeln‑Text</span>
+        <textarea id="regeln_text" rows="3"
+          class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+          placeholder="📜 Regeln ..."></textarea>
+      </label>
+    </div>
 
-      <p id="hint" class="text-xs text-white/60"></p>
-    </form>
+    <div class="flex items-center gap-3">
+      <button id="saveBtn" type="button" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3">
+        Speichern
+      </button>
+      <button id="reloadBtn" type="button" class="px-4 py-3 border border-luxgray rounded-xl">
+        Neu laden
+      </button>
+    </div>
+
+    <p id="hint" class="text-xs text-white/60"></p>
   </section>
 
   <style is:global>
@@ -155,34 +160,47 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
              border:1px solid rgba(255,255,255,.08); border-radius: 12px; padding:.55rem .8rem; font-size:12px; z-index:70; }
   </style>
 
-  <!-- QR‑Lib (UMD, blockiert nicht die Init-Logik) -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js" defer></script>
+  <!-- QR-Library (defer) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
+  <!-- Haupt-Logik -->
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+    // Meta & ENV
     const META = document.getElementById("lux-meta");
     const BOT = META?.dataset?.bot || "GroupLuxBot";
     const BOT_API = META?.dataset?.botApi || "";
 
     const $ = (id) => document.getElementById(id);
-    const toast = (t="Kopiert!") => { const el=document.createElement("div"); el.className="toast"; el.textContent=t; document.body.appendChild(el); setTimeout(()=>el.remove(),1400); };
-    const setStatus = (msg, ok=true) => { const box=$("statusBox"); box.classList.remove("hidden"); box.textContent=msg; box.classList.toggle("border-green-600",ok); box.classList.toggle("border-red-600",!ok); };
+    const toast = (m="OK") => { const t=document.createElement("div"); t.className="toast"; t.textContent=m; document.body.appendChild(t); setTimeout(()=>t.remove(),1400); };
 
-    // Supabase aus Layout
-    const meta = document.getElementById("supabase-config");
-    if (!meta?.dataset?.url || !meta?.dataset?.key) {
-      console.error("supabase-config missing in layout");
+    // Supabase
+    const supaMeta = document.getElementById("supabase-config");
+    if (!supaMeta?.dataset?.url || !supaMeta?.dataset?.key) {
+      $("hint").textContent = "❌ Supabase‑Konfiguration fehlt.";
+      throw new Error("supabase-config-missing");
     }
-    const supabase = createClient(meta.dataset.url, meta.dataset.key);
+    const supabase = createClient(supaMeta.dataset.url, supaMeta.dataset.key);
 
+    // Felder
     const fields = ["preis","vip_days","gruppe_link","welcome_text","regeln_text"];
-    let userId = null;
 
-    // QR safe render (mit Retry, fällt nie die restliche Logik um)
+    // Auth
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
+    const userId = user.id;
+
+    // Links
+    const customerLink = () => `https://t.me/${BOT}?start=${encodeURIComponent("creator_"+userId)}`; // zum Teilen
+    const groupLink   = () => `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+userId)}`; // Gruppe verbinden
+    const linkTelegram = () => `https://t.me/${BOT}?start=${encodeURIComponent("link_creator_"+userId)}`; // DM-Owner-Connect
+    const stripeRedirect = () => `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(userId)}`;
+
+    // QR
     async function drawQR(canvasId, value, tries=10) {
       try {
-        const c = $(canvasId); if (!c) return;
+        const c = document.getElementById(canvasId); if (!c) return;
         const dpr = Math.max(1, window.devicePixelRatio || 1);
         const size = 140;
         c.width = size * dpr; c.height = size * dpr;
@@ -191,108 +209,91 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
           await window.QRCode.toCanvas(c, value, { margin: 1, scale: dpr });
           return;
         }
-        if (tries > 0) setTimeout(()=>drawQR(canvasId, value, tries-1), 150);
-      } catch (err) {
-        console.warn("QR render error:", err);
-      }
+        if (tries > 0) setTimeout(()=>drawQR(canvasId, value, tries-1), 120);
+      } catch (err) { console.warn("QR render error:", err); }
     }
 
-    function groupLink() { return `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+userId)}`; }
-    function linkTelegram() { return `https://t.me/${BOT}?start=${encodeURIComponent("link_creator_"+userId)}`; }
-    function stripeRedirect() { return `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(userId)}`; }
-
     async function updatePreviews() {
-      const g = groupLink();
-      $("previewGroup").href = g; $("previewGroup").textContent = g;
-      $("previewGroupInput").value = g;
-      drawQR("qrGroup", g);
+      // Kunden-Link
+      const s = customerLink();
+      $("customerLinkA").href = s;
+      $("customerLinkA").textContent = s;
+      $("customerLinkInput").value = s;
+      drawQR("qrCustomer", s);
 
+      // Stripe-Link
       const wrap = $("stripeLinkWrap");
       if (wrap) wrap.href = BOT_API ? stripeRedirect() : "#";
     }
 
     async function loadCfg() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { window.location.href = "/"; return; }
-        userId = user.id;
+      const { data } = await supabase
+        .from("creator_config")
+        .select(fields.join(",") + ", stripe_account_id, group_chat_id")
+        .eq("creator_id", userId)
+        .maybeSingle();
 
-        const { data, error } = await supabase
-          .from("creator_config")
-          .select(fields.join(",") + ", stripe_account_id, group_chat_id")
-          .eq("creator_id", userId)
-          .maybeSingle();
-
-        if (error) console.warn("loadCfg error:", error);
-
-        if (data) {
-          for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
-          $("stripeStatus").textContent = data.stripe_account_id ? `✅ Stripe verbunden (Account: ${data.stripe_account_id}).` : "⚠️ Stripe noch nicht verbunden.";
-          $("groupInfo").textContent = data.group_chat_id ? `✅ Gruppe verknüpft (Chat ID: ${data.group_chat_id}).` : "⚠️ Noch keine Gruppe verknüpft.";
-        } else {
-          for (const k of fields) if ($(k)) $(k).value = "";
-          $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
-          $("groupInfo").textContent = "⚠️ Noch keine Gruppe verknüpft.";
-        }
-
-        await updatePreviews();
-        setStatus("✅ Seite geladen.", true);
-      } catch (e) {
-        console.error(e);
-        setStatus("❌ Fehler beim Laden.", false);
+      if (data) {
+        for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
+        $("stripeStatus").textContent = data.stripe_account_id
+          ? `✅ Stripe verbunden (Account: ${data.stripe_account_id}).`
+          : "⚠️ Stripe noch nicht verbunden.";
+      } else {
+        for (const k of fields) if ($(k)) $(k).value = "";
+        $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
       }
+      updatePreviews();
     }
 
-    // Listener — immer binden (unabhängig vom QR)
-    $("saveBtn")?.addEventListener("click", async () => {
-      try {
-        if (!userId) return alert("Nicht eingeloggt.");
-        const payload = { creator_id: userId };
-        for (const k of fields) payload[k] = $(k)?.value ?? null;
-        payload.preis = Number(payload.preis || 0);
-        payload.vip_days = Number(payload.vip_days || 30);
+    // Speichern
+    $("saveBtn").addEventListener("click", async () => {
+      const payload = { creator_id: userId };
+      for (const k of fields) payload[k] = $(k)?.value ?? null;
+      payload.preis = Number(payload.preis || 0);
+      payload.vip_days = Number(payload.vip_days || 30);
 
-        const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
-        $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
-        if (!error) await loadCfg();
-      } catch (e) {
-        console.error(e);
-        $("hint").textContent = "❌ Speichern fehlgeschlagen.";
-      }
+      const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
+      $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
+      if (!error) toast("Gespeichert");
     });
 
-    $("reloadBtn")?.addEventListener("click", loadCfg);
+    // Reload
+    $("reloadBtn").addEventListener("click", loadCfg);
 
-    $("linkTelegramBtn")?.addEventListener("click", () => {
-      if (!userId) return alert("Nicht eingeloggt.");
+    // Bot aktivieren (DM)
+    $("linkTelegramBtn").addEventListener("click", () => {
       window.open(linkTelegram(), "_blank");
       $("hint").textContent = "Telegram öffnen → Bot im DM starten, danach Bot in der Gruppe als Admin hinzufügen.";
     });
 
-    $("bindGroupBtn")?.addEventListener("click", () => {
-      if (!userId) return alert("Nicht eingeloggt.");
+    // Gruppe verbinden
+    $("bindGroupBtn").addEventListener("click", () => {
       window.open(groupLink(), "_blank");
       $("hint").textContent = "Telegram → Gruppe auswählen → Bot starten → Admin‑Rechte geben.";
     });
 
-    $("stripeBtn")?.addEventListener("click", (e) => {
+    // Stripe
+    $("stripeBtn").addEventListener("click", (e) => {
       if (!BOT_API) {
         e.preventDefault();
-        alert("PUBLIC_BOT_API_BASE fehlt im Frontend (Netlify‑ENV).");
+        alert("PUBLIC_BOT_API_BASE fehlt im Frontend.");
       }
     });
 
-    $("copyGroup")?.addEventListener("click", async () => {
-      const val = $("previewGroupInput")?.value || "";
-      try { await navigator.clipboard.writeText(val); toast("Startgroup‑Link kopiert"); }
-      catch { $("previewGroupInput")?.select(); document.execCommand?.("copy"); toast("Kopiert"); }
+    // Copy Kunden-Link
+    $("copyCustomerLink").addEventListener("click", async () => {
+      const val = $("customerLinkInput")?.value || "";
+      try { await navigator.clipboard.writeText(val); toast("Kunden‑Link kopiert"); }
+      catch { $("customerLinkInput")?.select(); document.execCommand?.("copy"); toast("Kopiert"); }
     });
 
-    $("downloadQRGroup")?.addEventListener("click", () => {
-      const c = $("qrGroup"); if (!c) return;
+    // QR Download
+    $("downloadQRCustomer").addEventListener("click", () => {
+      const c = $("qrCustomer"); if (!c) return;
       const a = document.createElement("a");
-      a.download = "luxbase-startgroup-qr.png";
-      a.href = c.toDataURL("image/png"); a.click();
+      a.download = "luxbase-kundenlink-qr.png";
+      a.href = c.toDataURL("image/png");
+      a.click();
     });
 
     // Tooltips
@@ -300,33 +301,36 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     function showTip(anchorBtn, text) {
       hideTip();
       const tip = document.createElement("div");
-      tip.className = "tip tip-enter"; tip.textContent = text;
+      tip.className = "tip tip-enter";
+      tip.textContent = text;
       document.body.appendChild(tip);
-      requestAnimationFrame(()=>tip.classList.add("tip-enter-active"));
+      requestAnimationFrame(() => tip.classList.add("tip-enter-active"));
       const rect = anchorBtn.getBoundingClientRect();
-      const margin = 8, top = rect.bottom + margin + window.scrollY;
-      const left = rect.left + rect.width/2 - tip.offsetWidth/2 + window.scrollX;
+      const margin = 8;
+      const top = rect.bottom + margin + window.scrollY;
+      const left = rect.left + rect.width / 2 - tip.offsetWidth / 2 + window.scrollX;
       tip.style.top = `${top}px`;
       tip.style.left = `${Math.max(12, Math.min(left, window.scrollX + document.documentElement.clientWidth - tip.offsetWidth - 12))}px`;
-      activeTipEl = tip; hideTimer = setTimeout(hideTip, 3500);
+      activeTipEl = tip;
+      hideTimer = setTimeout(hideTip, 3500);
     }
     function hideTip() {
       if (!activeTipEl) return;
       activeTipEl.classList.remove("tip-enter", "tip-enter-active");
       activeTipEl.classList.add("tip-exit");
-      requestAnimationFrame(()=>{
+      requestAnimationFrame(() => {
         activeTipEl.classList.add("tip-exit-active");
-        setTimeout(()=>{ activeTipEl?.remove(); activeTipEl=null; },120);
+        setTimeout(() => { activeTipEl?.remove(); activeTipEl = null; }, 120);
       });
-      clearTimeout(hideTimer); hideTimer=null;
+      clearTimeout(hideTimer); hideTimer = null;
     }
-    document.addEventListener("click", (e)=>{
+    document.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-tip]");
       if (btn) { e.stopPropagation(); showTip(btn, btn.getAttribute("data-tip") || ""); }
       else hideTip();
     });
 
-    // Start
+    // Initial laden
     await loadCfg();
   </script>
 </DashboardLayout>

@@ -4,46 +4,82 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
 <DashboardLayout title="Dein Luxbase Dashboard">
   <section class="max-w-6xl mx-auto px-4 py-6 space-y-6" id="dashboardRoot">
+
+    <!-- Controls: Range + Compare -->
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex gap-1 sm:gap-2" id="rangeControls">
+        <button data-range="7"  class="range-btn">7T</button>
+        <button data-range="30" class="range-btn is-active">30T</button>
+        <button data-range="90" class="range-btn">90T</button>
+      </div>
+      <label class="inline-flex items-center gap-2 text-xs sm:text-[13px] text-white/70">
+        <input type="checkbox" id="compareToggle" class="accent-[#f6c453] w-4 h-4">
+        Vorperiode vergleichen
+      </label>
+    </div>
+
     <!-- KPI Cards -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
-        <h3 class="text-xs text-white/60 mb-2">Umsatz (30 Tage)</h3>
-        <p class="text-2xl font-semibold text-luxgold" id="kpiRevenue">–</p>
-        <p class="text-[11px] text-white/50" id="kpiRevenueNote"></p>
+      <!-- Umsatz -->
+      <article class="kpi-card">
+        <h3 class="kpi-title">Umsatz (<span id="labelRange1">30</span> Tage)</h3>
+        <div class="flex items-baseline gap-2">
+          <p class="kpi-value" id="kpiRevenue">–</p>
+          <span class="kpi-delta" id="kpiRevenueDelta"></span>
+        </div>
+        <p class="kpi-note" id="kpiRevenueNote"></p>
+        <div class="kpi-spark"><canvas id="sparkRevenue"></canvas></div>
       </article>
-      <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
-        <h3 class="text-xs text-white/60 mb-2">Aktive VIPs</h3>
-        <p class="text-2xl font-semibold text-luxgold" id="kpiActive">–</p>
-        <p class="text-[11px] text-white/50" id="kpiActiveNote"></p>
+
+      <!-- Aktive VIPs -->
+      <article class="kpi-card">
+        <h3 class="kpi-title">Aktive VIPs</h3>
+        <div class="flex items-baseline gap-2">
+          <p class="kpi-value" id="kpiActive">–</p>
+          <span class="kpi-delta" id="kpiActiveDelta"></span>
+        </div>
+        <p class="kpi-note" id="kpiActiveNote"></p>
+        <div class="kpi-spark"><canvas id="sparkActive"></canvas></div>
       </article>
-      <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
-        <h3 class="text-xs text-white/60 mb-2">Neue VIPs (7 Tage)</h3>
-        <p class="text-2xl font-semibold text-luxgold" id="kpiNew">–</p>
-        <p class="text-[11px] text-white/50" id="kpiNewNote"></p>
+
+      <!-- Neue VIPs -->
+      <article class="kpi-card">
+        <h3 class="kpi-title">Neue VIPs (<span id="labelRange2">7</span> Tage)</h3>
+        <div class="flex items-baseline gap-2">
+          <p class="kpi-value" id="kpiNew">–</p>
+          <span class="kpi-delta" id="kpiNewDelta"></span>
+        </div>
+        <p class="kpi-note" id="kpiNewNote"></p>
+        <div class="kpi-spark"><canvas id="sparkNew"></canvas></div>
       </article>
-      <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
-        <h3 class="text-xs text-white/60 mb-2">Conversion (Demo)</h3>
-        <p class="text-2xl font-semibold text-luxgold" id="kpiConv">–</p>
-        <p class="text-[11px] text-white/50">Platzhalter – an Datenquelle anbindbar</p>
+
+      <!-- Conversion Demo -->
+      <article class="kpi-card">
+        <h3 class="kpi-title">Conversion (Demo)</h3>
+        <div class="flex items-baseline gap-2">
+          <p class="kpi-value" id="kpiConv">–</p>
+        </div>
+        <p class="kpi-note">Platzhalter – an Datenquelle anbindbar</p>
+        <div class="kpi-spark opacity-30"><canvas></canvas></div>
       </article>
     </div>
 
-    <!-- Charts -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
-        <header class="flex items-center justify-between mb-2">
-          <h3 class="text-sm font-semibold text-luxgold">Umsatzverlauf (30 Tage)</h3>
-          <span class="text-[11px] text-white/50" id="revMeta">–</span>
+    <!-- Charts: Mobile Swipe-Carousel / Desktop Grid -->
+    <div class="charts-wrap overflow-x-auto snap-x snap-mandatory flex gap-4 pb-2 -mx-4 px-4 md:grid md:grid-cols-2 md:overflow-visible md:snap-none md:mx-0 md:px-0">
+      <article class="chart-card min-w-[88%] snap-start">
+        <header class="chart-header">
+          <h3 class="chart-title">Umsatzverlauf</h3>
+          <span class="chart-meta" id="revMeta">–</span>
         </header>
-        <div style="height: 240px"><canvas id="revChart"></canvas></div>
+        <div class="h-60 sm:h-[260px]"><canvas id="revChart"></canvas></div>
       </article>
 
-      <article class="bg-black/60 border border-luxgray rounded-2xl p-4">
-        <header class="flex items-center justify-between mb-2">
-          <h3 class="text-sm font-semibold text-luxgold">Neue VIPs / Tag</h3>
-          <span class="text-[11px] text-white/50" id="vipMeta">–</span>
+      <article class="chart-card min-w-[88%] snap-start">
+        <header class="chart-header">
+          <h3 class="chart-title">Neue VIPs / Tag</h3>
+          <span class="chart-meta" id="vipMeta">–</span>
         </header>
-        <div style="height: 240px"><canvas id="vipChart"></canvas></div>
+        <div class="h-60 sm:h-[260px]"><canvas id="vipChart"></canvas></div>
       </article>
     </div>
 
@@ -51,60 +87,67 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     <pre id="debugBox" class="bg-black/40 border border-luxgray/50 rounded-xl p-3 text-xs text-white/70 overflow-auto"></pre>
   </section>
 
+  <style is:global>
+    .kpi-card{background:rgba(0,0,0,.6);border:1px solid var(--luxgray,#2a2a2a);border-radius:1rem;padding:1rem}
+    .kpi-title{font-size:.75rem;color:rgba(255,255,255,.6);margin-bottom:.25rem}
+    .kpi-value{font-size:1.6rem;font-weight:700;color:#f6c453}
+    .kpi-note{font-size:11px;color:rgba(255,255,255,.55)}
+    .kpi-delta{font-size:.8rem}
+    .kpi-delta.up{color:#7ee787}
+    .kpi-delta.down{color:#ff6b6b}
+    .kpi-spark{height:32px;margin-top:.35rem}
+    .range-btn{border:1px solid var(--luxgray,#2a2a2a);border-radius:.6rem;padding:.45rem .7rem;font-size:.85rem;color:#fff;background:transparent}
+    .range-btn.is-active{border-color:rgba(246,196,83,.5);background:rgba(246,196,83,.08);color:#f6c453}
+    .chart-card{background:rgba(0,0,0,.6);border:1px solid var(--luxgray,#2a2a2a);border-radius:1rem;padding:1rem}
+    .chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.25rem}
+    .chart-title{font-size:.9rem;font-weight:600;color:#f6c453}
+    .chart-meta{font-size:11px;color:rgba(255,255,255,.6)}
+    .charts-wrap::-webkit-scrollbar{display:none}
+  </style>
+
   <script type="module">
+  // -------- Helper Debug ----------
   const dbg = (...args) => {
     const parts = [];
-    for (const a of args) {
-      try { parts.push(typeof a === "string" ? a : JSON.stringify(a, null, 2)); }
-      catch { parts.push(String(a)); }
-    }
+    for (const a of args) { try { parts.push(typeof a === "string" ? a : JSON.stringify(a, null, 2)); } catch { parts.push(String(a)); } }
     const msg = parts.join(" ");
     console.log(...args);
-    const box = document.getElementById("debugBox");
-    if (box) box.textContent += msg + "\n";
+    const box = document.getElementById("debugBox"); if (box) box.textContent += msg + "\\n";
   };
 
   try {
+    // ENV check
     const meta = document.getElementById("supabase-config");
-    if (!meta?.dataset?.url || !meta?.dataset?.key) {
-      dbg("❌ Supabase ENV fehlt:", { url: meta?.dataset?.url, keySet: !!meta?.dataset?.key });
-      throw new Error("Supabase ENV fehlt");
-    }
+    if (!meta?.dataset?.url || !meta?.dataset?.key) { dbg("❌ Supabase ENV fehlt:", { url: meta?.dataset?.url, keySet: !!meta?.dataset?.key }); throw new Error("Supabase ENV fehlt"); }
 
-   const [{ createClient }] = await Promise.all([
-  import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"),
-  import("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"),
-]);
-const Chart = window.Chart;
+    // Libraries
+    const [{ createClient }] = await Promise.all([
+      import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"),
+      import("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"),
+    ]);
+    const Chart = window.Chart;
 
+    // Supabase client
     const supabase = createClient(meta.dataset.url, meta.dataset.key);
 
+    // DOM shorthands
     const el = (id) => document.getElementById(id);
-    const fmtEUR = (n) => (typeof n === "number" ? n : Number(n || 0))
-      .toLocaleString("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+    const qsA = (sel) => Array.from(document.querySelectorAll(sel));
+    const fmtEUR = (n) => (typeof n === "number" ? n : Number(n || 0)).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+    const fmtPct = (x) => `${(x*100).toFixed(1)}%`;
 
+    // Date helpers
     const today = new Date();
-    const daysAgo = (d) => new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - d));
-    function labelsLastNDays(n=30) {
-      const arr = [];
-      for (let i = n - 1; i >= 0; i--) {
-        const dt = daysAgo(i);
-        arr.push(dt.toISOString().slice(0,10));
-      }
-      return arr;
-    }
+    const toISO = (d) => new Date(d).toISOString().slice(0,10);
+    const daysAgo = (d) => new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()-d));
+    function labelsLastNDays(n){const arr=[];for(let i=n-1;i>=0;i--){arr.push(toISO(daysAgo(i)));}return arr;}
 
-    // 2) Auth
+    // Auth
     const { data: { user }, error: userErr } = await supabase.auth.getUser();
     if (userErr) dbg("⚠️ getUser error:", userErr);
-    if (!user) {
-      dbg("❌ Kein User – redirect /");
-      window.location.href = "/";
-      throw new Error("redirect");
-    }
-  
+    if (!user) { dbg("❌ Kein User – redirect /"); window.location.href = "/"; throw new Error("redirect"); }
 
-    // 3) creator_config
+    // Config
     const { data: cfg, error: cfgErr } = await supabase
       .from("creator_config")
       .select("preis, vip_dauer")
@@ -115,7 +158,7 @@ const Chart = window.Chart;
     const preis = Number(cfg?.preis || 0);
     const vipDauer = Number(cfg?.vip_dauer || 30);
 
-    // 4) vip_users
+    // VIPs
     const { data: vipData, error: vipErr } = await supabase
       .from("vip_users")
       .select("letzter_kontakt, vip_bis, status")
@@ -124,77 +167,186 @@ const Chart = window.Chart;
 
     let vipRows = vipData || [];
 
-    // 5) Demo-Fallback, falls leer
+    // Demo fallback
     if (!vipRows.length) {
       const base = new Date();
       const mk = (offset, days=vipDauer) => ({
-        letzter_kontakt: new Date(base.getTime() - offset*86400000).toISOString(),
-        vip_bis: new Date(base.getTime() + (days-offset)*86400000).toISOString(),
+        letzter_kontakt: new Date(base.getTime()-offset*86400000).toISOString(),
+        vip_bis:         new Date(base.getTime()+(days-offset)*86400000).toISOString(),
         status: "active",
       });
       vipRows = [mk(1), mk(2), mk(5), mk(7), mk(8), mk(10), mk(15)];
       el("kpiRevenueNote").textContent = "Demo-Schätzung (keine echten Datensätze oder keine Leserechte)";
-      el("kpiActiveNote").textContent = "Demo-Daten";
-      el("kpiNewNote").textContent = "Demo-Daten";
+      el("kpiActiveNote").textContent  = "Demo-Daten";
+      el("kpiNewNote").textContent     = "Demo-Daten";
     }
 
-    // 6) Aggregation
-    const labels = labelsLastNDays(30);
-    const newVipByDay = Object.fromEntries(labels.map(d => [d, 0]));
-    vipRows.forEach(r => {
-      const d = (r.letzter_kontakt || "").slice(0,10);
-      if (newVipByDay[d] !== undefined) newVipByDay[d] += 1;
-    });
-    const newVipSeries = labels.map(d => newVipByDay[d]);
+    // ---------- Aggregation & Rendering ----------
+    let RANGE = 30; // default
+    const compareToggle = el("compareToggle");
 
-    const revenueByDay = labels.map((_, i) => (preis > 0 ? newVipSeries[i] * preis : 0));
-    const revenue30 = revenueByDay.reduce((a,b) => a + b, 0);
+    let revChart, vipChart, sparkRev, sparkActive, sparkNew;
 
-    const todayISO = new Date().toISOString().slice(0,10);
-    const active = vipRows.filter(r => String(r.vip_bis || "").slice(0,10) >= todayISO).length;
+    function destroyChart(c){ if(c && typeof c.destroy==="function"){ c.destroy(); } }
 
-    const last7 = labels.slice(-7);
-    const new7 = last7.reduce((sum, d) => sum + (newVipByDay[d] || 0), 0);
+    function computeSeries(rangeDays){
+      const labels = labelsLastNDays(rangeDays);
+      const mapNew = Object.fromEntries(labels.map(d=>[d,0]));
+      vipRows.forEach(r=>{ const d=(r.letzter_kontakt||"").slice(0,10); if(mapNew[d]!==undefined) mapNew[d]+=1;});
+      const newVipSeries = labels.map(d=>mapNew[d]);
 
-    // 7) KPIs
-    el("kpiRevenue").textContent = fmtEUR(revenue30);
-    el("kpiActive").textContent = String(active);
-    el("kpiNew").textContent = String(new7);
-    el("revMeta").textContent = preis > 0 ? `Basis: Preis ${fmtEUR(preis)} × neue VIPs` : "Kein Preis in creator_config";
-    el("vipMeta").textContent = `Zeitraum: ${labels[0]} – ${labels[labels.length-1]}`;
+      const revenueByDay = labels.map((_,i)=> (preis>0 ? newVipSeries[i]*preis : 0));
 
-    // 8) Charts
-    const revCanvas = el("revChart");
-    const vipCanvas = el("vipChart");
-    if (!revCanvas || !vipCanvas) {
+      // aktive VIPs je Tag := VIPs mit vip_bis >= Datum
+      const activeEachDay = labels.map(d=>{
+        const count = vipRows.filter(r => String(r.vip_bis||"").slice(0,10) >= d).length;
+        return count;
+      });
 
-    } else {
-      new Chart(revCanvas.getContext("2d"), {
+      // Totals
+      const revenueTotal = revenueByDay.reduce((a,b)=>a+b,0);
+      const activeToday  = activeEachDay[activeEachDay.length-1] || 0;
+      const newTotal     = newVipSeries.reduce((a,b)=>a+b,0);
+
+      return { labels, newVipSeries, revenueByDay, activeEachDay, totals:{ revenueTotal, activeToday, newTotal } };
+    }
+
+    function computePrev(rangeDays){
+      // Vorperiode: gleicher Zeitraum direkt davor
+      const endPrev   = daysAgo(rangeDays);
+      const labelsPrev = [];
+      for(let i=rangeDays-1;i>=0;i--){ labelsPrev.push(toISO(new Date(endPrev.getTime()-i*86400000))); }
+      const mapNewPrev = Object.fromEntries(labelsPrev.map(d=>[d,0]));
+      vipRows.forEach(r=>{ const d=(r.letzter_kontakt||"").slice(0,10); if(mapNewPrev[d]!==undefined) mapNewPrev[d]+=1;});
+      const newVipPrev = labelsPrev.map(d=>mapNewPrev[d]);
+      const revPrevByDay = labelsPrev.map((_,i)=> (preis>0 ? newVipPrev[i]*preis : 0));
+      const activePrevEnd = vipRows.filter(r => String(r.vip_bis||"").slice(0,10) >= labelsPrev[labelsPrev.length-1]).length;
+      return {
+        totals:{
+          revenueTotal: revPrevByDay.reduce((a,b)=>a+b,0),
+          activeToday: activePrevEnd,
+          newTotal: newVipPrev.reduce((a,b)=>a+b,0),
+        }
+      };
+    }
+
+    function deltaClass(elm, curr, prev){
+      const wrap = elm; wrap.textContent = "";
+      if (!compareToggle.checked) return;
+      const d = prev>0 ? (curr-prev)/prev : (curr>0 ? 1 : 0);
+      const txt = (d>=0?"+":"")+ (Math.abs(d)*100).toFixed(1) + "% " + (d>0?"↗︎":"↘︎");
+      wrap.textContent = txt;
+      wrap.classList.remove("up","down");
+      if (d>0) wrap.classList.add("up"); else if (d<0) wrap.classList.add("down");
+    }
+
+    // Sparklines (super schlank)
+    function renderSpark(canvas, data, color="#f6c453"){
+      const ctx = canvas.getContext("2d");
+      return new Chart(ctx,{
+        type:"line",
+        data:{ labels:data.map((_,i)=>i), datasets:[{ data, borderColor:color, pointRadius:0, tension:.35, borderWidth:2 }]},
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{enabled:false}}, scales:{x:{display:false},y:{display:false}} }
+      });
+    }
+
+    function renderKPIs(series, prevTotals){
+      // Labels
+      el("labelRange1").textContent = String(RANGE);
+      el("labelRange2").textContent = String(Math.min(7,RANGE)); // „Neue VIPs (7 Tage)“ kann auch RANGE sein – hier leicht konservativ
+
+      // Totals
+      el("kpiRevenue").textContent = fmtEUR(series.totals.revenueTotal);
+      el("kpiActive").textContent  = String(series.totals.activeToday);
+      // Neue VIPs der letzten min(7,RANGE) Tage
+      const lastN = Math.min(7, RANGE);
+      const new7  = series.newVipSeries.slice(-lastN).reduce((a,b)=>a+b,0);
+      el("kpiNew").textContent     = String(new7);
+
+      // Deltas (wenn Compare an)
+      deltaClass(el("kpiRevenueDelta"), series.totals.revenueTotal, prevTotals?.revenueTotal ?? 0);
+      deltaClass(el("kpiActiveDelta"),  series.totals.activeToday,  prevTotals?.activeToday ?? 0);
+      deltaClass(el("kpiNewDelta"),     new7,                       Math.round((prevTotals?.newTotal ?? 0)*(lastN/RANGE)));
+
+      // Notes
+      el("kpiRevenueNote").textContent = preis>0 ? "Basierend auf Preis × neue VIPs" : "Kein Preis in creator_config";
+      el("kpiNewNote").textContent     = `Zeitraum: ${series.labels[series.labels.length-lastN]} – ${series.labels[series.labels.length-1]}`;
+
+      // Sparklines
+      destroyChart(sparkRev); destroyChart(sparkActive); destroyChart(sparkNew);
+      sparkRev    = renderSpark(document.getElementById("sparkRevenue"), series.revenueByDay);
+      sparkActive = renderSpark(document.getElementById("sparkActive"),  series.activeEachDay);
+      sparkNew    = renderSpark(document.getElementById("sparkNew"),     series.newVipSeries);
+    }
+
+    function renderCharts(series){
+      // Meta
+      el("revMeta").textContent = `${series.labels[0]} – ${series.labels[series.labels.length-1]}`;
+      el("vipMeta").textContent = el("revMeta").textContent;
+
+      // Destroy old
+      destroyChart(revChart); destroyChart(vipChart);
+
+      // Revenue gradient
+      const revCtx = document.getElementById("revChart").getContext("2d");
+      const grad = revCtx.createLinearGradient(0,0,0,revCtx.canvas.height);
+      grad.addColorStop(0,"rgba(246,196,83,0.35)");
+      grad.addColorStop(1,"rgba(246,196,83,0.03)");
+
+      revChart = new Chart(revCtx,{
         type: "line",
-        data: { labels, datasets: [{ label: "Umsatz", data: revenueByDay, tension: 0.35, borderWidth: 2, pointRadius: 0 }] },
+        data: { labels: series.labels, datasets: [{
+          label: "Umsatz", data: series.revenueByDay, fill:true,
+          backgroundColor: grad, borderColor:"#f6c453", tension:.35, pointRadius:0, borderWidth:2
+        }]},
         options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: (ctx) => fmtEUR(ctx.parsed.y) } } },
-          scales: {
-            x: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)", maxTicksLimit: 6 } },
-            y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)", callback: (v) => fmtEUR(v) } },
-          },
-        },
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(ctx)=>fmtEUR(ctx.parsed.y) } } },
+          scales:{
+            x:{ grid:{ display:false }, ticks:{ color:"rgba(255,255,255,.75)", maxTicksLimit:6 }},
+            y:{ grid:{ color:"rgba(255,255,255,.08)" }, ticks:{ color:"rgba(255,255,255,.75)", callback:(v)=>fmtEUR(v), maxTicksLimit:5 }, beginAtZero:true }
+          }
+        }
       });
 
-      new Chart(vipCanvas.getContext("2d"), {
-        type: "bar",
-        data: { labels, datasets: [{ label: "Neue VIPs", data: newVipSeries }] },
-        options: {
-          responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)", maxTicksLimit: 6 } },
-            y: { grid: { color: "rgba(255,255,255,0.1)" }, ticks: { color: "rgba(255,255,255,0.7)" }, beginAtZero: true },
-          },
-        },
+      const vipCtx = document.getElementById("vipChart").getContext("2d");
+      vipChart = new Chart(vipCtx,{
+        type:"bar",
+        data:{ labels: series.labels, datasets:[{ label:"Neue VIPs", data: series.newVipSeries, borderRadius:6 }]},
+        options:{
+          responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} },
+          scales:{
+            x:{ grid:{ display:false }, ticks:{ color:"rgba(255,255,255,.75)", maxTicksLimit:6 }},
+            y:{ grid:{ color:"rgba(255,255,255,.08)" }, ticks:{ color:"rgba(255,255,255,.75)" }, beginAtZero:true }
+          }
+        }
       });
     }
+
+    // Initial render
+    function rerender(){
+      const series = computeSeries(RANGE);
+      const prev   = compareToggle.checked ? computePrev(RANGE).totals : null;
+      renderKPIs(series, prev);
+      renderCharts(series);
+    }
+
+    // Range events
+    qsA(".range-btn").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        qsA(".range-btn").forEach(b=>b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        RANGE = Number(btn.dataset.range || 30);
+        rerender();
+      });
+    });
+    compareToggle.addEventListener("change", rerender);
+
+    // Kick
+    rerender();
+
   } catch (e) {
+    dbg("❌ Render error:", e?.message || e);
   }
-</script>
+  </script>
 </DashboardLayout>

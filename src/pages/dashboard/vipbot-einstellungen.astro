@@ -1,13 +1,11 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
-// Serverseitig ins DOM schieben:
 const BOT_USERNAME = "GroupLuxBot";
 const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
 ---
 
 <DashboardLayout title="VIP‑Einstellungen">
-  <!-- Meta fürs Browser‑Script -->
   <div id="lux-meta" data-bot={BOT_USERNAME} data-bot-api={BOT_API_BASE} class="hidden"></div>
 
   <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative space-y-6">
@@ -37,8 +35,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
       <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
         <div class="flex items-center gap-2">
           <h2 class="text-luxgold text-lg font-semibold">Stripe</h2>
-          <button type="button" class="tip-btn" aria-label="Hilfe"
-            data-tip="Verbinde zuerst Stripe, damit Zahlungen funktionieren. Es öffnet sich das Stripe‑Onboarding.">?</button>
+          <button type="button" class="tip-btn" data-tip="Verbinde zuerst Stripe – es öffnet sich das Stripe‑Onboarding.">?</button>
         </div>
 
         <a id="stripeLinkWrap" class="w-full" target="_blank" rel="noreferrer">
@@ -56,8 +53,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
         <label class="block">
           <div class="flex items-center gap-2">
             <span class="text-sm text-white/70">Gruppen‑Link (Fallback, statisch)</span>
-            <button type="button" class="tip-btn" aria-label="Hilfe"
-              data-tip="Optionaler, statischer Einladungslink deiner Gruppe – wird nur genutzt, wenn der Einmallink nicht erstellt werden kann.">?</button>
+            <button type="button" class="tip-btn" data-tip="Optional: statischer Einladungslink – nur falls Einmallink nicht klappt.">?</button>
           </div>
           <input id="gruppe_link"
             class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
@@ -71,7 +67,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
               Bot aktivieren
             </button>
             <button type="button" class="tip-btn absolute right-2 top-1/2 -translate-y-1/2"
-              data-tip="Öffnet den Bot im DM. Danach bitte den Bot als Admin in deiner VIP‑Gruppe hinzufügen.">?</button>
+              data-tip="Öffnet den Bot im DM. Danach Bot als Admin in deiner VIP‑Gruppe hinzufügen.">?</button>
           </div>
 
           <div class="relative">
@@ -80,72 +76,37 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
               Gruppe verbinden
             </button>
             <button type="button" class="tip-btn absolute right-2 top-1/2 -translate-y-1/2"
-              data-tip="Wähle deine VIP‑Gruppe und starte den Bot dort. Er verknüpft die Gruppe automatisch und erzeugt später Einladungslinks.">?</button>
+              data-tip="Wähle deine VIP‑Gruppe und starte den Bot dort. Er verknüpft automatisch die Gruppe.">?</button>
           </div>
         </div>
 
-        <!-- Start- & Startgroup‑Link + QR -->
-        <div class="grid grid-cols-1 gap-6">
-          <!-- Start -->
-          <div class="grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start">
-            <div class="space-y-2">
-              <div class="flex items-center gap-2">
-                <span class="text-sm text-white/70">Start‑Link</span>
-                <button type="button" class="tip-btn" aria-label="Hilfe"
-                  data-tip="Dein persönlicher Start‑Link. Teile ihn – er öffnet den Bezahl‑Flow im Bot.">?</button>
-              </div>
-              <div class="flex gap-2">
-                <input id="previewStartInput" readonly
-                  class="flex-1 bg-black/30 border border-luxgray rounded-lg px-3 py-2 text-[13px] select-all" />
-                <button id="copyStart" type="button" class="border border-luxgray rounded-lg px-3 text-[13px]">
-                  Kopieren
-                </button>
-              </div>
-              <a id="previewStart" class="text-[13px] underline break-all text-white/70" target="_blank" rel="noreferrer">—</a>
+        <!-- NUR Startgroup‑Link + QR -->
+        <div class="grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start">
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-sm text-white/70">Startgroup‑Link</span>
+              <button type="button" class="tip-btn" data-tip="Scannen oder öffnen – verbindet den Bot mit deiner Gruppe.">?</button>
             </div>
-
-            <div class="flex flex-col items-center gap-2">
-              <canvas id="qrStart" width="140" height="140" class="rounded-lg border border-luxgray"></canvas>
-              <button id="downloadQRStart" type="button"
-                class="text-[12px] px-2 py-1 border border-luxgray rounded-lg text-white/70 hover:text-white">
-                QR herunterladen
+            <div class="flex gap-2">
+              <input id="previewGroupInput" readonly
+                class="flex-1 bg-black/30 border border-luxgray rounded-lg px-3 py-2 text-[13px] select-all" />
+              <button id="copyGroup" type="button" class="border border-luxgray rounded-lg px-3 text-[13px]">
+                Kopieren
               </button>
             </div>
+            <a id="previewGroup" class="text-[13px] underline break-all text-white/70" target="_blank" rel="noreferrer">—</a>
           </div>
 
-          <!-- Startgroup -->
-          <div class="grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start">
-            <div class="space-y-2">
-              <div class="flex items-center gap-2">
-                <span class="text-sm text-white/70">Startgroup‑Link</span>
-                <button type="button" class="tip-btn" aria-label="Hilfe"
-                  data-tip="Öffnet den Bot im Modus zum Verbinden mit einer Gruppe. Wähle deine VIP‑Gruppe und gib dem Bot Admin‑Rechte.">?</button>
-              </div>
-              <div class="flex gap-2">
-                <input id="previewGroupInput" readonly
-                  class="flex-1 bg-black/30 border border-luxgray rounded-lg px-3 py-2 text-[13px] select-all" />
-                <button id="copyGroup" type="button" class="border border-luxgray rounded-lg px-3 text-[13px]">
-                  Kopieren
-                </button>
-              </div>
-              <a id="previewGroup" class="text-[13px] underline break-all text-white/70" target="_blank" rel="noreferrer">—</a>
-            </div>
-
-            <div class="flex flex-col items-center gap-2">
-              <canvas id="qrGroup" width="140" height="140" class="rounded-lg border border-luxgray"></canvas>
-              <button id="downloadQRGroup" type="button"
-                class="text-[12px] px-2 py-1 border border-luxgray rounded-lg text-white/70 hover:text-white">
-                QR herunterladen
-              </button>
-            </div>
+          <div class="flex flex-col items-center gap-2">
+            <canvas id="qrGroup" width="140" height="140" class="rounded-lg border border-luxgray"></canvas>
+            <button id="downloadQRGroup" type="button"
+              class="text-[12px] px-2 py-1 border border-luxgray rounded-lg text-white/70 hover:text-white">
+              QR herunterladen
+            </button>
           </div>
         </div>
 
         <p id="groupInfo" class="text-xs text-white/60"></p>
-        <p class="text-xs text-white/60 leading-5">
-          Reihenfolge: Erst <b>Stripe verbinden</b>, dann <b>Bot aktivieren</b> (DM) und
-          den Bot als Admin in deiner VIP‑Gruppe hinzufügen.
-        </p>
       </div>
 
       <!-- Texte -->
@@ -193,11 +154,10 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
              border:1px solid rgba(255,255,255,.08); border-radius: 12px; padding:.55rem .8rem; font-size:12px; z-index:70; }
   </style>
 
-  <!-- QR Code lib -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    // ESM‑QR‑Lib (verlässlicher als UMD im Mischbetrieb)
+    const { toCanvas } = await import("https://cdn.jsdelivr.net/npm/qrcode@1.5.3/es/index.js");
 
     const META = document.getElementById("lux-meta");
     const BOT = META?.dataset?.bot || "GroupLuxBot";
@@ -225,34 +185,34 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
 
-    const startLink = () => `https://t.me/${BOT}?start=${encodeURIComponent("creator_"+user.id)}`;
     const groupLink = () => `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+user.id)}`;
     const linkTelegram = () => `https://t.me/${BOT}?start=${encodeURIComponent("link_creator_"+user.id)}`;
     const stripeRedirect = () => `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(user.id)}`;
 
-    function drawQR(canvasId, value) {
+    async function drawQR(canvasId, value) {
       const c = $(canvasId);
-      if (!c || !window.QRCode) return;
-      const ctx = c.getContext("2d");
-      ctx.clearRect(0, 0, c.width, c.height);
-      window.QRCode.toCanvas(c, value, { margin: 1, width: 140 }, (err)=>{ if (err) console.warn("QR error", err); });
+      if (!c) return;
+      // Retina‑scharf
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      const size = 140;
+      c.width = size * dpr;
+      c.height = size * dpr;
+      c.style.width = size + "px";
+      c.style.height = size + "px";
+      const opts = { margin: 1, scale: dpr }; // scale sorgt für scharfe Pixel
+      try {
+        await toCanvas(c, value, opts);
+      } catch (err) {
+        console.warn("QR render error:", err);
+      }
     }
 
     function updatePreviews() {
-      const s = startLink();
       const g = groupLink();
-
-      // Links + Inputs
-      $("previewStart").href = s; $("previewStart").textContent = s;
       $("previewGroup").href = g; $("previewGroup").textContent = g;
-      $("previewStartInput").value = s;
       $("previewGroupInput").value = g;
-
-      // QR
-      drawQR("qrStart", s);
       drawQR("qrGroup", g);
 
-      // Stripe-Link-Wrapper klickbar machen
       const wrap = $("stripeLinkWrap");
       if (wrap) wrap.href = BOT_API ? stripeRedirect() : "#";
     }
@@ -324,26 +284,13 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
       setTimeout(()=>el.remove(), 1400);
     };
 
-    $("copyStart")?.addEventListener("click", async () => {
-      const val = $("previewStartInput")?.value || "";
-      try { await navigator.clipboard.writeText(val); toast("Start‑Link kopiert"); }
-      catch { $("previewStartInput")?.select(); document.execCommand?.("copy"); toast("Kopiert"); }
-    });
-
     $("copyGroup")?.addEventListener("click", async () => {
       const val = $("previewGroupInput")?.value || "";
       try { await navigator.clipboard.writeText(val); toast("Startgroup‑Link kopiert"); }
       catch { $("previewGroupInput")?.select(); document.execCommand?.("copy"); toast("Kopiert"); }
     });
 
-    // QR‑Downloads
-    $("downloadQRStart")?.addEventListener("click", () => {
-      const c = $("qrStart"); if (!c) return;
-      const a = document.createElement("a");
-      a.download = "luxbase-start-qr.png";
-      a.href = c.toDataURL("image/png"); a.click();
-    });
-
+    // QR‑Download
     $("downloadQRGroup")?.addEventListener("click", () => {
       const c = $("qrGroup"); if (!c) return;
       const a = document.createElement("a");

@@ -381,26 +381,49 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
 
     // Load
     async function loadCfg() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("creator_config")
-        .select(fields.join(",") + ", stripe_account_id, group_chat_id, bot_aktiv")
+        .select(`
+          ${fields.join(",")},
+          stripe_account_id,
+          group_chat_id,
+          telegram_id,
+          has_vipbot
+        `)
         .eq("creator_id", state.userId)
         .maybeSingle();
 
+      if (error) {
+        console.warn("loadCfg error:", error);
+        $("hint").textContent = "❌ Konnte Daten nicht laden. Bitte später erneut versuchen.";
+      }
+
       if (data) {
+        // Formular-Felder
         for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
+
+        // Status-Ableitung
         state.stripeConnected = !!data.stripe_account_id;
         state.stripeId = data.stripe_account_id || null;
+
         state.groupLinked = !!data.group_chat_id;
-        state.botActive = !!data.bot_aktiv; // erwartet bool in DB
+
+        // Bot aktiv ableiten (konservativ): sobald DM-Verknüpfung / Gruppe / has_vipbot vorhanden
+        state.botActive = !!(data.telegram_id || data.group_chat_id || data.has_vipbot);
+
         $("stripeStatus").textContent = state.stripeConnected
           ? `✅ Stripe verbunden (Account: ${data.stripe_account_id}).`
           : "⚠️ Stripe noch nicht verbunden.";
       } else {
+        // Kein Datensatz -> neutrales UI
         for (const k of fields) if ($(k)) $(k).value = "";
-        state.stripeConnected = false; state.stripeId = null; state.groupLinked = false; state.botActive = false;
+        state.stripeConnected = false;
+        state.stripeId = null;
+        state.groupLinked = false;
+        state.botActive = false;
         $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
       }
+
       await updatePreviews();
       refreshProgressUI();
     }

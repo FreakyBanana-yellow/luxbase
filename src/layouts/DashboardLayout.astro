@@ -1,95 +1,336 @@
 ---
-// KEIN Sidebar-Import mehr
-const role = "creator";
-const name = "Creator";
+import DashboardLayout from "../../layouts/DashboardLayout.astro";
+
+// Fester Bot-Name in der UI
+const BOT_USERNAME = "GroupLuxBot";
+// Render-Backend Basis-URL (für Stripe-Redirect)
+const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
 ---
 
-<html lang="de">
-  <head>
-    <title>{Astro.props.title || "Luxbase Dashboard"}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta charset="utf-8" />
-    <meta name="theme-color" content="#0d0d0d" />
-    <meta id="supabase-config"
-      data-url={`${import.meta.env.PUBLIC_SUPABASE_URL}`}
-      data-key={`${import.meta.env.PUBLIC_SUPABASE_ANON_KEY}`} />
-  </head>
+<DashboardLayout title="VIP‑Einstellungen">
+  <!-- Meta für Browser‑Script -->
+  <div id="lux-meta" data-bot={BOT_USERNAME} data-bot-api={BOT_API_BASE} class="hidden"></div>
 
-  <body class="bg-luxblack text-white font-sans">
-    <!-- Header -->
-    <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
-      <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a>
-      <div id="accountMenu" class="relative">
-        <button id="accountBtn" class="h-11 px-4 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition hidden">
-          👤 <span id="username">Account</span>
+  <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative space-y-6">
+    <!-- Basis -->
+    <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
+      <h2 class="text-luxgold text-lg font-semibold">Basis</h2>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="block">
+          <span class="text-sm text-white/70">Preis (€)</span>
+          <input id="preis" type="number" step="1" min="0"
+            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+            placeholder="49" />
+        </label>
+        <label class="block">
+          <span class="text-sm text-white/70">VIP‑Dauer (Tage)</span>
+          <input id="vip_days" type="number" step="1" min="1"
+            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+            placeholder="30" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Stripe -->
+    <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
+      <div class="flex items-center gap-2">
+        <h2 class="text-luxgold text-lg font-semibold">Stripe</h2>
+        <button type="button" class="tip-btn" aria-label="Hilfe"
+          data-tip="Verbinde zuerst Stripe, damit Zahlungen funktionieren. Es öffnet sich das Stripe‑Onboarding.">?</button>
+      </div>
+
+      <a id="stripeLinkWrap" class="w-full" target="_blank" rel="noreferrer">
+        <button id="stripeBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">
+          Stripe verbinden
         </button>
-        <div class="absolute right-0 mt-2 w-56 bg-black border border-luxgray rounded-xl shadow-xl text-sm hidden" id="accountDropdown">
-          <a href="/dashboard" class="block px-4 py-3 hover:bg-luxgray/30">Dashboard</a>
-          <a href="/dashboard/vipbot-einstellungen" class="block px-4 py-3 hover:bg-luxgray/30">Bot‑Einstellungen</a>
-          <a href="/logs" class="block px-4 py-3 hover:bg-luxgray/30">Logs</a>
-          <button id="logoutBtn" class="w-full text-left px-4 py-3 hover:bg-red-900/40 text-red-400">Abmelden</button>
+      </a>
+
+      <p id="stripeStatus" class="text-xs text-white/60"></p>
+    </div>
+
+    <!-- Telegram -->
+    <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
+      <h2 class="text-luxgold text-lg font-semibold">Telegram</h2>
+
+      <label class="block">
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-white/70">Gruppen‑Link (Fallback, statisch)</span>
+          <button type="button" class="tip-btn" aria-label="Hilfe"
+            data-tip="Optionaler, statischer Einladungslink deiner Gruppe – wird nur genutzt, wenn der Einmallink nicht erstellt werden kann.">?</button>
+        </div>
+        <input id="gruppe_link"
+          class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+          placeholder="https://t.me/+abcdef..." />
+      </label>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="relative">
+          <button id="linkTelegramBtn" type="button"
+            class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3">
+            Bot aktivieren
+          </button>
+          <button type="button" class="tip-btn absolute right-2 top-1/2 -translate-y-1/2"
+            data-tip="Öffnet den Bot im DM. Danach bitte den Bot als Admin in deiner VIP‑Gruppe hinzufügen.">?</button>
+        </div>
+
+        <div class="relative">
+          <button id="bindGroupBtn" type="button"
+            class="w-full border border-luxgray rounded-xl py-3">
+            Gruppe verbinden
+          </button>
+          <button type="button" class="tip-btn absolute right-2 top-1/2 -translate-y-1/2"
+            data-tip="Wähle deine VIP‑Gruppe und starte den Bot dort. Er verknüpft die Gruppe und erzeugt später Einladungslinks.">?</button>
         </div>
       </div>
-    </header>
 
-    <!-- Main (ohne Sidebar) -->
-    <main class="min-h-screen p-4 md:p-6 pb-24" id="dashboardRoot">
-      <slot name="header" />
-      <h1 class="text-2xl md:text-3xl font-bold text-luxgold mb-6 md:mb-8" id="welcomeHeadline">
-        Willkommen zurück, {name}! 👋
-      </h1>
-      <slot />
-    </main>
+      <!-- Kunden‑Link + QR (zum Teilen) -->
+      <div class="grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start">
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-white/70">Kunden‑Link (zum Teilen)</span>
+            <button type="button" class="tip-btn" aria-label="Hilfe"
+              data-tip="Diesen Link/QR teilst du mit deinen Kunden. Er öffnet den Bot im DM mit deinem Creator‑Payload.">?</button>
+          </div>
+          <div class="flex gap-2">
+            <input id="customerLinkInput" readonly
+              class="flex-1 bg-black/30 border border-luxgray rounded-lg px-3 py-2 text-[13px] select-all" />
+            <button id="copyCustomerLink" type="button" class="border border-luxgray rounded-lg px-3 text-[13px]">
+              Kopieren
+            </button>
+          </div>
+          <a id="customerLinkA" class="text-[13px] underline break-all text-white/70" target="_blank" rel="noreferrer">—</a>
+        </div>
 
-    <!-- Bottom Tabs -->
-    <nav class="fixed bottom-0 inset-x-0 md:hidden bg-black/90 backdrop-blur border-t border-luxgray z-50">
-      <div class="grid grid-cols-4 text-center text-xs">
-        <a href="/dashboard" class="py-3 flex flex-col items-center gap-1">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
-          <span>Start</span>
-        </a>
-        <a href="/dashboard/vipbot-einstellungen" class="py-3 flex flex-col items-center gap-1">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94a7.43,7.43,0,0,0,.05-1,7.43,7.43,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.45,7.45,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,12.5,1h-4a.5.5,0,0,0-.49.42L7.63,4.07a7.45,7.45,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L3.14,10a7.43,7.43,0,0,0-.05,1,7.43,7.43,0,0,0,.05,1L1,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.45,7.45,0,0,0,1.73,1l.38,2.65A.5.5,0,0,0,8.5,22h4a.5.5,0,0,0,.49-.42l.38-2.65a7.45,7.45,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64Z"/></svg>
-          <span>Bot</span>
-        </a>
-        <a href="/logs" class="py-3 flex flex-col items-center gap-1">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z"/></svg>
-          <span>Logs</span>
-        </a>
-        <a href="/profile" class="py-3 flex flex-col items-center gap-1">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>
-          <span>Profil</span>
-        </a>
+        <div class="flex flex-col items-center gap-2">
+          <canvas id="qrCustomer" width="140" height="140" class="rounded-lg border border-luxgray"></canvas>
+          <button id="downloadQRCustomer" type="button"
+            class="text-[12px] px-2 py-1 border border-luxgray rounded-lg text-white/70 hover:text-white">
+            QR herunterladen
+          </button>
+        </div>
       </div>
-    </nav>
 
-    <!-- Client Script -->
-    <script type="module">
-      import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-      (async () => {
-        const meta = document.getElementById("supabase-config");
-        const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { window.location.href = "/"; return; }
+      <p class="text-xs text-white/60 leading-5">
+        Reihenfolge: Erst <b>Stripe verbinden</b>, dann <b>Bot aktivieren</b> (DM) und
+        den Bot als Admin in deiner VIP‑Gruppe hinzufügen.
+      </p>
+    </div>
 
-        const accountBtn = document.getElementById("accountBtn");
-        const accountDropdown = document.getElementById("accountDropdown");
-        const usernameEl = document.getElementById("username");
-        const logoutBtn = document.getElementById("logoutBtn");
-        accountBtn?.classList.remove("hidden");
-        usernameEl.textContent = user.email || "Account";
-        accountBtn?.addEventListener("click", () => accountDropdown.classList.toggle("hidden"));
-        logoutBtn?.addEventListener("click", async () => {
-          await supabase.auth.signOut();
-          sessionStorage.clear();
-          location.href = "/";
-        });
+    <!-- Texte -->
+    <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
+      <h2 class="text-luxgold text-lg font-semibold">Texte</h2>
+      <label class="block">
+        <span class="text-sm text-white/70">Welcome‑Text</span>
+        <textarea id="welcome_text" rows="3"
+          class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+          placeholder="👋 Willkommen im VIP! ..."></textarea>
+      </label>
+      <label class="block">
+        <span class="text-sm text-white/70">Regeln‑Text</span>
+        <textarea id="regeln_text" rows="3"
+          class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+          placeholder="📜 Regeln ..."></textarea>
+      </label>
+    </div>
 
-        const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
-        const welcomeHeadline = document.getElementById("welcomeHeadline");
-        const fallbackName = lux.role === "agentur" ? "deine Agentur" : "dein Creator‑Profil";
-        welcomeHeadline.textContent = `Willkommen zurück, ${lux.creator_name || fallbackName}! 👋`;
-      })();
-    </script>
-  </body>
-</html>
+    <div class="flex items-center gap-3">
+      <button id="saveBtn" type="button" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3">
+        Speichern
+      </button>
+      <button id="reloadBtn" type="button" class="px-4 py-3 border border-luxgray rounded-xl">
+        Neu laden
+      </button>
+    </div>
+
+    <p id="hint" class="text-xs text-white/60"></p>
+  </section>
+
+  <style is:global>
+    #botForm, #botForm * { pointer-events: auto; }
+    .tip-btn { inline-size: 1.5rem; block-size: 1.5rem; line-height: 1.5rem; border-radius: 999px; }
+    .tip-btn { display:inline-flex; align-items:center; justify-content:center; border:1px solid var(--luxgray,#2a2a2a); background:transparent; color:#f6c453; }
+    .tip { position: fixed; z-index: 60; max-width: 260px; font-size: 12px; line-height: 1.2; color: #fff;
+           background: rgba(0,0,0,.9); border: 1px solid rgba(255,255,255,.08); border-radius: 10px; padding: .6rem .7rem;
+           box-shadow: 0 8px 24px rgba(0,0,0,.45); transform-origin: top center; }
+    .tip-enter { transform: scale(.96); opacity: 0 }
+    .tip-enter-active { transform: scale(1); opacity: 1; transition: transform .12s ease, opacity .12s ease }
+    .tip-exit { transform: scale(1); opacity: 1 }
+    .tip-exit-active { transform: scale(.96); opacity: 0; transition: transform .12s ease, opacity .12s ease }
+    .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background:#111; color:#fff;
+             border:1px solid rgba(255,255,255,.08); border-radius: 12px; padding:.55rem .8rem; font-size:12px; z-index:70; }
+  </style>
+
+  <!-- QR-Library (defer) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+  <!-- Haupt-Logik -->
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    // Meta & ENV
+    const META = document.getElementById("lux-meta");
+    const BOT = META?.dataset?.bot || "GroupLuxBot";
+    const BOT_API = META?.dataset?.botApi || "";
+
+    const $ = (id) => document.getElementById(id);
+    const toast = (m="OK") => { const t=document.createElement("div"); t.className="toast"; t.textContent=m; document.body.appendChild(t); setTimeout(()=>t.remove(),1400); };
+
+    // Supabase
+    const supaMeta = document.getElementById("supabase-config");
+    if (!supaMeta?.dataset?.url || !supaMeta?.dataset?.key) {
+      $("hint").textContent = "❌ Supabase‑Konfiguration fehlt.";
+      throw new Error("supabase-config-missing");
+    }
+    const supabase = createClient(supaMeta.dataset.url, supaMeta.dataset.key);
+
+    // Felder
+    const fields = ["preis","vip_days","gruppe_link","welcome_text","regeln_text"];
+
+    // Auth
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
+    const userId = user.id;
+
+    // Links
+    const customerLink = () => `https://t.me/${BOT}?start=${encodeURIComponent("creator_"+userId)}`; // zum Teilen
+    const groupLink   = () => `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+userId)}`; // Gruppe verbinden
+    const linkTelegram = () => `https://t.me/${BOT}?start=${encodeURIComponent("link_creator_"+userId)}`; // DM-Owner-Connect
+    const stripeRedirect = () => `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(userId)}`;
+
+    // QR
+    async function drawQR(canvasId, value, tries=10) {
+      try {
+        const c = document.getElementById(canvasId); if (!c) return;
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        const size = 140;
+        c.width = size * dpr; c.height = size * dpr;
+        c.style.width = size + "px"; c.style.height = size + "px";
+        if (window.QRCode?.toCanvas) {
+          await window.QRCode.toCanvas(c, value, { margin: 1, scale: dpr });
+          return;
+        }
+        if (tries > 0) setTimeout(()=>drawQR(canvasId, value, tries-1), 120);
+      } catch (err) { console.warn("QR render error:", err); }
+    }
+
+    async function updatePreviews() {
+      // Kunden-Link
+      const s = customerLink();
+      $("customerLinkA").href = s;
+      $("customerLinkA").textContent = s;
+      $("customerLinkInput").value = s;
+      drawQR("qrCustomer", s);
+
+      // Stripe-Link
+      const wrap = $("stripeLinkWrap");
+      if (wrap) wrap.href = BOT_API ? stripeRedirect() : "#";
+    }
+
+    async function loadCfg() {
+      const { data } = await supabase
+        .from("creator_config")
+        .select(fields.join(",") + ", stripe_account_id, group_chat_id")
+        .eq("creator_id", userId)
+        .maybeSingle();
+
+      if (data) {
+        for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
+        $("stripeStatus").textContent = data.stripe_account_id
+          ? `✅ Stripe verbunden (Account: ${data.stripe_account_id}).`
+          : "⚠️ Stripe noch nicht verbunden.";
+      } else {
+        for (const k of fields) if ($(k)) $(k).value = "";
+        $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
+      }
+      updatePreviews();
+    }
+
+    // Speichern
+    $("saveBtn").addEventListener("click", async () => {
+      const payload = { creator_id: userId };
+      for (const k of fields) payload[k] = $(k)?.value ?? null;
+      payload.preis = Number(payload.preis || 0);
+      payload.vip_days = Number(payload.vip_days || 30);
+
+      const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
+      $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
+      if (!error) toast("Gespeichert");
+    });
+
+    // Reload
+    $("reloadBtn").addEventListener("click", loadCfg);
+
+    // Bot aktivieren (DM)
+    $("linkTelegramBtn").addEventListener("click", () => {
+      window.open(linkTelegram(), "_blank");
+      $("hint").textContent = "Telegram öffnen → Bot im DM starten, danach Bot in der Gruppe als Admin hinzufügen.";
+    });
+
+    // Gruppe verbinden
+    $("bindGroupBtn").addEventListener("click", () => {
+      window.open(groupLink(), "_blank");
+      $("hint").textContent = "Telegram → Gruppe auswählen → Bot starten → Admin‑Rechte geben.";
+    });
+
+    // Stripe
+    $("stripeBtn").addEventListener("click", (e) => {
+      if (!BOT_API) {
+        e.preventDefault();
+        alert("PUBLIC_BOT_API_BASE fehlt im Frontend.");
+      }
+    });
+
+    // Copy Kunden-Link
+    $("copyCustomerLink").addEventListener("click", async () => {
+      const val = $("customerLinkInput")?.value || "";
+      try { await navigator.clipboard.writeText(val); toast("Kunden‑Link kopiert"); }
+      catch { $("customerLinkInput")?.select(); document.execCommand?.("copy"); toast("Kopiert"); }
+    });
+
+    // QR Download
+    $("downloadQRCustomer").addEventListener("click", () => {
+      const c = $("qrCustomer"); if (!c) return;
+      const a = document.createElement("a");
+      a.download = "luxbase-kundenlink-qr.png";
+      a.href = c.toDataURL("image/png");
+      a.click();
+    });
+
+    // Tooltips
+    let activeTipEl = null, hideTimer = null;
+    function showTip(anchorBtn, text) {
+      hideTip();
+      const tip = document.createElement("div");
+      tip.className = "tip tip-enter";
+      tip.textContent = text;
+      document.body.appendChild(tip);
+      requestAnimationFrame(() => tip.classList.add("tip-enter-active"));
+      const rect = anchorBtn.getBoundingClientRect();
+      const margin = 8;
+      const top = rect.bottom + margin + window.scrollY;
+      const left = rect.left + rect.width / 2 - tip.offsetWidth / 2 + window.scrollX;
+      tip.style.top = `${top}px`;
+      tip.style.left = `${Math.max(12, Math.min(left, window.scrollX + document.documentElement.clientWidth - tip.offsetWidth - 12))}px`;
+      activeTipEl = tip;
+      hideTimer = setTimeout(hideTip, 3500);
+    }
+    function hideTip() {
+      if (!activeTipEl) return;
+      activeTipEl.classList.remove("tip-enter", "tip-enter-active");
+      activeTipEl.classList.add("tip-exit");
+      requestAnimationFrame(() => {
+        activeTipEl.classList.add("tip-exit-active");
+        setTimeout(() => { activeTipEl?.remove(); activeTipEl = null; }, 120);
+      });
+      clearTimeout(hideTimer); hideTimer = null;
+    }
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-tip]");
+      if (btn) { e.stopPropagation(); showTip(btn, btn.getAttribute("data-tip") || ""); }
+      else hideTip();
+    });
+
+    // Initial laden
+    await loadCfg();
+  </script>
+</DashboardLayout>

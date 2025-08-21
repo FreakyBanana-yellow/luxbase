@@ -5,8 +5,18 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
 <DashboardLayout title="Dein Luxbase Dashboard">
   <section class="max-w-6xl mx-auto px-4 py-6 space-y-6" id="dashboardRoot">
 
+    <!-- Header / Kontext -->
+    <header class="space-y-2">
+      <h1 class="text-lg sm:text-xl font-semibold text-white">Übersicht deiner VIP-Performance</h1>
+      <p class="text-sm text-white/70">
+        Hier siehst du Umsatz, aktive VIPs und Neuabschlüsse für den ausgewählten Zeitraum.
+        Optional kannst du die <b>Vorperiode</b> zum Vergleich einblenden.
+      </p>
+      <p id="dataStamp" class="text-[12px] text-white/50">–</p>
+    </header>
+
     <!-- Controls: Range + Compare -->
-    <div class="flex items-center justify-between gap-3">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <div class="flex gap-1 sm:gap-2" id="rangeControls">
         <button data-range="7"  class="range-btn">7T</button>
         <button data-range="30" class="range-btn is-active">30T</button>
@@ -44,7 +54,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
       <!-- Neue VIPs -->
       <article class="kpi-card">
-        <h3 class="kpi-title">Neue VIPs (<span id="labelRange2">7</span> Tage)</h3>
+        <h3 class="kpi-title">Neue VIPs (<span id="labelRange2">30</span> Tage)</h3>
         <div class="flex items-baseline gap-2">
           <p class="kpi-value" id="kpiNew">–</p>
           <span class="kpi-delta" id="kpiNewDelta"></span>
@@ -96,8 +106,10 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     .kpi-delta.up{color:#7ee787}
     .kpi-delta.down{color:#ff6b6b}
     .kpi-spark{height:32px;margin-top:.35rem}
+
     .range-btn{border:1px solid var(--luxgray,#2a2a2a);border-radius:.6rem;padding:.45rem .7rem;font-size:.85rem;color:#fff;background:transparent}
     .range-btn.is-active{border-color:rgba(246,196,83,.5);background:rgba(246,196,83,.08);color:#f6c453}
+
     .chart-card{background:rgba(0,0,0,.6);border:1px solid var(--luxgray,#2a2a2a);border-radius:1rem;padding:1rem}
     .chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.25rem}
     .chart-title{font-size:.9rem;font-weight:600;color:#f6c453}
@@ -134,36 +146,34 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     const el = (id) => document.getElementById(id);
     const qsA = (sel) => Array.from(document.querySelectorAll(sel));
     const fmtEUR = (n) => (typeof n === "number" ? n : Number(n || 0)).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
-    const fmtPct = (x) => `${(x*100).toFixed(1)}%`;
 
     // Date helpers
-    const today = new Date();
+    const now = new Date();
     const toISO = (d) => new Date(d).toISOString().slice(0,10);
-    const daysAgo = (d) => new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()-d));
+    const daysAgo = (d) => new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()-d));
     function labelsLastNDays(n){const arr=[];for(let i=n-1;i>=0;i--){arr.push(toISO(daysAgo(i)));}return arr;}
+    const stamp = new Intl.DateTimeFormat('de-DE',{dateStyle:'medium', timeStyle:'short'}).format(new Date());
+    el("dataStamp").textContent = `Datenstand: ${stamp}`;
 
     // Auth
-    const { data: { user }, error: userErr } = await supabase.auth.getUser();
-    if (userErr) dbg("⚠️ getUser error:", userErr);
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) { dbg("❌ Kein User – redirect /"); window.location.href = "/"; throw new Error("redirect"); }
 
     // Config
-    const { data: cfg, error: cfgErr } = await supabase
+    const { data: cfg } = await supabase
       .from("creator_config")
       .select("preis, vip_dauer")
       .eq("creator_id", user.id)
       .maybeSingle();
-    if (cfgErr) dbg("⚠️ creator_config error:", cfgErr);
 
     const preis = Number(cfg?.preis || 0);
     const vipDauer = Number(cfg?.vip_dauer || 30);
 
     // VIPs
-    const { data: vipData, error: vipErr } = await supabase
+    const { data: vipData } = await supabase
       .from("vip_users")
       .select("letzter_kontakt, vip_bis, status")
       .eq("creator_id", user.id);
-    if (vipErr) dbg("⚠️ vip_users error:", vipErr);
 
     let vipRows = vipData || [];
 
@@ -176,7 +186,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         status: "active",
       });
       vipRows = [mk(1), mk(2), mk(5), mk(7), mk(8), mk(10), mk(15)];
-      el("kpiRevenueNote").textContent = "Demo-Schätzung (keine echten Datensätze oder keine Leserechte)";
+      el("kpiRevenueNote").textContent = "Basierend auf Preis × neue VIPs";
       el("kpiActiveNote").textContent  = "Demo-Daten";
       el("kpiNewNote").textContent     = "Demo-Daten";
     }
@@ -205,42 +215,39 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
       // Totals
       const revenueTotal = revenueByDay.reduce((a,b)=>a+b,0);
-      const activeToday  = activeEachDay[activeEachDay.length-1] || 0;
+      const activeToday  = activeEachDay.at(-1) || 0;
       const newTotal     = newVipSeries.reduce((a,b)=>a+b,0);
 
       return { labels, newVipSeries, revenueByDay, activeEachDay, totals:{ revenueTotal, activeToday, newTotal } };
     }
 
-    function computePrev(rangeDays){
+    function computePrevSeries(rangeDays){
       // Vorperiode: gleicher Zeitraum direkt davor
-      const endPrev   = daysAgo(rangeDays);
+      const endPrev = daysAgo(rangeDays);
       const labelsPrev = [];
       for(let i=rangeDays-1;i>=0;i--){ labelsPrev.push(toISO(new Date(endPrev.getTime()-i*86400000))); }
       const mapNewPrev = Object.fromEntries(labelsPrev.map(d=>[d,0]));
       vipRows.forEach(r=>{ const d=(r.letzter_kontakt||"").slice(0,10); if(mapNewPrev[d]!==undefined) mapNewPrev[d]+=1;});
       const newVipPrev = labelsPrev.map(d=>mapNewPrev[d]);
       const revPrevByDay = labelsPrev.map((_,i)=> (preis>0 ? newVipPrev[i]*preis : 0));
-      const activePrevEnd = vipRows.filter(r => String(r.vip_bis||"").slice(0,10) >= labelsPrev[labelsPrev.length-1]).length;
+      const activePrevEnd = vipRows.filter(r => String(r.vip_bis||"").slice(0,10) >= labelsPrev.at(-1)).length;
       return {
-        totals:{
-          revenueTotal: revPrevByDay.reduce((a,b)=>a+b,0),
-          activeToday: activePrevEnd,
-          newTotal: newVipPrev.reduce((a,b)=>a+b,0),
-        }
+        newVipPrev, revPrevByDay,
+        totals:{ revenueTotal: revPrevByDay.reduce((a,b)=>a+b,0), activeToday: activePrevEnd, newTotal: newVipPrev.reduce((a,b)=>a+b,0) }
       };
     }
 
-    function deltaClass(elm, curr, prev){
-      const wrap = elm; wrap.textContent = "";
+    function delta(elm, curr, prev){
+      elm.textContent = "";
+      elm.classList.remove("up","down");
       if (!compareToggle.checked) return;
       const d = prev>0 ? (curr-prev)/prev : (curr>0 ? 1 : 0);
       const txt = (d>=0?"+":"")+ (Math.abs(d)*100).toFixed(1) + "% " + (d>0?"↗︎":"↘︎");
-      wrap.textContent = txt;
-      wrap.classList.remove("up","down");
-      if (d>0) wrap.classList.add("up"); else if (d<0) wrap.classList.add("down");
+      elm.textContent = txt;
+      if (d>0) elm.classList.add("up"); else if (d<0) elm.classList.add("down");
     }
 
-    // Sparklines (super schlank)
+    // Sparklines
     function renderSpark(canvas, data, color="#f6c453"){
       const ctx = canvas.getContext("2d");
       return new Chart(ctx,{
@@ -253,39 +260,37 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     function renderKPIs(series, prevTotals){
       // Labels
       el("labelRange1").textContent = String(RANGE);
-      el("labelRange2").textContent = String(Math.min(7,RANGE)); // „Neue VIPs (7 Tage)“ kann auch RANGE sein – hier leicht konservativ
+      el("labelRange2").textContent = String(RANGE);
 
       // Totals
       el("kpiRevenue").textContent = fmtEUR(series.totals.revenueTotal);
       el("kpiActive").textContent  = String(series.totals.activeToday);
-      // Neue VIPs der letzten min(7,RANGE) Tage
-      const lastN = Math.min(7, RANGE);
-      const new7  = series.newVipSeries.slice(-lastN).reduce((a,b)=>a+b,0);
-      el("kpiNew").textContent     = String(new7);
+      el("kpiNew").textContent     = String(series.totals.newTotal);
 
       // Deltas (wenn Compare an)
-      deltaClass(el("kpiRevenueDelta"), series.totals.revenueTotal, prevTotals?.revenueTotal ?? 0);
-      deltaClass(el("kpiActiveDelta"),  series.totals.activeToday,  prevTotals?.activeToday ?? 0);
-      deltaClass(el("kpiNewDelta"),     new7,                       Math.round((prevTotals?.newTotal ?? 0)*(lastN/RANGE)));
+      delta(el("kpiRevenueDelta"), series.totals.revenueTotal, prevTotals?.revenueTotal ?? 0);
+      delta(el("kpiActiveDelta"),  series.totals.activeToday,  prevTotals?.activeToday ?? 0);
+      delta(el("kpiNewDelta"),     series.totals.newTotal,     prevTotals?.newTotal ?? 0);
 
       // Notes
       el("kpiRevenueNote").textContent = preis>0 ? "Basierend auf Preis × neue VIPs" : "Kein Preis in creator_config";
-      el("kpiNewNote").textContent     = `Zeitraum: ${series.labels[series.labels.length-lastN]} – ${series.labels[series.labels.length-1]}`;
+      el("kpiNewNote").textContent     = `Zeitraum: ${series.labels[0]} – ${series.labels.at(-1)}`;
 
       // Sparklines
-      destroyChart(sparkRev); destroyChart(sparkActive); destroyChart(sparkNew);
+      if (sparkRev) sparkRev.destroy(); if (sparkActive) sparkActive.destroy(); if (sparkNew) sparkNew.destroy();
       sparkRev    = renderSpark(document.getElementById("sparkRevenue"), series.revenueByDay);
       sparkActive = renderSpark(document.getElementById("sparkActive"),  series.activeEachDay);
       sparkNew    = renderSpark(document.getElementById("sparkNew"),     series.newVipSeries);
     }
 
-    function renderCharts(series){
+    function renderCharts(series, prevSeries){
       // Meta
-      el("revMeta").textContent = `${series.labels[0]} – ${series.labels[series.labels.length-1]}`;
+      el("revMeta").textContent = `${series.labels[0]} – ${series.labels.at(-1)}`;
       el("vipMeta").textContent = el("revMeta").textContent;
 
       // Destroy old
-      destroyChart(revChart); destroyChart(vipChart);
+      if (revChart) revChart.destroy();
+      if (vipChart) vipChart.destroy();
 
       // Revenue gradient
       const revCtx = document.getElementById("revChart").getContext("2d");
@@ -293,12 +298,20 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       grad.addColorStop(0,"rgba(246,196,83,0.35)");
       grad.addColorStop(1,"rgba(246,196,83,0.03)");
 
+      const revDatasets = [{
+        label: "Umsatz", data: series.revenueByDay, fill:true,
+        backgroundColor: grad, borderColor:"#f6c453", tension:.35, pointRadius:0, borderWidth:2
+      }];
+      if (compareToggle.checked && prevSeries){
+        revDatasets.push({
+          label:"Vorperiode", data: prevSeries.revPrevByDay, fill:false,
+          borderColor:"rgba(255,255,255,.45)", borderDash:[5,4], tension:.35, pointRadius:0, borderWidth:1.5
+        });
+      }
+
       revChart = new Chart(revCtx,{
         type: "line",
-        data: { labels: series.labels, datasets: [{
-          label: "Umsatz", data: series.revenueByDay, fill:true,
-          backgroundColor: grad, borderColor:"#f6c453", tension:.35, pointRadius:0, borderWidth:2
-        }]},
+        data: { labels: series.labels, datasets: revDatasets },
         options: {
           responsive:true, maintainAspectRatio:false,
           plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(ctx)=>fmtEUR(ctx.parsed.y) } } },
@@ -310,9 +323,20 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       });
 
       const vipCtx = document.getElementById("vipChart").getContext("2d");
+      const vipDatasets = [{
+        label:"Neue VIPs", data: series.newVipSeries, borderRadius:6, borderSkipped:false,
+        backgroundColor:"rgba(246,196,83,.85)"
+      }];
+      if (compareToggle.checked && prevSeries){
+        vipDatasets.push({
+          label:"Vorperiode", type:"line", data: prevSeries.newVipPrev,
+          borderColor:"rgba(255,255,255,.45)", borderDash:[5,4], pointRadius:0, tension:.35, fill:false
+        });
+      }
+
       vipChart = new Chart(vipCtx,{
         type:"bar",
-        data:{ labels: series.labels, datasets:[{ label:"Neue VIPs", data: series.newVipSeries, borderRadius:6 }]},
+        data:{ labels: series.labels, datasets: vipDatasets },
         options:{
           responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} },
           scales:{
@@ -326,9 +350,9 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     // Initial render
     function rerender(){
       const series = computeSeries(RANGE);
-      const prev   = compareToggle.checked ? computePrev(RANGE).totals : null;
-      renderKPIs(series, prev);
-      renderCharts(series);
+      const prev   = compareToggle.checked ? computePrevSeries(RANGE) : null;
+      renderKPIs(series, prev?.totals);
+      renderCharts(series, prev);
     }
 
     // Range events

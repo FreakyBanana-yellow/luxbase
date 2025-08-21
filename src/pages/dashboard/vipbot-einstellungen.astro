@@ -1,6 +1,7 @@
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
+// Serverseitig ins DOM schieben:
 const BOT_USERNAME = "GroupLuxBot";
 const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
 ---
@@ -10,6 +11,8 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
   <div id="lux-meta" data-bot={BOT_USERNAME} data-bot-api={BOT_API_BASE} class="hidden"></div>
 
   <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative space-y-6">
+    <div id="statusBox" class="hidden bg-black/60 border border-luxgray rounded-2xl p-4 text-sm text-white/80"></div>
+
     <form id="botForm" class="space-y-6">
       <!-- Basis -->
       <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
@@ -30,7 +33,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
         </div>
       </div>
 
-      <!-- Stripe (vor Telegram) -->
+      <!-- Stripe -->
       <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
         <div class="flex items-center gap-2">
           <h2 class="text-luxgold text-lg font-semibold">Stripe</h2>
@@ -43,6 +46,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
             Stripe verbinden
           </button>
         </a>
+        <p id="stripeStatus" class="text-xs text-white/60"></p>
       </div>
 
       <!-- Telegram -->
@@ -76,38 +80,68 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
               Gruppe verbinden
             </button>
             <button type="button" class="tip-btn absolute right-2 top-1/2 -translate-y-1/2"
-              data-tip="Wähle deine VIP‑Gruppe und starte den Bot dort. Er verknüpft die Gruppe und erzeugt später Einladungslinks.">?</button>
+              data-tip="Wähle deine VIP‑Gruppe und starte den Bot dort. Er verknüpft die Gruppe automatisch und erzeugt später Einladungslinks.">?</button>
           </div>
         </div>
 
-        <!-- Start-Link + QR -->
-        <div class="grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start">
-          <div class="space-y-2">
-            <div class="flex items-center gap-2">
-              <span class="text-sm text-white/70">Start‑Link</span>
-              <button type="button" class="tip-btn" aria-label="Hilfe"
-                data-tip="Das ist dein persönlicher Start‑Link. Teile ihn – er öffnet direkt den Bezahl‑Flow im Bot.">?</button>
+        <!-- Start- & Startgroup‑Link + QR -->
+        <div class="grid grid-cols-1 gap-6">
+          <!-- Start -->
+          <div class="grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="text-sm text-white/70">Start‑Link</span>
+                <button type="button" class="tip-btn" aria-label="Hilfe"
+                  data-tip="Dein persönlicher Start‑Link. Teile ihn – er öffnet den Bezahl‑Flow im Bot.">?</button>
+              </div>
+              <div class="flex gap-2">
+                <input id="previewStartInput" readonly
+                  class="flex-1 bg-black/30 border border-luxgray rounded-lg px-3 py-2 text-[13px] select-all" />
+                <button id="copyStart" type="button" class="border border-luxgray rounded-lg px-3 text-[13px]">
+                  Kopieren
+                </button>
+              </div>
+              <a id="previewStart" class="text-[13px] underline break-all text-white/70" target="_blank" rel="noreferrer">—</a>
             </div>
-            <div class="flex gap-2">
-              <input id="previewStartInput" readonly
-                class="flex-1 bg-black/30 border border-luxgray rounded-lg px-3 py-2 text-[13px] select-all" />
-              <button id="copyStart" type="button" class="border border-luxgray rounded-lg px-3 text-[13px]">
-                Kopieren
+
+            <div class="flex flex-col items-center gap-2">
+              <canvas id="qrStart" width="140" height="140" class="rounded-lg border border-luxgray"></canvas>
+              <button id="downloadQRStart" type="button"
+                class="text-[12px] px-2 py-1 border border-luxgray rounded-lg text-white/70 hover:text-white">
+                QR herunterladen
               </button>
             </div>
-            <a id="previewStart" class="text-[13px] underline break-all text-white/70" target="_blank" rel="noreferrer">—</a>
           </div>
 
-          <!-- QR + Download -->
-          <div class="flex flex-col items-center gap-2">
-            <canvas id="qr" width="140" height="140" class="rounded-lg border border-luxgray"></canvas>
-            <button id="downloadQR" type="button" 
-              class="text-[12px] px-2 py-1 border border-luxgray rounded-lg text-white/70 hover:text-white">
-              QR herunterladen
-            </button>
+          <!-- Startgroup -->
+          <div class="grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="text-sm text-white/70">Startgroup‑Link</span>
+                <button type="button" class="tip-btn" aria-label="Hilfe"
+                  data-tip="Öffnet den Bot im Modus zum Verbinden mit einer Gruppe. Wähle deine VIP‑Gruppe und gib dem Bot Admin‑Rechte.">?</button>
+              </div>
+              <div class="flex gap-2">
+                <input id="previewGroupInput" readonly
+                  class="flex-1 bg-black/30 border border-luxgray rounded-lg px-3 py-2 text-[13px] select-all" />
+                <button id="copyGroup" type="button" class="border border-luxgray rounded-lg px-3 text-[13px]">
+                  Kopieren
+                </button>
+              </div>
+              <a id="previewGroup" class="text-[13px] underline break-all text-white/70" target="_blank" rel="noreferrer">—</a>
+            </div>
+
+            <div class="flex flex-col items-center gap-2">
+              <canvas id="qrGroup" width="140" height="140" class="rounded-lg border border-luxgray"></canvas>
+              <button id="downloadQRGroup" type="button"
+                class="text-[12px] px-2 py-1 border border-luxgray rounded-lg text-white/70 hover:text-white">
+                QR herunterladen
+              </button>
+            </div>
           </div>
         </div>
 
+        <p id="groupInfo" class="text-xs text-white/60"></p>
         <p class="text-xs text-white/60 leading-5">
           Reihenfolge: Erst <b>Stripe verbinden</b>, dann <b>Bot aktivieren</b> (DM) und
           den Bot als Admin in deiner VIP‑Gruppe hinzufügen.
@@ -160,7 +194,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
   </style>
 
   <!-- QR Code lib -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
@@ -170,6 +204,13 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     const BOT_API = META?.dataset?.botApi || "";
 
     const $ = (id) => document.getElementById(id);
+    const setStatus = (msg, ok=true) => {
+      const box = $("statusBox");
+      box.classList.remove("hidden");
+      box.textContent = msg;
+      box.classList.toggle("border-green-600", ok);
+      box.classList.toggle("border-red-600", !ok);
+    };
 
     // Supabase aus Layout
     const meta = document.getElementById("supabase-config");
@@ -179,7 +220,6 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     }
     const supabase = createClient(meta.dataset.url, meta.dataset.key);
 
-    // Felder (ohne stripe_price_id)
     const fields = ["preis","vip_days","gruppe_link","welcome_text","regeln_text"];
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -190,32 +230,59 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     const linkTelegram = () => `https://t.me/${BOT}?start=${encodeURIComponent("link_creator_"+user.id)}`;
     const stripeRedirect = () => `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(user.id)}`;
 
-    function updateStartPreview() {
-      const s = startLink();
-      $("previewStart").href = s; $("previewStart").textContent = s;
-      $("previewStartInput").value = s;
+    function drawQR(canvasId, value) {
+      const c = $(canvasId);
+      if (!c || !window.QRCode) return;
+      const ctx = c.getContext("2d");
+      ctx.clearRect(0, 0, c.width, c.height);
+      window.QRCode.toCanvas(c, value, { margin: 1, width: 140 }, (err)=>{ if (err) console.warn("QR error", err); });
+    }
 
-      const canvas = $("qr");
-      if (window.QRCode && canvas) {
-        QRCode.toCanvas(canvas, s, { margin: 1, width: 140 }, (err)=>{ if (err) console.error(err); });
-      }
+    function updatePreviews() {
+      const s = startLink();
+      const g = groupLink();
+
+      // Links + Inputs
+      $("previewStart").href = s; $("previewStart").textContent = s;
+      $("previewGroup").href = g; $("previewGroup").textContent = g;
+      $("previewStartInput").value = s;
+      $("previewGroupInput").value = g;
+
+      // QR
+      drawQR("qrStart", s);
+      drawQR("qrGroup", g);
+
+      // Stripe-Link-Wrapper klickbar machen
       const wrap = $("stripeLinkWrap");
       if (wrap) wrap.href = BOT_API ? stripeRedirect() : "#";
     }
 
     async function loadCfg() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("creator_config")
         .select(fields.join(",") + ", stripe_account_id, group_chat_id")
         .eq("creator_id", user.id)
         .maybeSingle();
 
+      if (error) setStatus("❌ Konnte Einstellungen nicht laden.", false);
+
       if (data) {
         for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
+        $("stripeStatus").textContent = data.stripe_account_id
+          ? `✅ Stripe verbunden (Account: ${data.stripe_account_id}).`
+          : "⚠️ Stripe noch nicht verbunden.";
+
+        $("groupInfo").textContent = data.group_chat_id
+          ? `✅ Gruppe verknüpft (Chat ID: ${data.group_chat_id}).`
+          : "⚠️ Noch keine Gruppe verknüpft.";
       } else {
         for (const k of fields) if ($(k)) $(k).value = "";
+        $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
+        $("groupInfo").textContent = "⚠️ Noch keine Gruppe verknüpft.";
       }
-      updateStartPreview();
+
+      updatePreviews();
+      setStatus("✅ Seite geladen.", true);
     }
 
     // Speichern
@@ -227,6 +294,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
 
       const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
       $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
+      if (!error) await loadCfg();
     });
 
     $("reloadBtn").addEventListener("click", loadCfg);
@@ -244,95 +312,78 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     $("stripeBtn").addEventListener("click", (e) => {
       if (!BOT_API) {
         e.preventDefault();
-        alert("PUBLIC_BOT_API_BASE fehlt im Frontend.");
+        alert("PUBLIC_BOT_API_BASE fehlt im Frontend (Netlify‑ENV).");
       }
     });
 
-    await loadCfg();
+    // Copy‑Buttons
+    const toast = (t="Kopiert!") => {
+      const el = document.createElement("div");
+      el.className = "toast"; el.textContent = t;
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(), 1400);
+    };
 
-    // ====== Mobile‑freundliche Tooltips ======
+    $("copyStart")?.addEventListener("click", async () => {
+      const val = $("previewStartInput")?.value || "";
+      try { await navigator.clipboard.writeText(val); toast("Start‑Link kopiert"); }
+      catch { $("previewStartInput")?.select(); document.execCommand?.("copy"); toast("Kopiert"); }
+    });
+
+    $("copyGroup")?.addEventListener("click", async () => {
+      const val = $("previewGroupInput")?.value || "";
+      try { await navigator.clipboard.writeText(val); toast("Startgroup‑Link kopiert"); }
+      catch { $("previewGroupInput")?.select(); document.execCommand?.("copy"); toast("Kopiert"); }
+    });
+
+    // QR‑Downloads
+    $("downloadQRStart")?.addEventListener("click", () => {
+      const c = $("qrStart"); if (!c) return;
+      const a = document.createElement("a");
+      a.download = "luxbase-start-qr.png";
+      a.href = c.toDataURL("image/png"); a.click();
+    });
+
+    $("downloadQRGroup")?.addEventListener("click", () => {
+      const c = $("qrGroup"); if (!c) return;
+      const a = document.createElement("a");
+      a.download = "luxbase-startgroup-qr.png";
+      a.href = c.toDataURL("image/png"); a.click();
+    });
+
+    // Tooltips
     let activeTipEl = null, hideTimer = null;
-
     function showTip(anchorBtn, text) {
       hideTip();
       const tip = document.createElement("div");
       tip.className = "tip tip-enter";
       tip.textContent = text;
       document.body.appendChild(tip);
-
-      requestAnimationFrame(() => tip.classList.add("tip-enter-active"));
-
-      // Position unter dem Button
+      requestAnimationFrame(()=>tip.classList.add("tip-enter-active"));
       const rect = anchorBtn.getBoundingClientRect();
       const margin = 8;
       const top = rect.bottom + margin + window.scrollY;
-      const left = rect.left + rect.width / 2 - tip.offsetWidth / 2 + window.scrollX;
+      const left = rect.left + rect.width/2 - tip.offsetWidth/2 + window.scrollX;
       tip.style.top = `${top}px`;
       tip.style.left = `${Math.max(12, Math.min(left, window.scrollX + document.documentElement.clientWidth - tip.offsetWidth - 12))}px`;
-
-      activeTipEl = tip;
-      hideTimer = setTimeout(hideTip, 3500);
+      activeTipEl = tip; hideTimer = setTimeout(hideTip, 3500);
     }
-
     function hideTip() {
       if (!activeTipEl) return;
       activeTipEl.classList.remove("tip-enter", "tip-enter-active");
       activeTipEl.classList.add("tip-exit");
-      requestAnimationFrame(() => {
+      requestAnimationFrame(()=>{
         activeTipEl.classList.add("tip-exit-active");
-        setTimeout(() => {
-          activeTipEl?.remove();
-          activeTipEl = null;
-        }, 120);
+        setTimeout(()=>{ activeTipEl?.remove(); activeTipEl=null; },120);
       });
-      clearTimeout(hideTimer); hideTimer = null;
+      clearTimeout(hideTimer); hideTimer=null;
     }
-
-    document.addEventListener("click", (e) => {
+    document.addEventListener("click", (e)=>{
       const btn = e.target.closest("[data-tip]");
-      if (btn) {
-        e.stopPropagation();
-        showTip(btn, btn.getAttribute("data-tip") || "");
-      } else {
-        hideTip();
-      }
+      if (btn) { e.stopPropagation(); showTip(btn, btn.getAttribute("data-tip") || ""); }
+      else hideTip();
     });
 
-    // ===== Copy‑Button + Toast =====
-    function showToast(msg="Kopiert!") {
-      const t = document.createElement("div");
-      t.className = "toast";
-      t.textContent = msg;
-      document.body.appendChild(t);
-      setTimeout(() => t.remove(), 1400);
-    }
-
-    const copyBtn = document.getElementById("copyStart");
-    if (copyBtn) {
-      copyBtn.addEventListener("click", async () => {
-        const val = document.getElementById("previewStartInput")?.value || "";
-        try {
-          await navigator.clipboard.writeText(val);
-          showToast("Start‑Link kopiert");
-        } catch {
-          const el = document.getElementById("previewStartInput");
-          el?.select(); document.execCommand?.("copy");
-          showToast("Kopiert");
-        }
-      });
-    }
-
-    // ===== QR Download =====
-    const downloadBtn = document.getElementById("downloadQR");
-    if (downloadBtn) {
-      downloadBtn.addEventListener("click", () => {
-        const canvas = document.getElementById("qr");
-        if (!canvas) return;
-        const link = document.createElement("a");
-        link.download = "luxbase-vip-qr.png";
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-      });
-    }
+    await loadCfg();
   </script>
 </DashboardLayout>

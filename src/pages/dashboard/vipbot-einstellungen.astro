@@ -6,6 +6,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
 ---
 
 <DashboardLayout title="VIP‑Einstellungen">
+  <!-- Meta fürs Browser‑Script -->
   <div id="lux-meta" data-bot={BOT_USERNAME} data-bot-api={BOT_API_BASE} class="hidden"></div>
 
   <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative space-y-6">
@@ -80,7 +81,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
           </div>
         </div>
 
-        <!-- NUR Startgroup‑Link + QR -->
+        <!-- Startgroup‑Link + QR -->
         <div class="grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start">
           <div class="space-y-2">
             <div class="flex items-center gap-2">
@@ -154,60 +155,53 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
              border:1px solid rgba(255,255,255,.08); border-radius: 12px; padding:.55rem .8rem; font-size:12px; z-index:70; }
   </style>
 
+  <!-- QR‑Lib (UMD, blockiert nicht die Init-Logik) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js" defer></script>
+
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-    // ESM‑QR‑Lib (verlässlicher als UMD im Mischbetrieb)
-    const { toCanvas } = await import("https://cdn.jsdelivr.net/npm/qrcode@1.5.3/es/index.js");
 
     const META = document.getElementById("lux-meta");
     const BOT = META?.dataset?.bot || "GroupLuxBot";
     const BOT_API = META?.dataset?.botApi || "";
 
     const $ = (id) => document.getElementById(id);
-    const setStatus = (msg, ok=true) => {
-      const box = $("statusBox");
-      box.classList.remove("hidden");
-      box.textContent = msg;
-      box.classList.toggle("border-green-600", ok);
-      box.classList.toggle("border-red-600", !ok);
-    };
+    const toast = (t="Kopiert!") => { const el=document.createElement("div"); el.className="toast"; el.textContent=t; document.body.appendChild(el); setTimeout(()=>el.remove(),1400); };
+    const setStatus = (msg, ok=true) => { const box=$("statusBox"); box.classList.remove("hidden"); box.textContent=msg; box.classList.toggle("border-green-600",ok); box.classList.toggle("border-red-600",!ok); };
 
     // Supabase aus Layout
     const meta = document.getElementById("supabase-config");
     if (!meta?.dataset?.url || !meta?.dataset?.key) {
-      $("hint").textContent = "❌ Supabase‑Konfiguration fehlt.";
-      throw new Error("supabase-config-missing");
+      console.error("supabase-config missing in layout");
     }
     const supabase = createClient(meta.dataset.url, meta.dataset.key);
 
     const fields = ["preis","vip_days","gruppe_link","welcome_text","regeln_text"];
+    let userId = null;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
-
-    const groupLink = () => `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+user.id)}`;
-    const linkTelegram = () => `https://t.me/${BOT}?start=${encodeURIComponent("link_creator_"+user.id)}`;
-    const stripeRedirect = () => `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(user.id)}`;
-
-    async function drawQR(canvasId, value) {
-      const c = $(canvasId);
-      if (!c) return;
-      // Retina‑scharf
-      const dpr = Math.max(1, window.devicePixelRatio || 1);
-      const size = 140;
-      c.width = size * dpr;
-      c.height = size * dpr;
-      c.style.width = size + "px";
-      c.style.height = size + "px";
-      const opts = { margin: 1, scale: dpr }; // scale sorgt für scharfe Pixel
+    // QR safe render (mit Retry, fällt nie die restliche Logik um)
+    async function drawQR(canvasId, value, tries=10) {
       try {
-        await toCanvas(c, value, opts);
+        const c = $(canvasId); if (!c) return;
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        const size = 140;
+        c.width = size * dpr; c.height = size * dpr;
+        c.style.width = size + "px"; c.style.height = size + "px";
+        if (window.QRCode?.toCanvas) {
+          await window.QRCode.toCanvas(c, value, { margin: 1, scale: dpr });
+          return;
+        }
+        if (tries > 0) setTimeout(()=>drawQR(canvasId, value, tries-1), 150);
       } catch (err) {
         console.warn("QR render error:", err);
       }
     }
 
-    function updatePreviews() {
+    function groupLink() { return `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+userId)}`; }
+    function linkTelegram() { return `https://t.me/${BOT}?start=${encodeURIComponent("link_creator_"+userId)}`; }
+    function stripeRedirect() { return `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(userId)}`; }
+
+    async function updatePreviews() {
       const g = groupLink();
       $("previewGroup").href = g; $("previewGroup").textContent = g;
       $("previewGroupInput").value = g;
@@ -218,71 +212,75 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     }
 
     async function loadCfg() {
-      const { data, error } = await supabase
-        .from("creator_config")
-        .select(fields.join(",") + ", stripe_account_id, group_chat_id")
-        .eq("creator_id", user.id)
-        .maybeSingle();
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { window.location.href = "/"; return; }
+        userId = user.id;
 
-      if (error) setStatus("❌ Konnte Einstellungen nicht laden.", false);
+        const { data, error } = await supabase
+          .from("creator_config")
+          .select(fields.join(",") + ", stripe_account_id, group_chat_id")
+          .eq("creator_id", userId)
+          .maybeSingle();
 
-      if (data) {
-        for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
-        $("stripeStatus").textContent = data.stripe_account_id
-          ? `✅ Stripe verbunden (Account: ${data.stripe_account_id}).`
-          : "⚠️ Stripe noch nicht verbunden.";
+        if (error) console.warn("loadCfg error:", error);
 
-        $("groupInfo").textContent = data.group_chat_id
-          ? `✅ Gruppe verknüpft (Chat ID: ${data.group_chat_id}).`
-          : "⚠️ Noch keine Gruppe verknüpft.";
-      } else {
-        for (const k of fields) if ($(k)) $(k).value = "";
-        $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
-        $("groupInfo").textContent = "⚠️ Noch keine Gruppe verknüpft.";
+        if (data) {
+          for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
+          $("stripeStatus").textContent = data.stripe_account_id ? `✅ Stripe verbunden (Account: ${data.stripe_account_id}).` : "⚠️ Stripe noch nicht verbunden.";
+          $("groupInfo").textContent = data.group_chat_id ? `✅ Gruppe verknüpft (Chat ID: ${data.group_chat_id}).` : "⚠️ Noch keine Gruppe verknüpft.";
+        } else {
+          for (const k of fields) if ($(k)) $(k).value = "";
+          $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
+          $("groupInfo").textContent = "⚠️ Noch keine Gruppe verknüpft.";
+        }
+
+        await updatePreviews();
+        setStatus("✅ Seite geladen.", true);
+      } catch (e) {
+        console.error(e);
+        setStatus("❌ Fehler beim Laden.", false);
       }
-
-      updatePreviews();
-      setStatus("✅ Seite geladen.", true);
     }
 
-    // Speichern
-    $("saveBtn").addEventListener("click", async () => {
-      const payload = { creator_id: user.id };
-      for (const k of fields) payload[k] = $(k)?.value ?? null;
-      payload.preis = Number(payload.preis || 0);
-      payload.vip_days = Number(payload.vip_days || 30);
+    // Listener — immer binden (unabhängig vom QR)
+    $("saveBtn")?.addEventListener("click", async () => {
+      try {
+        if (!userId) return alert("Nicht eingeloggt.");
+        const payload = { creator_id: userId };
+        for (const k of fields) payload[k] = $(k)?.value ?? null;
+        payload.preis = Number(payload.preis || 0);
+        payload.vip_days = Number(payload.vip_days || 30);
 
-      const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
-      $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
-      if (!error) await loadCfg();
+        const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
+        $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
+        if (!error) await loadCfg();
+      } catch (e) {
+        console.error(e);
+        $("hint").textContent = "❌ Speichern fehlgeschlagen.";
+      }
     });
 
-    $("reloadBtn").addEventListener("click", loadCfg);
+    $("reloadBtn")?.addEventListener("click", loadCfg);
 
-    $("linkTelegramBtn").addEventListener("click", () => {
+    $("linkTelegramBtn")?.addEventListener("click", () => {
+      if (!userId) return alert("Nicht eingeloggt.");
       window.open(linkTelegram(), "_blank");
       $("hint").textContent = "Telegram öffnen → Bot im DM starten, danach Bot in der Gruppe als Admin hinzufügen.";
     });
 
-    $("bindGroupBtn").addEventListener("click", () => {
+    $("bindGroupBtn")?.addEventListener("click", () => {
+      if (!userId) return alert("Nicht eingeloggt.");
       window.open(groupLink(), "_blank");
       $("hint").textContent = "Telegram → Gruppe auswählen → Bot starten → Admin‑Rechte geben.";
     });
 
-    $("stripeBtn").addEventListener("click", (e) => {
+    $("stripeBtn")?.addEventListener("click", (e) => {
       if (!BOT_API) {
         e.preventDefault();
         alert("PUBLIC_BOT_API_BASE fehlt im Frontend (Netlify‑ENV).");
       }
     });
-
-    // Copy‑Buttons
-    const toast = (t="Kopiert!") => {
-      const el = document.createElement("div");
-      el.className = "toast"; el.textContent = t;
-      document.body.appendChild(el);
-      setTimeout(()=>el.remove(), 1400);
-    };
 
     $("copyGroup")?.addEventListener("click", async () => {
       const val = $("previewGroupInput")?.value || "";
@@ -290,7 +288,6 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
       catch { $("previewGroupInput")?.select(); document.execCommand?.("copy"); toast("Kopiert"); }
     });
 
-    // QR‑Download
     $("downloadQRGroup")?.addEventListener("click", () => {
       const c = $("qrGroup"); if (!c) return;
       const a = document.createElement("a");
@@ -303,13 +300,11 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     function showTip(anchorBtn, text) {
       hideTip();
       const tip = document.createElement("div");
-      tip.className = "tip tip-enter";
-      tip.textContent = text;
+      tip.className = "tip tip-enter"; tip.textContent = text;
       document.body.appendChild(tip);
       requestAnimationFrame(()=>tip.classList.add("tip-enter-active"));
       const rect = anchorBtn.getBoundingClientRect();
-      const margin = 8;
-      const top = rect.bottom + margin + window.scrollY;
+      const margin = 8, top = rect.bottom + margin + window.scrollY;
       const left = rect.left + rect.width/2 - tip.offsetWidth/2 + window.scrollX;
       tip.style.top = `${top}px`;
       tip.style.left = `${Math.max(12, Math.min(left, window.scrollX + document.documentElement.clientWidth - tip.offsetWidth - 12))}px`;
@@ -331,6 +326,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
       else hideTip();
     });
 
+    // Start
     await loadCfg();
   </script>
 </DashboardLayout>

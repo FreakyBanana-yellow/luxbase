@@ -11,7 +11,90 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
   <!-- Meta für Browser‑Script -->
   <div id="lux-meta" data-bot={BOT_USERNAME} data-bot-api={BOT_API_BASE} class="hidden"></div>
 
-  <section class="max-w-3xl mx-auto px-4 py-6 pb-28 relative space-y-6">
+  <section class="max-w-4xl mx-auto px-4 py-6 pb-28 relative space-y-6">
+
+    <!-- 🔁 Setup-Progress -->
+    <div class="bg-black/60 border border-luxgray rounded-2xl p-5">
+      <div class="flex items-center justify-between gap-4">
+        <h2 class="text-luxgold text-lg font-semibold">Einrichtung</h2>
+        <p id="setupAllDone" class="text-xs text-white/70 hidden">🎉 Alles fertig! Dein VIP‑Bot ist live.</p>
+      </div>
+
+      <ol id="progress" class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <li class="progress-step" data-key="stripe">
+          <div class="step-dot">1</div>
+          <div class="step-body">
+            <div class="step-title">Stripe verbinden</div>
+            <div id="progressStripeHint" class="step-hint">Zahlungen aktivieren</div>
+          </div>
+          <button id="editStripe" class="step-edit hidden">⚙️ Bearbeiten</button>
+        </li>
+        <li class="progress-step" data-key="bot">
+          <div class="step-dot">2</div>
+          <div class="step-body">
+            <div class="step-title">Bot aktivieren</div>
+            <div id="progressBotHint" class="step-hint">DM öffnen & starten</div>
+          </div>
+          <button id="editBot" class="step-edit hidden">⚙️ Bearbeiten</button>
+        </li>
+        <li class="progress-step" data-key="group">
+          <div class="step-dot">3</div>
+          <div class="step-body">
+            <div class="step-title">Gruppe verknüpfen</div>
+            <div id="progressGroupHint" class="step-hint">Bot als Admin hinzufügen</div>
+          </div>
+          <button id="editGroup" class="step-edit hidden">⚙️ Bearbeiten</button>
+        </li>
+      </ol>
+
+      <!-- Kurz-Summaries wenn erledigt -->
+      <div id="summaries" class="mt-4 space-y-3">
+        <!-- Stripe Summary -->
+        <div id="stripeSummary" class="hidden border border-luxgray rounded-xl p-3 flex items-center justify-between">
+          <div class="text-sm text-white/80">
+            ✅ <b>Stripe verbunden</b> <span id="stripeSummaryId" class="text-white/60"></span>
+          </div>
+          <button id="stripeSummaryEdit" class="step-edit">⚙️ Bearbeiten</button>
+        </div>
+
+        <!-- Bot Summary (inkl. Kundenlink + QR) -->
+        <div id="botSummary" class="hidden border border-luxgray rounded-xl p-3">
+          <div class="flex items-center justify-between gap-3">
+            <div class="text-sm text-white/80">✅ <b>Bot aktiv</b></div>
+            <button id="botSummaryEdit" class="step-edit">⚙️ Bearbeiten</button>
+          </div>
+          <div class="mt-3 grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start">
+            <div class="space-y-2">
+              <div class="flex items-center gap-2">
+                <span class="text-sm text-white/70">Kunden‑Link (zum Teilen)</span>
+              </div>
+              <div class="flex gap-2">
+                <input id="customerLinkInputSummary" readonly
+                  class="flex-1 bg-black/30 border border-luxgray rounded-lg px-3 py-2 text-[13px] select-all" />
+                <button id="copyCustomerLinkSummary" type="button" class="border border-luxgray rounded-lg px-3 text-[13px]">
+                  Kopieren
+                </button>
+              </div>
+              <a id="customerLinkASummary" class="text-[13px] underline break-all text-white/70" target="_blank" rel="noreferrer">—</a>
+            </div>
+            <div class="flex flex-col items-center gap-2">
+              <canvas id="qrCustomerSummary" width="140" height="140" class="rounded-lg border border-luxgray"></canvas>
+              <button id="downloadQRCustomerSummary" type="button"
+                class="text-[12px] px-2 py-1 border border-luxgray rounded-lg text-white/70 hover:text-white">
+                QR herunterladen
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gruppen Summary -->
+        <div id="groupSummary" class="hidden border border-luxgray rounded-xl p-3 flex items-center justify-between">
+          <div class="text-sm text-white/80">✅ <b>Gruppe verknüpft</b></div>
+          <button id="groupSummaryEdit" class="step-edit">⚙️ Bearbeiten</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Basis -->
     <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
       <h2 class="text-luxgold text-lg font-semibold">Basis</h2>
@@ -32,7 +115,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     </div>
 
     <!-- Stripe -->
-    <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
+    <div id="stripeSection" class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
       <div class="flex items-center gap-2">
         <h2 class="text-luxgold text-lg font-semibold">Stripe</h2>
         <button type="button" class="tip-btn" aria-label="Hilfe"
@@ -49,7 +132,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     </div>
 
     <!-- Telegram -->
-    <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
+    <div id="botSection" class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
       <h2 class="text-luxgold text-lg font-semibold">Telegram</h2>
 
       <label class="block">
@@ -83,7 +166,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
         </div>
       </div>
 
-      <!-- Kunden‑Link + QR (zum Teilen) -->
+      <!-- Kunden‑Link + QR (zum Teilen) – in der Bearbeitungssektion ebenfalls sichtbar -->
       <div class="grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start">
         <div class="space-y-2">
           <div class="flex items-center gap-2">
@@ -116,24 +199,30 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
       </p>
     </div>
 
-    <!-- Texte -->
-    <div class="bg-black/60 border border-luxgray rounded-2xl p-5 space-y-4">
-      <h2 class="text-luxgold text-lg font-semibold">Texte</h2>
-      <label class="block">
-        <span class="text-sm text-white/70">Welcome‑Text</span>
-        <textarea id="welcome_text" rows="3"
-          class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
-          placeholder="👋 Willkommen im VIP! ..."></textarea>
-      </label>
-      <label class="block">
-        <span class="text-sm text-white/70">Regeln‑Text</span>
-        <textarea id="regeln_text" rows="3"
-          class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
-          placeholder="📜 Regeln ..."></textarea>
-      </label>
+    <!-- Texte (einklappbar) -->
+    <div class="bg-black/60 border border-luxgray rounded-2xl">
+      <button id="toggleTexts" class="w-full flex items-center justify-between px-5 py-4">
+        <h2 class="text-luxgold text-lg font-semibold">Texte</h2>
+        <span id="textsChevron" class="text-white/60">▾</span>
+      </button>
+      <div id="textsBody" class="p-5 pt-0 space-y-4">
+        <label class="block">
+          <span class="text-sm text-white/70">Welcome‑Text</span>
+          <textarea id="welcome_text" rows="3"
+            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+            placeholder="👋 Willkommen im VIP! ..."></textarea>
+        </label>
+        <label class="block">
+          <span class="text-sm text-white/70">Regeln‑Text</span>
+          <textarea id="regeln_text" rows="3"
+            class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2"
+            placeholder="📜 Regeln ..."></textarea>
+        </label>
+      </div>
     </div>
 
-    <div class="flex items-center gap-3">
+    <!-- Actions -->
+    <div class="flex items-center gap-3 sticky bottom-4">
       <button id="saveBtn" type="button" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3">
         Speichern
       </button>
@@ -158,6 +247,16 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     .tip-exit-active { transform: scale(.96); opacity: 0; transition: transform .12s ease, opacity .12s ease }
     .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background:#111; color:#fff;
              border:1px solid rgba(255,255,255,.08); border-radius: 12px; padding:.55rem .8rem; font-size:12px; z-index:70; }
+
+    /* Progress */
+    .progress-step { display:flex; align-items:center; gap:.75rem; border:1px solid var(--luxgray,#2a2a2a); border-radius: .75rem; padding:.6rem .75rem; }
+    .progress-step.done { border-color: rgba(246,196,83,.4); background: linear-gradient(0deg, rgba(246,196,83,.06), transparent); }
+    .step-dot { inline-size: 28px; block-size: 28px; border-radius:999px; display:grid; place-items:center; border:1px solid #2a2a2a; }
+    .progress-step.done .step-dot { content:""; border-color: rgba(246,196,83,.5); }
+    .step-body { flex:1; min-width:0; }
+    .step-title { font-weight:600; color:#f6c453; }
+    .step-hint { font-size:12px; color: rgba(255,255,255,.6); }
+    .step-edit { font-size:12px; border:1px solid var(--luxgray,#2a2a2a); padding:.25rem .5rem; border-radius:.5rem; color:#f6c453; background:transparent; }
   </style>
 
   <!-- QR-Library (defer) -->
@@ -186,16 +285,25 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     // Felder
     const fields = ["preis","vip_days","gruppe_link","welcome_text","regeln_text"];
 
+    // State
+    const state = {
+      stripeConnected: false,
+      stripeId: null,
+      botActive: false,
+      groupLinked: false,
+      userId: null,
+    };
+
     // Auth
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
-    const userId = user.id;
+    state.userId = user.id;
 
     // Links
-    const customerLink = () => `https://t.me/${BOT}?start=${encodeURIComponent("creator_"+userId)}`; // zum Teilen
-    const groupLink   = () => `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+userId)}`; // Gruppe verbinden
-    const linkTelegram = () => `https://t.me/${BOT}?start=${encodeURIComponent("link_creator_"+userId)}`; // DM-Owner-Connect
-    const stripeRedirect = () => `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(userId)}`;
+    const customerLink = () => `https://t.me/${BOT}?start=${encodeURIComponent("creator_"+state.userId)}`; // zum Teilen
+    const groupLink   = () => `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+state.userId)}`; // Gruppe verbinden
+    const linkTelegram = () => `https://t.me/${BOT}?start=${encodeURIComponent("link_creator_"+state.userId)}`; // DM-Owner-Connect
+    const stripeRedirect = () => `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(state.userId)}`;
 
     // QR
     async function drawQR(canvasId, value, tries=10) {
@@ -213,41 +321,93 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
       } catch (err) { console.warn("QR render error:", err); }
     }
 
-    async function updatePreviews() {
-      // Kunden-Link
+    function updateCustomerLinkTargets() {
       const s = customerLink();
+      // Bearbeitungssektion
       $("customerLinkA").href = s;
       $("customerLinkA").textContent = s;
       $("customerLinkInput").value = s;
       drawQR("qrCustomer", s);
+      // Summary
+      $("customerLinkASummary").href = s;
+      $("customerLinkASummary").textContent = s;
+      $("customerLinkInputSummary").value = s;
+      drawQR("qrCustomerSummary", s);
+    }
 
+    async function updatePreviews() {
+      updateCustomerLinkTargets();
       // Stripe-Link
       const wrap = $("stripeLinkWrap");
       if (wrap) wrap.href = BOT_API ? stripeRedirect() : "#";
     }
 
+    // UI Helpers
+    function setHidden(el, hidden) { if (!el) return; el.classList.toggle("hidden", !!hidden); }
+
+    function refreshProgressUI() {
+      // Steps
+      const stepStripe = document.querySelector('.progress-step[data-key="stripe"]');
+      const stepBot    = document.querySelector('.progress-step[data-key="bot"]');
+      const stepGroup  = document.querySelector('.progress-step[data-key="group"]');
+
+      stepStripe?.classList.toggle("done", state.stripeConnected);
+      stepBot?.classList.toggle("done", state.botActive);
+      stepGroup?.classList.toggle("done", state.groupLinked);
+
+      // Edit Buttons sichtbar, wenn jeweiliger Schritt done ist
+      setHidden($("editStripe"), !state.stripeConnected);
+      setHidden($("editBot"), !state.botActive);
+      setHidden($("editGroup"), !state.groupLinked);
+
+      // Summaries
+      setHidden($("stripeSummary"), !state.stripeConnected);
+      setHidden($("botSummary"), !state.botActive);
+      setHidden($("groupSummary"), !state.groupLinked);
+
+      if (state.stripeConnected) {
+        $("stripeSummaryId").textContent = state.stripeId ? ` (Account: ${state.stripeId})` : "";
+      }
+
+      // Sections einklappen, wenn erledigt
+      setHidden($("stripeSection"), state.stripeConnected);
+      // Bot‑Sektion bleibt sichtbar, solange Bot ODER Gruppe nicht erledigt sind (weil beides dort verwaltet wird)
+      const botSectionShouldHide = state.botActive && state.groupLinked;
+      setHidden($("botSection"), botSectionShouldHide);
+
+      // All done Banner
+      $("setupAllDone").classList.toggle("hidden", !(state.stripeConnected && state.botActive && state.groupLinked));
+    }
+
+    // Load
     async function loadCfg() {
       const { data } = await supabase
         .from("creator_config")
-        .select(fields.join(",") + ", stripe_account_id, group_chat_id")
-        .eq("creator_id", userId)
+        .select(fields.join(",") + ", stripe_account_id, group_chat_id, bot_aktiv")
+        .eq("creator_id", state.userId)
         .maybeSingle();
 
       if (data) {
         for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
-        $("stripeStatus").textContent = data.stripe_account_id
+        state.stripeConnected = !!data.stripe_account_id;
+        state.stripeId = data.stripe_account_id || null;
+        state.groupLinked = !!data.group_chat_id;
+        state.botActive = !!data.bot_aktiv; // erwartet bool in DB
+        $("stripeStatus").textContent = state.stripeConnected
           ? `✅ Stripe verbunden (Account: ${data.stripe_account_id}).`
           : "⚠️ Stripe noch nicht verbunden.";
       } else {
         for (const k of fields) if ($(k)) $(k).value = "";
+        state.stripeConnected = false; state.stripeId = null; state.groupLinked = false; state.botActive = false;
         $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
       }
-      updatePreviews();
+      await updatePreviews();
+      refreshProgressUI();
     }
 
     // Speichern
     $("saveBtn").addEventListener("click", async () => {
-      const payload = { creator_id: userId };
+      const payload = { creator_id: state.userId };
       for (const k of fields) payload[k] = $(k)?.value ?? null;
       payload.preis = Number(payload.preis || 0);
       payload.vip_days = Number(payload.vip_days || 30);
@@ -260,41 +420,73 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     // Reload
     $("reloadBtn").addEventListener("click", loadCfg);
 
-    // Bot aktivieren (DM)
+    // Bearbeiten-Buttons aus Progress & Summary
+    const showStripeEditor = () => { setHidden($("stripeSection"), false); setHidden($("stripeSummary"), true); };
+    const showBotEditor = () => { setHidden($("botSection"), false); setHidden($("botSummary"), true); setHidden($("groupSummary"), true); };
+
+    ["editStripe","stripeSummaryEdit"].forEach(id => $(id).addEventListener("click", showStripeEditor));
+    ["editBot","botSummaryEdit","editGroup","groupSummaryEdit"].forEach(id => $(id).addEventListener("click", showBotEditor));
+
+    // Texte einklappen
+    let textsOpen = true;
+    const toggleTexts = () => {
+      textsOpen = !textsOpen;
+      setHidden($("textsBody"), !textsOpen);
+      $("textsChevron").textContent = textsOpen ? "▾" : "▸";
+    };
+    $("toggleTexts").addEventListener("click", toggleTexts);
+
+    // Bot aktivieren (DM) – mit Bonus-Bestätigung falls bereits aktiv
     $("linkTelegramBtn").addEventListener("click", () => {
+      if (state.botActive) {
+        const ok = confirm("Der Bot ist bereits aktiv. Möchtest du ihn erneut öffnen/neu verknüpfen?");
+        if (!ok) return;
+      }
       window.open(linkTelegram(), "_blank");
       $("hint").textContent = "Telegram öffnen → Bot im DM starten, danach Bot in der Gruppe als Admin hinzufügen.";
     });
 
-    // Gruppe verbinden
+    // Gruppe verbinden – mit Bonus-Bestätigung falls bereits verknüpft
     $("bindGroupBtn").addEventListener("click", () => {
+      if (state.groupLinked) {
+        const ok = confirm("Es ist bereits eine Gruppe verknüpft. Möchtest du eine andere Gruppe verbinden?");
+        if (!ok) return;
+      }
       window.open(groupLink(), "_blank");
       $("hint").textContent = "Telegram → Gruppe auswählen → Bot starten → Admin‑Rechte geben.";
     });
 
-    // Stripe
+    // Stripe – mit Bonus-Bestätigung falls bereits verbunden
     $("stripeBtn").addEventListener("click", (e) => {
       if (!BOT_API) {
         e.preventDefault();
         alert("PUBLIC_BOT_API_BASE fehlt im Frontend.");
+        return;
+      }
+      if (state.stripeConnected) {
+        const ok = confirm("Stripe ist bereits verbunden. Möchtest du das Onboarding erneut öffnen, um die Verbindung zu ändern?");
+        if (!ok) { e.preventDefault(); return; }
       }
     });
 
-    // Copy Kunden-Link
-    $("copyCustomerLink").addEventListener("click", async () => {
-      const val = $("customerLinkInput")?.value || "";
+    // Copy Kunden-Link (Editor & Summary)
+    async function copyToClipboard(val) {
       try { await navigator.clipboard.writeText(val); toast("Kunden‑Link kopiert"); }
-      catch { $("customerLinkInput")?.select(); document.execCommand?.("copy"); toast("Kopiert"); }
-    });
+      catch { /* fallback */ }
+    }
+    $("copyCustomerLink").addEventListener("click", () => copyToClipboard($("customerLinkInput")?.value || ""));
+    $("copyCustomerLinkSummary").addEventListener("click", () => copyToClipboard($("customerLinkInputSummary")?.value || ""));
 
-    // QR Download
-    $("downloadQRCustomer").addEventListener("click", () => {
-      const c = $("qrCustomer"); if (!c) return;
+    // QR Download (Editor & Summary)
+    function downloadQR(canvasId, filename) {
+      const c = $(canvasId); if (!c) return;
       const a = document.createElement("a");
-      a.download = "luxbase-kundenlink-qr.png";
+      a.download = filename;
       a.href = c.toDataURL("image/png");
       a.click();
-    });
+    }
+    $("downloadQRCustomer").addEventListener("click", () => downloadQR("qrCustomer","luxbase-kundenlink-qr.png"));
+    $("downloadQRCustomerSummary").addEventListener("click", () => downloadQR("qrCustomerSummary","luxbase-kundenlink-qr.png"));
 
     // Tooltips
     let activeTipEl = null, hideTimer = null;

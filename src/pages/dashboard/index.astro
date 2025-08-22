@@ -1,4 +1,3 @@
-
 ---
 import DashboardLayout from "../../layouts/DashboardLayout.astro";
 ---
@@ -32,7 +31,6 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
 
     <!-- KPI Cards -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <!-- Umsatz -->
       <article class="kpi-card">
         <h3 class="kpi-title">Umsatz (<span id="labelRange1">30</span> Tage)</h3>
         <div class="flex items-baseline gap-2">
@@ -43,7 +41,6 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         <div class="kpi-spark"><canvas id="sparkRevenue"></canvas></div>
       </article>
 
-      <!-- Aktive VIPs -->
       <article class="kpi-card">
         <h3 class="kpi-title">Aktive VIPs</h3>
         <div class="flex items-baseline gap-2">
@@ -54,7 +51,6 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         <div class="kpi-spark"><canvas id="sparkActive"></canvas></div>
       </article>
 
-      <!-- Neue VIPs -->
       <article class="kpi-card">
         <h3 class="kpi-title">Neue VIPs (<span id="labelRange2">30</span> Tage)</h3>
         <div class="flex items-baseline gap-2">
@@ -65,7 +61,6 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         <div class="kpi-spark"><canvas id="sparkNew"></canvas></div>
       </article>
 
-      <!-- Conversion Demo -->
       <article class="kpi-card">
         <h3 class="kpi-title">Conversion (Demo)</h3>
         <div class="flex items-baseline gap-2">
@@ -95,13 +90,51 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       </article>
     </div>
 
-    <!-- Export: Steuer-ready -->
+    <!-- Top- & Flop-Tag + optionaler KI-Tipp -->
+    <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-3">
+      <div class="flex items-center justify-between gap-3">
+        <h3 class="text-sm font-semibold text-luxgold">Highlights: Top- & Flop-Tag</h3>
+        <button id="tfToggleTip" class="border border-luxgray rounded-xl px-3 py-1.5 text-xs">💡 Tipp anzeigen</button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+        <div class="rounded-xl border border-white/5 bg-black/40 p-3">
+          <div class="text-[11px] text-white/60">Top-Tag</div>
+          <div class="mt-1 text-sm text-white/80"><span id="tfTopDate">–</span></div>
+          <div class="mt-1 text-lg font-semibold text-luxgold"><span id="tfTopValue">–</span></div>
+          <div class="mt-1 text-[12px]"><span id="tfTopDelta" class="px-1.5 py-0.5 rounded-md"></span></div>
+        </div>
+
+        <div class="rounded-xl border border-white/5 bg-black/40 p-3">
+          <div class="text-[11px] text-white/60">Flop-Tag</div>
+          <div class="mt-1 text-sm text-white/80"><span id="tfFlopDate">–</span></div>
+          <div class="mt-1 text-lg font-semibold text-white/80"><span id="tfFlopValue">–</span></div>
+          <div class="mt-1 text-[12px]"><span id="tfFlopDelta" class="px-1.5 py-0.5 rounded-md"></span></div>
+        </div>
+
+        <div class="rounded-xl border border-white/5 bg-black/40 p-3">
+          <div class="text-[11px] text-white/60">Durchschnitt / Tag</div>
+          <div class="mt-1 text-sm text-white/80"><span id="tfAvgDate">im Zeitraum</span></div>
+          <div class="mt-1 text-lg font-semibold text-white/90"><span id="tfAvgValue">–</span></div>
+        </div>
+      </div>
+
+      <div id="tfTipWrap" class="hidden rounded-xl border border-white/5 bg-black/30 p-3 text-sm text-white/85 leading-6">
+        <div class="flex items-start gap-2">
+          <div>💡</div>
+          <p id="tfTip">–</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export (nutzt automatisch den Dashboard-Zeitraum) -->
     <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-3">
       <div class="flex items-center justify-between gap-3">
         <h3 class="text-sm font-semibold text-luxgold">Export</h3>
         <span class="text-[11px] text-white/60">Zeitraum: <span id="exportRangeLabel">–</span></span>
       </div>
 
+      <!-- Steuer-Optionen -->
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-end">
         <label class="block">
           <span class="text-xs text-white/70">USt-Satz</span>
@@ -111,7 +144,6 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
             <option value="0">0 % (steuerfrei)</option>
           </select>
         </label>
-
         <label class="block">
           <span class="text-xs text-white/70">Kontenplan</span>
           <select id="optKontoPlan" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2 text-sm">
@@ -119,12 +151,10 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
             <option value="SKR04">SKR04</option>
           </select>
         </label>
-
         <label class="block">
           <span class="text-xs text-white/70">Erlöskonto (z. B. 8400 / 4400)</span>
           <input id="optKonto" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2 text-sm" placeholder="8400" value="8400" />
         </label>
-
         <label class="block">
           <span class="text-xs text-white/70">Gegenkonto (Bank, z. B. 1200)</span>
           <input id="optContra" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-2 text-sm" placeholder="1200" value="1200" />
@@ -137,12 +167,11 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       </div>
 
       <p class="text-[11px] text-white/50 leading-5">
-        Hinweis: Dieser Export basiert auf deinen VIP-Verkäufen im gewählten Zeitraum und dem eingestellten Preis.
-        Für Gebühren/Refunds nutze zusätzlich die Stripe-Berichte. Kontonummern kannst du hier anpassen.
+        Hinweis: Dieser Export basiert auf deinen VIP-Verkäufen im gewählten Zeitraum (oben gewählt) und dem eingestellten Preis.
+        Für Gebühren/Refunds nutze zusätzlich die Stripe-Berichte.
       </p>
     </div>
 
-    <!-- Debug -->
     <pre id="debugBox" class="bg-black/40 border border-luxgray/50 rounded-xl p-3 text-xs text-white/70 overflow-auto"></pre>
   </section>
 
@@ -164,361 +193,164 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     .chart-title{font-size:.9rem;font-weight:600;color:#f6c453}
     .chart-meta{font-size:11px;color:rgba(255,255,255,.6)}
     .charts-wrap::-webkit-scrollbar{display:none}
+
+    .badge-pos{color:#0f0;background:rgba(0,255,0,.08);border:1px solid rgba(0,255,0,.25)}
+    .badge-neg{color:#ff6b6b;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.25)}
   </style>
 
   <script type="module">
-  // -------- Helper Debug ----------
   const dbg = (...args) => {
-    const parts = [];
-    for (const a of args) { try { parts.push(typeof a === "string" ? a : JSON.stringify(a, null, 2)); } catch { parts.push(String(a)); } }
-    const msg = parts.join(" ");
-    console.log(...args);
-    const box = document.getElementById("debugBox"); if (box) box.textContent += msg + "\\n";
+    const parts=[]; for (const a of args){ try{ parts.push(typeof a==="string"?a:JSON.stringify(a,null,2)); }catch{ parts.push(String(a)); } }
+    const msg=parts.join(" "); console.log(...args);
+    const box=document.getElementById("debugBox"); if(box) box.textContent+=msg+"\\n";
   };
 
-  try {
-    // ENV check
-    const meta = document.getElementById("supabase-config");
-    if (!meta?.dataset?.url || !meta?.dataset?.key) { dbg("❌ Supabase ENV fehlt:", { url: meta?.dataset?.url, keySet: !!meta?.dataset?.key }); throw new Error("Supabase ENV fehlt"); }
+  try{
+    const meta=document.getElementById("supabase-config");
+    if(!meta?.dataset?.url||!meta?.dataset?.key){ dbg("❌ Supabase ENV fehlt"); throw new Error("no-env"); }
 
-    // Libraries
-    const [{ createClient }] = await Promise.all([
+    const [{createClient}] = await Promise.all([
       import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"),
       import("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"),
     ]);
-    const Chart = window.Chart;
+    const Chart=window.Chart;
+    const supabase=createClient(meta.dataset.url, meta.dataset.key);
 
-    // Supabase client
-    const supabase = createClient(meta.dataset.url, meta.dataset.key);
+    const el=id=>document.getElementById(id);
+    const qsa=s=>Array.from(document.querySelectorAll(s));
+    const fmtEUR=n=>(typeof n==="number"?n:Number(n||0)).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
+    const fmtDE2=n=>Number(n||0).toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2});
 
-    // DOM shorthands
-    const el = (id) => document.getElementById(id);
-    const qsA = (sel) => Array.from(document.querySelectorAll(sel));
-    const fmtEUR = (n) => (typeof n === "number" ? n : Number(n || 0)).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
-    const fmtDE2 = (n) => Number(n||0).toLocaleString("de-DE",{minimumFractionDigits:2, maximumFractionDigits:2});
+    const now=new Date();
+    const toISO=d=>new Date(d).toISOString().slice(0,10);
+    const daysAgo=d=>new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()-d));
+    function labelsLastNDays(n){const arr=[];for(let i=n-1;i>=0;i--)arr.push(toISO(daysAgo(i)));return arr;}
+    el("dataStamp").textContent=new Intl.DateTimeFormat("de-DE",{dateStyle:"medium",timeStyle:"short"}).format(new Date());
 
-    // Date helpers
-    const now = new Date();
-    const toISO = (d) => new Date(d).toISOString().slice(0,10);
-    const daysAgo = (d) => new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()-d));
-    function labelsLastNDays(n){const arr=[];for(let i=n-1;i>=0;i--){arr.push(toISO(daysAgo(i)));}return arr;}
-    const stamp = new Intl.DateTimeFormat('de-DE',{dateStyle:'medium', timeStyle:'short'}).format(new Date());
-    el("dataStamp").textContent = `Datenstand: ${stamp}`;
+    const {data:{user}}=await supabase.auth.getUser();
+    if(!user){ window.location.href="/"; throw new Error("redirect"); }
 
-    // Auth
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { dbg("❌ Kein User – redirect /"); window.location.href = "/"; throw new Error("redirect"); }
+    const {data:cfg}=await supabase.from("creator_config").select("preis,vip_dauer").eq("creator_id",user.id).maybeSingle();
+    const preis=Number(cfg?.preis||0);
+    const vipDauer=Number(cfg?.vip_dauer||30);
 
-    // Config
-    const { data: cfg } = await supabase
-      .from("creator_config")
-      .select("preis, vip_dauer")
-      .eq("creator_id", user.id)
-      .maybeSingle();
-
-    const preis = Number(cfg?.preis || 0);
-    const vipDauer = Number(cfg?.vip_dauer || 30);
-
-    // VIPs
-    const { data: vipData } = await supabase
-      .from("vip_users")
-      .select("letzter_kontakt, vip_bis, status")
-      .eq("creator_id", user.id);
-
-    let vipRows = vipData || [];
-
-    // Demo fallback
-    if (!vipRows.length) {
-      const base = new Date();
-      const mk = (offset, days=vipDauer) => ({
-        letzter_kontakt: new Date(base.getTime()-offset*86400000).toISOString(),
-        vip_bis:         new Date(base.getTime()+(days-offset)*86400000).toISOString(),
-        status: "active",
-      });
-      vipRows = [mk(1), mk(2), mk(5), mk(7), mk(8), mk(10), mk(15)];
-      el("kpiRevenueNote").textContent = "Basierend auf Preis × neue VIPs";
-      el("kpiActiveNote").textContent  = "Demo-Daten";
-      el("kpiNewNote").textContent     = "Demo-Daten";
+    const {data:vipData}=await supabase.from("vip_users").select("letzter_kontakt,vip_bis,status").eq("creator_id",user.id);
+    let vipRows=vipData||[];
+    if(!vipRows.length){
+      const base=new Date(); const mk=(o,d=vipDauer)=>({letzter_kontakt:new Date(base.getTime()-o*86400000).toISOString(),vip_bis:new Date(base.getTime()+(d-o)*86400000).toISOString(),status:"active"});
+      vipRows=[mk(1),mk(2),mk(5),mk(7),mk(8),mk(10),mk(15)];
+      el("kpiRevenueNote").textContent="Basierend auf Preis × neue VIPs";
+      el("kpiActiveNote").textContent="Demo-Daten";
+      el("kpiNewNote").textContent="Demo-Daten";
     }
 
-    // ---------- Aggregation & Rendering ----------
-    let RANGE = 30; // default
-    const compareToggle = el("compareToggle");
-    const exportRangeLabel = el("exportRangeLabel");
+    let RANGE=30;
+    const compareToggle=el("compareToggle");
+    const exportRangeLabel=el("exportRangeLabel");
 
-    let revChart, vipChart, sparkRev, sparkActive, sparkNew;
-
-    function destroyChart(c){ if(c && typeof c.destroy==="function"){ c.destroy(); } }
+    let revChart,vipChart,sparkRev,sparkActive,sparkNew;
 
     function computeSeries(rangeDays){
-      const labels = labelsLastNDays(rangeDays);
-      const mapNew = Object.fromEntries(labels.map(d=>[d,0]));
+      const labels=labelsLastNDays(rangeDays);
+      const mapNew=Object.fromEntries(labels.map(d=>[d,0]));
       vipRows.forEach(r=>{ const d=(r.letzter_kontakt||"").slice(0,10); if(mapNew[d]!==undefined) mapNew[d]+=1;});
-      const newVipSeries = labels.map(d=>mapNew[d]);
-
-      const revenueByDay = labels.map((_,i)=> (preis>0 ? newVipSeries[i]*preis : 0));
-
-      // aktive VIPs je Tag := VIPs mit vip_bis >= Datum
-      const activeEachDay = labels.map(d=>{
-        const count = vipRows.filter(r => String(r.vip_bis||"").slice(0,10) >= d).length;
-        return count;
-      });
-
-      // Totals
-      const revenueTotal = revenueByDay.reduce((a,b)=>a+b,0);
-      const activeToday  = activeEachDay.at(-1) || 0;
-      const newTotal     = newVipSeries.reduce((a,b)=>a+b,0);
-
-      return { labels, newVipSeries, revenueByDay, activeEachDay, totals:{ revenueTotal, activeToday, newTotal } };
-    }
-
-    function computePrevSeries(rangeDays){
-      // Vorperiode: gleicher Zeitraum direkt davor
-      const endPrev = daysAgo(rangeDays);
-      const labelsPrev = [];
-      for(let i=rangeDays-1;i>=0;i--){ labelsPrev.push(toISO(new Date(endPrev.getTime()-i*86400000))); }
-      const mapNewPrev = Object.fromEntries(labelsPrev.map(d=>[d,0]));
-      vipRows.forEach(r=>{ const d=(r.letzter_kontakt||"").slice(0,10); if(mapNewPrev[d]!==undefined) mapNewPrev[d]+=1;});
-      const newVipPrev = labelsPrev.map(d=>mapNewPrev[d]);
-      const revPrevByDay = labelsPrev.map((_,i)=> (preis>0 ? newVipPrev[i]*preis : 0));
-      const activePrevEnd = vipRows.filter(r => String(r.vip_bis||"").slice(0,10) >= labelsPrev.at(-1)).length;
+      const newVipSeries=labels.map(d=>mapNew[d]);
+      const revenueByDay=labels.map((_,i)=> (preis>0?newVipSeries[i]*preis:0));
+      const activeEachDay=labels.map(d=>vipRows.filter(r=>String(r.vip_bis||"").slice(0,10)>=d).length);
       return {
-        newVipPrev, revPrevByDay,
-        totals:{ revenueTotal: revPrevByDay.reduce((a,b)=>a+b,0), activeToday: activePrevEnd, newTotal: newVipPrev.reduce((a,b)=>a+b,0) }
+        labels,newVipSeries,revenueByDay,activeEachDay,
+        totals:{revenueTotal:revenueByDay.reduce((a,b)=>a+b,0),activeToday:activeEachDay.at(-1)||0,newTotal:newVipSeries.reduce((a,b)=>a+b,0)}
       };
     }
-
-    function delta(elm, curr, prev){
-      elm.textContent = "";
-      elm.classList.remove("up","down");
-      if (!compareToggle.checked) return;
-      const d = prev>0 ? (curr-prev)/prev : (curr>0 ? 1 : 0);
-      const txt = (d>=0?"+":"")+ (Math.abs(d)*100).toFixed(1) + "% " + (d>0?"↗︎":"↘︎");
-      elm.textContent = txt;
-      if (d>0) elm.classList.add("up"); else if (d<0) elm.classList.add("down");
+    function computePrevSeries(rangeDays){
+      const endPrev=daysAgo(rangeDays);
+      const labelsPrev=[]; for(let i=rangeDays-1;i>=0;i--) labelsPrev.push(toISO(new Date(endPrev.getTime()-i*86400000)));
+      const mapNewPrev=Object.fromEntries(labelsPrev.map(d=>[d,0]));
+      vipRows.forEach(r=>{ const d=(r.letzter_kontakt||"").slice(0,10); if(mapNewPrev[d]!==undefined) mapNewPrev[d]+=1;});
+      const newVipPrev=labelsPrev.map(d=>mapNewPrev[d]);
+      const revPrevByDay=labelsPrev.map((_,i)=> (preis>0?newVipPrev[i]*preis:0));
+      const activePrevEnd=vipRows.filter(r=>String(r.vip_bis||"").slice(0,10)>=labelsPrev.at(-1)).length;
+      return {newVipPrev,revPrevByDay,totals:{revenueTotal:revPrevByDay.reduce((a,b)=>a+b,0),activeToday:activePrevEnd,newTotal:newVipPrev.reduce((a,b)=>a+b,0)}};
     }
 
-    // Sparklines
-    function renderSpark(canvas, data, color="#f6c453"){
-      const ctx = canvas.getContext("2d");
-      return new Chart(ctx,{
-        type:"line",
-        data:{ labels:data.map((_,i)=>i), datasets:[{ data, borderColor:color, pointRadius:0, tension:.35, borderWidth:2 }]},
-        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{enabled:false}}, scales:{x:{display:false},y:{display:false}} }
-      });
+    function deltaBadge(elm, val, avg, positiveGood=true){
+      const d = avg>0 ? (val-avg)/avg : 0;
+      const pct = (Math.abs(d)*100).toFixed(1)+"%";
+      const up = d>=0;
+      elm.textContent = (up?"+":"−")+pct+" vs. Ø";
+      elm.classList.remove("badge-pos","badge-neg");
+      elm.classList.add((up===positiveGood)?"badge-pos":"badge-neg");
     }
 
-    function renderKPIs(series, prevTotals){
-      // Labels
-      el("labelRange1").textContent = String(RANGE);
-      el("labelRange2").textContent = String(RANGE);
-      exportRangeLabel.textContent = `${series.labels[0]} – ${series.labels.at(-1)}`;
-
-      // Totals
-      el("kpiRevenue").textContent = fmtEUR(series.totals.revenueTotal);
-      el("kpiActive").textContent  = String(series.totals.activeToday);
-      el("kpiNew").textContent     = String(series.totals.newTotal);
-
-      // Deltas (wenn Compare an)
-      delta(el("kpiRevenueDelta"), series.totals.revenueTotal, prevTotals?.revenueTotal ?? 0);
-      delta(el("kpiActiveDelta"),  series.totals.activeToday,  prevTotals?.activeToday ?? 0);
-      delta(el("kpiNewDelta"),     series.totals.newTotal,     prevTotals?.newTotal ?? 0);
-
-      // Notes
-      el("kpiRevenueNote").textContent = preis>0 ? "Basierend auf Preis × neue VIPs" : "Kein Preis in creator_config";
-      el("kpiNewNote").textContent     = `Zeitraum: ${series.labels[0]} – ${series.labels.at(-1)}`;
-
-      // Sparklines
-      if (sparkRev) sparkRev.destroy(); if (sparkActive) sparkActive.destroy(); if (sparkNew) sparkNew.destroy();
-      sparkRev    = renderSpark(document.getElementById("sparkRevenue"), series.revenueByDay);
-      sparkActive = renderSpark(document.getElementById("sparkActive"),  series.activeEachDay);
-      sparkNew    = renderSpark(document.getElementById("sparkNew"),     series.newVipSeries);
+    function renderSpark(canvas,data,color="#f6c453"){
+      const ctx=canvas.getContext("2d");
+      return new Chart(ctx,{type:"line",data:{labels:data.map((_,i)=>i),datasets:[{data,borderColor:color,pointRadius:0,tension:.35,borderWidth:2}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}}}});
     }
 
-    function renderCharts(series, prevSeries){
-      // Meta
-      el("revMeta").textContent = `${series.labels[0]} – ${series.labels.at(-1)}`;
-      el("vipMeta").textContent = el("revMeta").textContent;
+    function renderKPIs(series,prevTotals){
+      el("labelRange1").textContent=String(RANGE);
+      el("labelRange2").textContent=String(RANGE);
+      el("kpiRevenue").textContent=fmtEUR(series.totals.revenueTotal);
+      el("kpiActive").textContent=String(series.totals.activeToday);
+      el("kpiNew").textContent=String(series.totals.newTotal);
 
-      // Destroy old
-      if (revChart) revChart.destroy();
-      if (vipChart) vipChart.destroy();
+      const delta=(elm,curr,prev)=>{ elm.textContent=""; elm.classList.remove("up","down"); if(!compareToggle.checked)return; const d=prev>0?(curr-prev)/prev:(curr>0?1:0); elm.textContent=(d>=0?"+":"")+ (Math.abs(d)*100).toFixed(1)+"% "+(d>0?"↗︎":"↘︎"); elm.classList.add(d>0?"up":(d<0?"down":"")); };
+      delta(el("kpiRevenueDelta"),series.totals.revenueTotal,prevTotals?.revenueTotal??0);
+      delta(el("kpiActiveDelta"),series.totals.activeToday,prevTotals?.activeToday??0);
+      delta(el("kpiNewDelta"),series.totals.newTotal,prevTotals?.newTotal??0);
 
-      // Revenue gradient
-      const revCtx = document.getElementById("revChart").getContext("2d");
-      const grad = revCtx.createLinearGradient(0,0,0,revCtx.canvas.height);
-      grad.addColorStop(0,"rgba(246,196,83,0.35)");
-      grad.addColorStop(1,"rgba(246,196,83,0.03)");
+      el("kpiRevenueNote").textContent=preis>0?"Basierend auf Preis × neue VIPs":"Kein Preis in creator_config";
+      el("kpiNewNote").textContent=`Zeitraum: ${series.labels[0]} – ${series.labels.at(-1)}`;
 
-      const revDatasets = [{
-        label: "Umsatz", data: series.revenueByDay, fill:true,
-        backgroundColor: grad, borderColor:"#f6c453", tension:.35, pointRadius:0, borderWidth:2
-      }];
-      if (compareToggle.checked && prevSeries){
-        revDatasets.push({
-          label:"Vorperiode", data: prevSeries.revPrevByDay, fill:false,
-          borderColor:"rgba(255,255,255,.45)", borderDash:[5,4], tension:.35, pointRadius:0, borderWidth:1.5
-        });
-      }
-
-      revChart = new Chart(revCtx,{
-        type: "line",
-        data: { labels: series.labels, datasets: revDatasets },
-        options: {
-          responsive:true, maintainAspectRatio:false,
-          plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(ctx)=>fmtEUR(ctx.parsed.y) } } },
-          scales:{
-            x:{ grid:{ display:false }, ticks:{ color:"rgba(255,255,255,.75)", maxTicksLimit:6 }},
-            y:{ grid:{ color:"rgba(255,255,255,.08)" }, ticks:{ color:"rgba(255,255,255,.75)", callback:(v)=>fmtEUR(v), maxTicksLimit:5 }, beginAtZero:true }
-          }
-        }
-      });
-
-      const vipCtx = document.getElementById("vipChart").getContext("2d");
-      const vipDatasets = [{
-        label:"Neue VIPs", data: series.newVipSeries, borderRadius:6, borderSkipped:false,
-        backgroundColor:"rgba(246,196,83,.85)"
-      }];
-      if (compareToggle.checked && prevSeries){
-        vipDatasets.push({
-          label:"Vorperiode", type:"line", data: prevSeries.newVipPrev,
-          borderColor:"rgba(255,255,255,.45)", borderDash:[5,4], pointRadius:0, tension:.35, fill:false
-        });
-      }
-
-      vipChart = new Chart(vipCtx,{
-        type:"bar",
-        data:{ labels: series.labels, datasets: vipDatasets },
-        options:{
-          responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} },
-          scales:{
-            x:{ grid:{ display:false }, ticks:{ color:"rgba(255,255,255,.75)", maxTicksLimit:6 }},
-            y:{ grid:{ color:"rgba(255,255,255,.08)" }, ticks:{ color:"rgba(255,255,255,.75)" }, beginAtZero:true }
-          }
-        }
-      });
+      if(sparkRev) sparkRev.destroy(); if(sparkActive) sparkActive.destroy(); if(sparkNew) sparkNew.destroy();
+      sparkRev=renderSpark(document.getElementById("sparkRevenue"),series.revenueByDay);
+      sparkActive=renderSpark(document.getElementById("sparkActive"),series.activeEachDay);
+      sparkNew=renderSpark(document.getElementById("sparkNew"),series.newVipSeries);
     }
 
-    // Initial render
-    function rerender(){
-      const series = computeSeries(RANGE);
-      const prev   = compareToggle.checked ? computePrevSeries(RANGE) : null;
-      renderKPIs(series, prev?.totals);
-      renderCharts(series, prev);
+    function renderCharts(series,prevSeries){
+      el("revMeta").textContent=`${series.labels[0]} – ${series.labels.at(-1)}`;
+      el("vipMeta").textContent=el("revMeta").textContent;
+
+      if(revChart) revChart.destroy(); if(vipChart) vipChart.destroy();
+
+      const revCtx=document.getElementById("revChart").getContext("2d");
+      const grad=revCtx.createLinearGradient(0,0,0,revCtx.canvas.height); grad.addColorStop(0,"rgba(246,196,83,0.35)"); grad.addColorStop(1,"rgba(246,196,83,0.03)");
+
+      const revData=[{label:"Umsatz",data:series.revenueByDay,fill:true,backgroundColor:grad,borderColor:"#f6c453",tension:.35,pointRadius:0,borderWidth:2}];
+      if(compareToggle.checked&&prevSeries){ revData.push({label:"Vorperiode",data:prevSeries.revPrevByDay,fill:false,borderColor:"rgba(255,255,255,.45)",borderDash:[5,4],tension:.35,pointRadius:0,borderWidth:1.5}); }
+
+      revChart=new Chart(revCtx,{type:"line",data:{labels:series.labels,datasets:revData},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>fmtEUR(c.parsed.y)}}},
+          scales:{x:{grid:{display:false},ticks:{color:"rgba(255,255,255,.75)",maxTicksLimit:6}},y:{grid:{color:"rgba(255,255,255,.08)"},ticks:{color:"rgba(255,255,255,.75)",callback:(v)=>fmtEUR(v),maxTicksLimit:5},beginAtZero:true}}});
+
+      const vipCtx=document.getElementById("vipChart").getContext("2d");
+      const vipData=[{label:"Neue VIPs",data:series.newVipSeries,borderRadius:6,borderSkipped:false,backgroundColor:"rgba(246,196,83,.85)"}];
+      if(compareToggle.checked&&prevSeries){ vipData.push({label:"Vorperiode",type:"line",data:prevSeries.newVipPrev,borderColor:"rgba(255,255,255,.45)",borderDash:[5,4],pointRadius:0,tension:.35,fill:false}); }
+      vipChart=new Chart(vipCtx,{type:"bar",data:{labels:series.labels,datasets:vipData},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+          scales:{x:{grid:{display:false},ticks:{color:"rgba(255,255,255,.75)",maxTicksLimit:6}},y:{grid:{color:"rgba(255,255,255,.08)"},ticks:{color:"rgba(255,255,255,.75)"},beginAtZero:true}}});
     }
 
-    // Range events
-    qsA(".range-btn").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        qsA(".range-btn").forEach(b=>b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-        RANGE = Number(btn.dataset.range || 30);
-        rerender();
-      });
-    });
-    compareToggle.addEventListener("change", rerender);
-
-    // ---- Export helpers ----
-    const defaults = {
-      SKR03: { "19":"8400", "7":"8300", "0":"" },
-      SKR04: { "19":"4400", "7":"4300", "0":"" }
-    };
-    const optVatRate   = el("optVatRate");
-    const optKontoPlan = el("optKontoPlan");
-    const optKonto     = el("optKonto");
-    const optContra    = el("optContra");
-
-    function syncDefaultAccount(){
-      const plan = optKontoPlan.value;
-      const vat  = optVatRate.value;
-      const d = defaults[plan]?.[vat];
-      if (d !== undefined && d !== "" ) optKonto.value = d; // leer lassen, wenn 0%
+    // Top/Flop + Tipp
+    function wdayDE(dateISO){ return ["So","Mo","Di","Mi","Do","Fr","Sa"][new Date(dateISO).getDay()] || ""; }
+    function genTip(series, topIdx, flopIdx){
+      const labels=series.labels, rev=series.revenueByDay, newV=series.newVipSeries;
+      const avg=rev.reduce((a,b)=>a+b,0)/Math.max(1,rev.length);
+      const top=rev[topIdx], flop=rev[flopIdx];
+      const topDow=wdayDE(labels[topIdx]), flopDow=wdayDE(labels[flopIdx]);
+      const vol=(Math.max(...rev)-Math.min(...rev))/Math.max(1,avg);
+      const ideas=[];
+      if(["Sa","So"].includes(flopDow)){ ideas.push(`Der Flop-Tag liegt am ${flopDow}. Teste eine Aktion am **Freitagabend (19–21 Uhr)** mit Story + Countdown.`); }
+      else { ideas.push(`Am ${flopDow} war es schwächer. Plane am **Vorabend 19–21 Uhr** eine Story mit klarer CTA.`); }
+      if(top > avg*1.3){ ideas.push(`Top-Tag (**${topDow}**) lag **${((top-avg)/avg*100).toFixed(0)}%** über Ø. Repliziere Format & Uhrzeit zeitnah.`); }
+      if(vol > 1.2){ ideas.push(`Große Schwankungen: Fülle ruhige Tage mit **Micro-Incentives** (5 % für 12 Std.) oder Reminder-DM.`); }
+      if(newV[flopIdx]===0 && flop>0){ ideas.push(`Umsatz ohne neue VIPs am Flop-Tag? Prüfe **Verlängerungs-Flow** & Erinnerungen 3/1 Tage vor Ablauf.`); }
+      return ideas.join(" ");
     }
-    optVatRate.addEventListener("change", syncDefaultAccount);
-    optKontoPlan.addEventListener("change", syncDefaultAccount);
-    syncDefaultAccount();
-
-    function downloadCSV(filename, rows, delimiter = ";"){
-      const escape = (v) => {
-        if (v===null || v===undefined) return "";
-        const s = String(v);
-        return (s.includes(delimiter) || s.includes('"') || s.includes("\n"))
-          ? `"${s.replace(/"/g,'""')}"`
-          : s;
-      };
-      const csv = rows.map(r => r.map(escape).join(delimiter)).join("\n");
-      const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = filename; a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function exportSalesCSV(){
-      const series = computeSeries(RANGE);
-      const start = series.labels[0];
-      const end   = series.labels.at(-1);
-
-      const vatRate = Number(optVatRate.value)/100; // 0.19/0.07/0
-      const konto   = optKonto.value || "";
-      const contra  = optContra.value || "1200";
-      const currency = "EUR";
-
-      // Alle Verkäufe im Zeitraum (je VIP-Join = eine Zeile)
-      const sales = vipRows.filter(r => {
-        const d = (r.letzter_kontakt||"").slice(0,10);
-        return d >= start && d <= end;
-      }).map(r => (r.letzter_kontakt||"").slice(0,10));
-
-      const header = [
-        "Buchungstag","Belegnummer","Buchungstext","Netto","USt-Satz","USt","Brutto",
-        "Konto","Gegenkonto","Währung","Menge","Einzelpreis (Netto)"
-      ];
-      const rows = [header];
-
-      for (const d of sales){
-        const brutto = preis || 0;
-        const netto  = vatRate>0 ? brutto/(1+vatRate) : brutto;
-        const ust    = brutto - netto;
-
-        rows.push([
-          d, "", `VIP Zugang (${vipDauer} Tage)`,
-          fmtDE2(netto), `${(vatRate*100).toFixed(0)}%`, fmtDE2(ust), fmtDE2(brutto),
-          konto, contra, currency, "1", fmtDE2(netto)
-        ]);
-      }
-
-      const fname = `luxbase_umsatz_${start}_bis_${end}.csv`;
-      downloadCSV(fname, rows);
-    }
-
-    function exportVIPsCSV(){
-      const series = computeSeries(RANGE);
-      const start = series.labels[0];
-      const end   = series.labels.at(-1);
-
-      const header = ["letzter_kontakt","vip_bis","status"];
-      const rows = [header];
-
-      vipRows.forEach(r=>{
-        const d = (r.letzter_kontakt||"").slice(0,10);
-        if (d >= start && d <= end){
-          rows.push([ (r.letzter_kontakt||"").slice(0,19), (r.vip_bis||"").slice(0,19), r.status||"" ]);
-        }
-      });
-
-      const fname = `luxbase_vips_${start}_bis_${end}.csv`;
-      downloadCSV(fname, rows);
-    }
-
-    el("btnExportSales").addEventListener("click", exportSalesCSV);
-    el("btnExportVIPs").addEventListener("click", exportVIPsCSV);
-
-    // Kick
-    rerender();
-
-  } catch (e) {
-    dbg("❌ Render error:", e?.message || e);
-  }
-  </script>
-</DashboardLayout>
+    function renderTopFlop(series){
+      const labels=series.labels, rev=series.revenueByDay; if(!labels.length) return;
+      const max=Math.max(...rev), min=Math.min(...rev);
+      const topIdx=rev.indexOf(max), flopIdx=rev.indexOf(min);
+      const avg=rev.reduce((a,b)=>a+b,0)/Math.max(1,rev.

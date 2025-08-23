@@ -21,3 +21,11 @@
   to = "/.netlify/functions/stripe-webhook"
   status = 200
   force = true
+
+  [build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = ""   # falls Netlify irgendwo '--production' gesetzt hatte

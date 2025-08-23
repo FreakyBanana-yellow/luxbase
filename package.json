@@ -26,6 +26,14 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
     "stripe": "^14.0.0"
+  },
+  {
+  "scripts": {
+    "prebuild": "npm ci --include=dev || npm install --include=dev",
+    "build": "astro build",
+    "dev": "astro dev",
+    "preview": "astro preview"
   }
+
 }
 

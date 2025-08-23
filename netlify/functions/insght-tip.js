@@ -51,7 +51,7 @@ exports.handler = async (event) => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ tip }),
     };
-  } catch (err) {
+  } catch {
     return { statusCode: 500, body: JSON.stringify({ error: "server_error" }) };
   }
 };

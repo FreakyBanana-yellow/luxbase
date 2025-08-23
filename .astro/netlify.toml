@@ -8,3 +8,12 @@
   NODE_ENV = "production"
   NPM_CONFIG_OPTIONAL = "false"
   NPM_FLAGS = "--omit=optional"
+  
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/insight-tip"
+  to = "/.netlify/functions/insight-tip"
+  status = 200
+  force = true

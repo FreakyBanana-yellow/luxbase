@@ -29,3 +29,8 @@
 [build.environment]
   NODE_VERSION = "20"
   NPM_FLAGS = ""   # falls Netlify irgendwo '--production' gesetzt hatte
+  
+[[redirects]]
+  from = "/api/stripe/webhook"
+  to = "/.netlify/functions/stripe-webhook"
+  status = 200

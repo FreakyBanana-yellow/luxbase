@@ -195,6 +195,23 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
       </p>
     </div>
 
+    <!-- 🎙️ Sprachnachricht -->
+    <div id="voiceSection" class="bg-black/60 border border-luxgray rounded-2xl p-4 sm:p-5 space-y-3">
+      <div class="flex items-center justify-between gap-2">
+        <h2 class="text-luxgold text-base sm:text-lg font-semibold">Sprachnachricht</h2>
+        <span id="voiceStatusBadge" class="text-xs sm:text-[13px] px-2 py-1 rounded-lg border border-luxgray text-white/80">–</span>
+      </div>
+      <p id="voiceStatusText" class="text-xs sm:text-[13px] text-white/60"></p>
+      <div class="flex flex-wrap gap-2">
+        <button id="openSetupVoice" type="button"
+          class="bg-luxgold/90 text-black font-semibold rounded-xl py-2.5 px-3 min-h-[40px] text-sm">
+          Im Bot aufnehmen
+        </button>
+        <button type="button" class="tip-btn" aria-label="Hilfe"
+          data-tip="Öffne den Bot im DM und sende dort /setup_voice. Danach sprichst du 5–20 Sekunden ein.">?</button>
+      </div>
+    </div>
+
     <!-- Texte (einklappbar) -->
     <div class="bg-black/60 border border-luxgray rounded-2xl">
       <button id="toggleTexts" class="w-full flex items-center justify-between px-4 sm:px-5 py-4">
@@ -294,6 +311,10 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
       botActive: false,
       groupLinked: false,
       userId: null,
+      // Voice
+      voiceHas: false,
+      voiceUpdatedAt: null,
+      voiceCaption: null
     };
 
     // Auth
@@ -306,6 +327,9 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     const groupLink   = () => `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+state.userId)}`; // Gruppe verbinden
     const linkTelegram = () => `https://t.me/${BOT}?start=${encodeURIComponent("link_creator_"+state.userId)}`; // DM-Owner-Connect
     const stripeRedirect = () => `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(state.userId)}`;
+
+    // Zusätzlich: für Voice einfach DM öffnen (gleich wie linkTelegram)
+    const openSetupVoice = () => window.open(linkTelegram(), "_blank");
 
     // QR
     async function drawQR(canvasId, value, tries=10) {
@@ -368,6 +392,22 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
       $("setupAllDone").classList.toggle("hidden", !(state.stripeConnected && state.botActive && state.groupLinked));
     }
 
+    function updateVoiceUI() {
+      const badge = $("voiceStatusBadge");
+      const text  = $("voiceStatusText");
+      if (!badge || !text) return;
+
+      if (state.voiceHas) {
+        badge.textContent = "✅ Voicenachricht gespeichert";
+        text.textContent  = state.voiceUpdatedAt
+          ? `Gespeichert am ${new Date(state.voiceUpdatedAt).toLocaleString()}`
+          : "Gespeichert.";
+      } else {
+        badge.textContent = "❌ Keine Voicenachricht hinterlegt";
+        text.textContent  = "Tipp: Öffne den Bot im DM und sende dort /setup_voice – dann nimmst du 5–20 Sekunden auf.";
+      }
+    }
+
     // Load
     async function loadCfg() {
       const { data, error } = await supabase
@@ -377,7 +417,11 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
           stripe_account_id,
           group_chat_id,
           telegram_id,
-          has_vipbot
+          has_vipbot,
+          voice_enabled,
+          voice_file_id,
+          voice_caption,
+          voice_updated_at
         `)
         .eq("creator_id", state.userId)
         .maybeSingle();
@@ -394,11 +438,13 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
         // Status-Ableitung
         state.stripeConnected = !!data.stripe_account_id;
         state.stripeId = data.stripe_account_id || null;
-
         state.groupLinked = !!data.group_chat_id;
-
-        // Bot aktiv ableiten (konservativ): sobald DM-Verknüpfung / Gruppe / has_vipbot vorhanden
         state.botActive = !!(data.telegram_id || data.group_chat_id || data.has_vipbot);
+
+        // Voice
+        state.voiceHas = !!(data.voice_enabled && data.voice_file_id);
+        state.voiceUpdatedAt = data.voice_updated_at || null;
+        state.voiceCaption = data.voice_caption || null;
 
         $("stripeStatus").textContent = state.stripeConnected
           ? `✅ Stripe verbunden.`
@@ -410,11 +456,11 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
         state.stripeId = null;
         state.groupLinked = false;
         state.botActive = false;
-        $("stripeStatus").textContent = "⚠️ Stripe noch nicht verbunden.";
       }
 
       await updatePreviews();
       refreshProgressUI();
+      updateVoiceUI();
     }
 
     // Speichern
@@ -448,7 +494,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
     };
     $("toggleTexts").addEventListener("click", toggleTexts);
 
-    // Bot aktivieren (DM) – mit Bonus-Bestätigung falls bereits aktiv
+    // Bot aktivieren (DM)
     $("linkTelegramBtn").addEventListener("click", () => {
       if (state.botActive) {
         const ok = confirm("Der Bot ist bereits aktiv. Möchtest du ihn erneut öffnen/neu verknüpfen?");
@@ -458,7 +504,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
       $("hint").textContent = "Telegram öffnen → Bot im DM starten, danach Bot in der Gruppe als Admin hinzufügen.";
     });
 
-    // Gruppe verbinden – mit Bonus-Bestätigung falls bereits verknüpft
+    // Gruppe verbinden
     $("bindGroupBtn").addEventListener("click", () => {
       if (state.groupLinked) {
         const ok = confirm("Es ist bereits eine Gruppe verknüpft. Möchtest du eine andere Gruppe verbinden?");
@@ -468,7 +514,7 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
       $("hint").textContent = "Telegram → Gruppe auswählen → Bot starten → Admin-Rechte geben.";
     });
 
-    // Stripe – mit Bonus-Bestätigung falls bereits verbunden
+    // Stripe
     $("stripeBtn").addEventListener("click", (e) => {
       if (!BOT_API) {
         e.preventDefault();
@@ -479,6 +525,12 @@ const BOT_API_BASE = import.meta.env.PUBLIC_BOT_API_BASE || "";
         const ok = confirm("Stripe ist bereits verbunden. Möchtest du das Onboarding erneut öffnen, um die Verbindung zu ändern?");
         if (!ok) { e.preventDefault(); return; }
       }
+    });
+
+    // Voice: Im Bot aufnehmen (öffnet DM)
+    $("openSetupVoice").addEventListener("click", () => {
+      openSetupVoice();
+      $("hint").textContent = "Im Telegram-DM /setup_voice senden und die Begrüßung aufnehmen (5–20 Sek.).";
     });
 
     // Copy Kunden-Link (Editor & Summary)

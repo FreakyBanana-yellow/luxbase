@@ -95,6 +95,15 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
         </header>
         <div class="h-60 sm:h-[260px]"><canvas id="vipChart"></canvas></div>
       </article>
+
+      <!-- ✅ Heatmap -->
+      <article class="chart-card min-w-[88%] snap-start">
+        <header class="chart-header">
+          <h3 class="chart-title">Heatmap: Aktivität (Beitritte)</h3>
+          <span class="chart-meta" id="heatMeta">–</span>
+        </header>
+        <div class="h-60 sm:h-[260px]"><canvas id="heatmapChart"></canvas></div>
+      </article>
     </div>
 
     <!-- 🔥 Highlights: Top- & Flop-Tag + optionaler KI-Tipp -->
@@ -198,7 +207,6 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     .range-btn{border:1px solid var(--luxgray,#2a2a2a);border-radius:.6rem;padding:.45rem .7rem;font-size:.85rem;color:#fff;background:transparent}
     .range-btn.is-active{border-color:rgba(246,196,83,.5);background:rgba(246,196,83,.08);color:#f6c453}
 
-    /* Demo button */
     .demo-btn{border:1px solid var(--luxgray,#2a2a2a);border-radius:.6rem;padding:.45rem .7rem;font-size:.85rem;color:#fff;background:transparent}
     .demo-btn.is-active{border-color:rgba(246,196,83,.5);background:rgba(246,196,83,.08);color:#f6c453}
 
@@ -208,13 +216,11 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     .chart-meta{font-size:11px;color:rgba(255,255,255,.6)}
     .charts-wrap::-webkit-scrollbar{display:none}
 
-    /* Badges für Top/Flop */
     .badge-pos{color:#7ee787;background:rgba(126,231,135,.08);border:1px solid rgba(126,231,135,.35)}
     .badge-neg{color:#ff6b6b;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.35)}
   </style>
 
   <script type="module">
-// -------- Helper Debug ----------
 const dbg = (...args) => {
   const parts = [];
   for (const a of args) { try { parts.push(typeof a === "string" ? a : JSON.stringify(a, null, 2)); } catch { parts.push(String(a)); } }
@@ -232,6 +238,8 @@ try {
   const [{ createClient }] = await Promise.all([
     import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"),
     import("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"),
+    // 🔌 Matrix-Plugin für Heatmap
+    import("https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3.0.0/dist/chartjs-chart-matrix.min.js"),
   ]);
   const Chart = window.Chart;
 
@@ -294,7 +302,10 @@ try {
       vip_bis:         new Date(base.getTime()+(days-offset)*86400000).toISOString(),
       status: "active",
     });
-    return [mk(1), mk(2), mk(5), mk(7), mk(8), mk(10), mk(15)];
+    // etwas mehr Streuung, damit Heatmap hübsch ist
+    const rows = [];
+    for (let i=1;i<=28;i++){ const c = Math.random()<0.55 ? 1 : 0; for(let k=0;k<c;k++) rows.push(mk(i)); }
+    return rows.length ? rows : [mk(1), mk(2), mk(5), mk(7), mk(8), mk(10), mk(15)];
   }
 
   // ---------- Aggregation & Rendering ----------
@@ -302,7 +313,7 @@ try {
   const compareToggle = el("compareToggle");
   const exportRangeLabel = el("exportRangeLabel");
 
-  let revChart, vipChart, sparkRev, sparkActive, sparkNew;
+  let revChart, vipChart, heatmapChart, sparkRev, sparkActive, sparkNew;
 
   function computeSeries(rangeDays){
     const labels = labelsLastNDays(rangeDays);
@@ -384,6 +395,7 @@ try {
   function renderCharts(series, prevSeries){
     el("revMeta").textContent = `${series.labels[0]} – ${series.labels.at(-1)}`;
     el("vipMeta").textContent = el("revMeta").textContent;
+    el("heatMeta").textContent = el("revMeta").textContent;
 
     if (revChart) revChart.destroy();
     if (vipChart) vipChart.destroy();
@@ -440,6 +452,112 @@ try {
         }
       }
     });
+
+    // 🔥 Heatmap rendern
+    renderHeatmap(series.labels);
+  }
+
+  // -------- Heatmap (weekday × hour) --------
+  const WD_LABELS = ["Mo","Di","Mi","Do","Fr","Sa","So"];
+  const WD_ORDER  = [1,2,3,4,5,6,0]; // Montag zuerst
+  const HOURS = Array.from({length:24},(_,h)=>`${String(h).padStart(2,"0")}:00`);
+
+  function withinRange(isoDate, startISO, endISO){
+    return isoDate >= startISO && isoDate <= endISO;
+  }
+
+  function buildHeatData(labels){
+    if (!labels.length) return { cells:[], max:0 };
+    const start = labels[0], end = labels.at(-1);
+    const counts = Array.from({length:7},()=>Array(24).fill(0));
+
+    for (const r of vipRows){
+      if (!r?.letzter_kontakt) continue;
+      const d = new Date(r.letzter_kontakt);
+      const iso = toISO(d);
+      if (!withinRange(iso, start, end)) continue;
+
+      const wd = d.getDay();               // 0..6 (So..Sa)
+      const hour = d.getHours();           // 0..23
+      const col = WD_ORDER.indexOf(wd);    // 0..6 (Mo..So)
+      if (col>=0 && hour>=0 && hour<24) counts[col][hour] += 1;
+    }
+
+    let max = 0;
+    const cells = [];
+    for (let x=0;x<7;x++){
+      for (let y=0;y<24;y++){
+        const v = counts[x][y];
+        if (v>max) max = v;
+        cells.push({ x, y, v });
+      }
+    }
+    return { cells, max };
+  }
+
+  function goldRGBA(alpha){
+    // #f6c453 → rgba(246,196,83,alpha)
+    return `rgba(246,196,83,${alpha})`;
+  }
+
+  function renderHeatmap(labels){
+    const ctx = document.getElementById("heatmapChart").getContext("2d");
+    if (heatmapChart) { heatmapChart.destroy(); heatmapChart = null; }
+
+    const { cells, max } = buildHeatData(labels);
+    const border = "rgba(255,255,255,.08)";
+
+    heatmapChart = new Chart(ctx,{
+      type:"matrix",
+      data:{
+        datasets:[{
+          label:"Beitritte",
+          data: cells,
+          width: ({chart}) => (chart.chartArea?.width ?? 0) / 7 - 4,
+          height:({chart}) => (chart.chartArea?.height ?? 0) / 24 - 2,
+          borderColor: border,
+          borderWidth: 1,
+          backgroundColor: (ctx) => {
+            const v = ctx.raw?.v ?? 0;
+            if (max<=0) return goldRGBA(0.06);
+            // sanfte Skala 0.06..0.95
+            const a = Math.min(0.95, 0.06 + (v/max)*0.89);
+            return goldRGBA(a);
+          }
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{ display:false },
+          tooltip:{
+            callbacks:{
+              title:(items)=> {
+                const it = items?.[0]; if (!it) return "";
+                const wd = WD_LABELS[it.raw.x];
+                const hr = HOURS[it.raw.y];
+                return `${wd} ${hr}`;
+              },
+              label:(it)=> `Beitritte: ${it.raw.v}`
+            }
+          }
+        },
+        scales:{
+          x:{
+            type:"category",
+            labels: WD_LABELS,
+            grid:{ display:false },
+            ticks:{ color:"rgba(255,255,255,.8)" }
+          },
+          y:{
+            type:"category",
+            labels: HOURS,
+            grid:{ color:"rgba(255,255,255,.06)" },
+            ticks:{ color:"rgba(255,255,255,.7)", maxTicksLimit:8 }
+          }
+        }
+      }
+    });
   }
 
   // -------- Top/Flop & KI-Tipp --------
@@ -461,7 +579,6 @@ try {
     el("tfFlopValue").textContent= fmtEUR(min);
     el("tfAvgValue").textContent = fmtEUR(avg);
 
-    // Δ vs. Ø als Badge (grün/rot)
     const badge = (node, val, positiveGood=true)=>{
       const d = avg>0 ? (val-avg)/avg : 0;
       const txt = (d>=0?"+":"−") + (Math.abs(d)*100).toFixed(1) + "% vs. Ø";
@@ -472,11 +589,9 @@ try {
     badge(el("tfTopDelta"),  max, true);
     badge(el("tfFlopDelta"), min, false);
 
-    // Speichere Summary für KI-Endpoint
     window.__tfSummary = buildTipPayload(series);
   }
 
-  // kompaktes Payload für den Server (Token-sparsam)
   function buildTipPayload(series){
     const { labels, revenueByDay, newVipSeries, totals } = series;
     const wdNames=["So","Mo","Di","Mi","Do","Fr","Sa"];
@@ -524,7 +639,6 @@ try {
     return tip;
   }
 
-  // natürlicher Fallback-Tipp (ohne Fachjargon)
   function fallbackTip(summary){
     const { top, flop, avgRevenuePerDay, volatility } = summary;
     const lines = [];
@@ -542,7 +656,6 @@ try {
     return lines.join(" ");
   }
 
-  // Tipp Toggle + KI-Load
   const tipBtn = el("tfToggleTip");
   tipBtn.addEventListener("click", async ()=>{
     const box = el("tfTipWrap");

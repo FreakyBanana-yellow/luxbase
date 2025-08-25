@@ -501,64 +501,69 @@ try {
   }
 
   function renderHeatmap(labels){
-    const ctx = document.getElementById("heatmapChart").getContext("2d");
-    if (heatmapChart) { heatmapChart.destroy(); heatmapChart = null; }
+  const ctx = document.getElementById("heatmapChart").getContext("2d");
+  if (heatmapChart) { heatmapChart.destroy(); heatmapChart = null; }
 
-    const { cells, max } = buildHeatData(labels);
-    const border = "rgba(255,255,255,.08)";
+  const { cells, max } = buildHeatData(labels);
 
-    heatmapChart = new Chart(ctx,{
-      type:"matrix",
-      data:{
-        datasets:[{
-          label:"Beitritte",
-          data: cells,
-          width: ({chart}) => (chart.chartArea?.width ?? 0) / 7 - 4,
-          height:({chart}) => (chart.chartArea?.height ?? 0) / 24 - 2,
-          borderColor: border,
-          borderWidth: 1,
-          backgroundColor: (ctx) => {
-            const v = ctx.raw?.v ?? 0;
-            if (max<=0) return goldRGBA(0.06);
-            // sanfte Skala 0.06..0.95
-            const a = Math.min(0.95, 0.06 + (v/max)*0.89);
-            return goldRGBA(a);
+  heatmapChart = new Chart(ctx,{
+    type:"matrix",
+    data:{
+      datasets:[{
+        label:"Beitritte",
+        data: cells,
+        width: ({chart}) => (chart.chartArea?.width ?? 0) / 7 - 6,
+        height:({chart}) => (chart.chartArea?.height ?? 0) / 24 - 6,
+        borderColor: "rgba(0,0,0,.2)",
+        borderWidth: 1,
+        backgroundColor: (ctx) => {
+          const v = ctx.raw?.v ?? 0;
+          if (max<=0) return "rgba(246,196,83,0.05)";
+          // Farbskala: von dunkelgrau bis kräftig gold
+          const a = Math.min(1, v/max);
+          const gold = `rgba(246,196,83,${0.2 + a*0.8})`;
+          return gold;
+        }
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ display:false },
+        tooltip:{
+          callbacks:{
+            title:(items)=> {
+              const it = items?.[0]; if (!it) return "";
+              const wd = WD_LABELS[it.raw.x];
+              const hr = HOURS[it.raw.y];
+              return `${wd} ${hr}`;
+            },
+            label:(it)=> `Beitritte: ${it.raw.v}`
           }
-        }]
+        }
       },
-      options:{
-        responsive:true, maintainAspectRatio:false,
-        plugins:{
-          legend:{ display:false },
-          tooltip:{
-            callbacks:{
-              title:(items)=> {
-                const it = items?.[0]; if (!it) return "";
-                const wd = WD_LABELS[it.raw.x];
-                const hr = HOURS[it.raw.y];
-                return `${wd} ${hr}`;
-              },
-              label:(it)=> `Beitritte: ${it.raw.v}`
-            }
-          }
+      scales:{
+        x:{
+          type:"category",
+          labels: WD_LABELS,
+          grid:{ display:false },
+          ticks:{ color:"rgba(255,255,255,.8)" }
         },
-        scales:{
-          x:{
-            type:"category",
-            labels: WD_LABELS,
-            grid:{ display:false },
-            ticks:{ color:"rgba(255,255,255,.8)" }
-          },
-          y:{
-            type:"category",
-            labels: HOURS,
-            grid:{ color:"rgba(255,255,255,.06)" },
-            ticks:{ color:"rgba(255,255,255,.7)", maxTicksLimit:8 }
+        y:{
+          type:"category",
+          labels: HOURS,
+          grid:{ display:false },
+          ticks:{
+            color:"rgba(255,255,255,.7)",
+            maxTicksLimit: 8, // → nur ca. alle 3h ein Tick
+            callback:(v, idx) => idx % 3 === 0 ? HOURS[idx] : "" // nur jede 3. Stunde zeigen
           }
         }
       }
-    });
-  }
+    }
+  });
+}
+
 
   // -------- Top/Flop & KI-Tipp --------
   const wdayDE = (iso) => ["So","Mo","Di","Mi","Do","Fr","Sa"][new Date(iso).getDay()] || "";

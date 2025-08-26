@@ -143,7 +143,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
       </div>
     </div>
 
-    <!-- Export: Steuer-ready -->
+    <!-- Export -->
     <div class="bg-black/60 border border-luxgray rounded-2xl p-4 space-y-3">
       <div class="flex items-center justify-between gap-3">
         <h3 class="text-sm font-semibold text-luxgold">Export</h3>
@@ -234,13 +234,12 @@ try {
   const meta = document.getElementById("supabase-config");
   if (!meta?.dataset?.url || !meta?.dataset?.key) { dbg("❌ Supabase ENV fehlt:", { url: meta?.dataset?.url, keySet: !!meta?.dataset?.key }); throw new Error("Supabase ENV fehlt"); }
 
-  // Libraries
-  const [{ createClient }] = await Promise.all([
-    import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"),
-    import("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"),
-    // 🔌 Matrix-Plugin für Heatmap
-    import("https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3.0.0/dist/chartjs-chart-matrix.min.js"),
-  ]);
+  // ---------- Libraries (Reihenfolge wichtig!) ----------
+  const supaMod = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm");
+  await import("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js");
+  await import("https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3.0.0/dist/chartjs-chart-matrix.min.js");
+  if (!window.Chart) throw new Error("Chart.js nicht geladen");
+  const { createClient } = supaMod;
   const Chart = window.Chart;
 
   // --- Demo-Flag (persistiert); URL-Override via ?demo=1|0
@@ -260,7 +259,6 @@ try {
   const el = (id) => document.getElementById(id);
   const qsA = (sel) => Array.from(document.querySelectorAll(sel));
   const fmtEUR = (n) => (typeof n === "number" ? n : Number(n || 0)).toLocaleString("de-DE",{style:"currency",currency:"EUR",maximumFractionDigits:0});
-  const fmtDE2 = (n) => Number(n||0).toLocaleString("de-DE",{minimumFractionDigits:2, maximumFractionDigits:2});
 
   // Date helpers
   const now = new Date();
@@ -302,7 +300,7 @@ try {
       vip_bis:         new Date(base.getTime()+(days-offset)*86400000).toISOString(),
       status: "active",
     });
-    // etwas mehr Streuung, damit Heatmap hübsch ist
+    // etwas Streuung für Heatmap
     const rows = [];
     for (let i=1;i<=28;i++){ const c = Math.random()<0.55 ? 1 : 0; for(let k=0;k<c;k++) rows.push(mk(i)); }
     return rows.length ? rows : [mk(1), mk(2), mk(5), mk(7), mk(8), mk(10), mk(15)];
@@ -322,11 +320,8 @@ try {
     const newVipSeries = labels.map(d=>mapNew[d]);
 
     const revenueByDay = labels.map((_,i)=> (preis>0 ? newVipSeries[i]*preis : 0));
-
-    // aktive VIPs je Tag := VIPs mit vip_bis >= Datum
     const activeEachDay = labels.map(d=> vipRows.filter(r => String(r.vip_bis||"").slice(0,10) >= d).length );
 
-    // Totals
     const revenueTotal = revenueByDay.reduce((a,b)=>a+b,0);
     const activeToday  = activeEachDay.at(-1) || 0;
     const newTotal     = newVipSeries.reduce((a,b)=>a+b,0);
@@ -495,75 +490,67 @@ try {
     return { cells, max };
   }
 
-  function goldRGBA(alpha){
-    // #f6c453 → rgba(246,196,83,alpha)
-    return `rgba(246,196,83,${alpha})`;
-  }
-
   function renderHeatmap(labels){
-  const ctx = document.getElementById("heatmapChart").getContext("2d");
-  if (heatmapChart) { heatmapChart.destroy(); heatmapChart = null; }
+    const ctx = document.getElementById("heatmapChart").getContext("2d");
+    if (heatmapChart) { heatmapChart.destroy(); heatmapChart = null; }
 
-  const { cells, max } = buildHeatData(labels);
+    const { cells, max } = buildHeatData(labels);
 
-  heatmapChart = new Chart(ctx,{
-    type:"matrix",
-    data:{
-      datasets:[{
-        label:"Beitritte",
-        data: cells,
-        width: ({chart}) => (chart.chartArea?.width ?? 0) / 7 - 6,
-        height:({chart}) => (chart.chartArea?.height ?? 0) / 24 - 6,
-        borderColor: "rgba(0,0,0,.2)",
-        borderWidth: 1,
-        backgroundColor: (ctx) => {
-          const v = ctx.raw?.v ?? 0;
-          if (max<=0) return "rgba(246,196,83,0.05)";
-          // Farbskala: von dunkelgrau bis kräftig gold
-          const a = Math.min(1, v/max);
-          const gold = `rgba(246,196,83,${0.2 + a*0.8})`;
-          return gold;
-        }
-      }]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{
-        legend:{ display:false },
-        tooltip:{
-          callbacks:{
-            title:(items)=> {
-              const it = items?.[0]; if (!it) return "";
-              const wd = WD_LABELS[it.raw.x];
-              const hr = HOURS[it.raw.y];
-              return `${wd} ${hr}`;
-            },
-            label:(it)=> `Beitritte: ${it.raw.v}`
+    heatmapChart = new Chart(ctx,{
+      type:"matrix",
+      data:{
+        datasets:[{
+          label:"Beitritte",
+          data: cells,
+          width: ({chart}) => (chart.chartArea?.width ?? 0) / 7 - 6,
+          height:({chart}) => (chart.chartArea?.height ?? 0) / 24 - 6,
+          borderColor: "rgba(0,0,0,.2)",
+          borderWidth: 1,
+          backgroundColor: (c) => {
+            const v = c.raw?.v ?? 0;
+            if (max<=0) return "rgba(246,196,83,0.05)";
+            const a = Math.min(1, v / max);
+            return `rgba(246,196,83,${0.2 + a*0.8})`; // dunkles Gold → hell
           }
-        }
+        }]
       },
-      scales:{
-        x:{
-          type:"category",
-          labels: WD_LABELS,
-          grid:{ display:false },
-          ticks:{ color:"rgba(255,255,255,.8)" }
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{ display:false },
+          tooltip:{
+            callbacks:{
+              title:(items)=> {
+                const it = items?.[0]; if (!it) return "";
+                const wd = WD_LABELS[it.raw.x];
+                const hr = HOURS[it.raw.y];
+                return `${wd} ${hr}`;
+              },
+              label:(it)=> `Beitritte: ${it.raw.v}`
+            }
+          }
         },
-        y:{
-          type:"category",
-          labels: HOURS,
-          grid:{ display:false },
-          ticks:{
-            color:"rgba(255,255,255,.7)",
-            maxTicksLimit: 8, // → nur ca. alle 3h ein Tick
-            callback:(v, idx) => idx % 3 === 0 ? HOURS[idx] : "" // nur jede 3. Stunde zeigen
+        scales:{
+          x:{
+            type:"category",
+            labels: WD_LABELS,
+            grid:{ display:false },
+            ticks:{ color:"rgba(255,255,255,.85)" }
+          },
+          y:{
+            type:"category",
+            labels: HOURS,
+            grid:{ display:false },
+            ticks:{
+              color:"rgba(255,255,255,.75)",
+              maxTicksLimit: 12,                           // ca. alle 2 Stunden
+              callback: (_val, idx) => idx % 2 === 0 ? HOURS[idx] : ""
+            }
           }
         }
       }
-    }
-  });
-}
-
+    });
+  }
 
   // -------- Top/Flop & KI-Tipp --------
   const wdayDE = (iso) => ["So","Mo","Di","Mi","Do","Fr","Sa"][new Date(iso).getDay()] || "";
@@ -671,7 +658,6 @@ try {
       return;
     }
     tipBtn.disabled = true;
-    const old = tipBtn.textContent;
     tipBtn.textContent = "… Tipp wird generiert";
     try{
       const series = computeSeries(RANGE);

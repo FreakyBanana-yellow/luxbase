@@ -220,7 +220,7 @@ import DashboardLayout from "../../layouts/DashboardLayout.astro";
     .badge-neg{color:#ff6b6b;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.35)}
   </style>
 
-  <script type="module">
+ <script type="module">
 const dbg = (...args) => {
   const parts = [];
   for (const a of args) { try { parts.push(typeof a === "string" ? a : JSON.stringify(a, null, 2)); } catch { parts.push(String(a)); } }
@@ -234,10 +234,9 @@ try {
   const meta = document.getElementById("supabase-config");
   if (!meta?.dataset?.url || !meta?.dataset?.key) { dbg("❌ Supabase ENV fehlt:", { url: meta?.dataset?.url, keySet: !!meta?.dataset?.key }); throw new Error("Supabase ENV fehlt"); }
 
-  // ---------- Libraries (Reihenfolge wichtig!) ----------
+  // ---------- Libraries ----------
   const supaMod = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm");
   await import("https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js");
-  await import("https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3.0.0/dist/chartjs-chart-matrix.min.js");
   if (!window.Chart) throw new Error("Chart.js nicht geladen");
   const { createClient } = supaMod;
   const Chart = window.Chart;
@@ -300,7 +299,7 @@ try {
       vip_bis:         new Date(base.getTime()+(days-offset)*86400000).toISOString(),
       status: "active",
     });
-    // etwas Streuung für Heatmap
+    // leichte Streuung für Sparklines/Charts
     const rows = [];
     for (let i=1;i<=28;i++){ const c = Math.random()<0.55 ? 1 : 0; for(let k=0;k<c;k++) rows.push(mk(i)); }
     return rows.length ? rows : [mk(1), mk(2), mk(5), mk(7), mk(8), mk(10), mk(15)];
@@ -311,7 +310,7 @@ try {
   const compareToggle = el("compareToggle");
   const exportRangeLabel = el("exportRangeLabel");
 
-  let revChart, vipChart, heatmapChart, sparkRev, sparkActive, sparkNew;
+  let revChart, vipChart, sparkRev, sparkActive, sparkNew;
 
   function computeSeries(rangeDays){
     const labels = labelsLastNDays(rangeDays);
@@ -390,7 +389,6 @@ try {
   function renderCharts(series, prevSeries){
     el("revMeta").textContent = `${series.labels[0]} – ${series.labels.at(-1)}`;
     el("vipMeta").textContent = el("revMeta").textContent;
-    el("heatMeta").textContent = el("revMeta").textContent;
 
     if (revChart) revChart.destroy();
     if (vipChart) vipChart.destroy();
@@ -444,109 +442,6 @@ try {
         scales:{
           x:{ grid:{ display:false }, ticks:{ color:"rgba(255,255,255,.75)", maxTicksLimit:6 }},
           y:{ grid:{ color:"rgba(255,255,255,.08)" }, ticks:{ color:"rgba(255,255,255,.75)" }, beginAtZero:true }
-        }
-      }
-    });
-
-    // 🔥 Heatmap rendern
-    renderHeatmap(series.labels);
-  }
-
-  // -------- Heatmap (weekday × hour) --------
-  const WD_LABELS = ["Mo","Di","Mi","Do","Fr","Sa","So"];
-  const WD_ORDER  = [1,2,3,4,5,6,0]; // Montag zuerst
-  const HOURS = Array.from({length:24},(_,h)=>`${String(h).padStart(2,"0")}:00`);
-
-  function withinRange(isoDate, startISO, endISO){
-    return isoDate >= startISO && isoDate <= endISO;
-  }
-
-  function buildHeatData(labels){
-    if (!labels.length) return { cells:[], max:0 };
-    const start = labels[0], end = labels.at(-1);
-    const counts = Array.from({length:7},()=>Array(24).fill(0));
-
-    for (const r of vipRows){
-      if (!r?.letzter_kontakt) continue;
-      const d = new Date(r.letzter_kontakt);
-      const iso = toISO(d);
-      if (!withinRange(iso, start, end)) continue;
-
-      const wd = d.getDay();               // 0..6 (So..Sa)
-      const hour = d.getHours();           // 0..23
-      const col = WD_ORDER.indexOf(wd);    // 0..6 (Mo..So)
-      if (col>=0 && hour>=0 && hour<24) counts[col][hour] += 1;
-    }
-
-    let max = 0;
-    const cells = [];
-    for (let x=0;x<7;x++){
-      for (let y=0;y<24;y++){
-        const v = counts[x][y];
-        if (v>max) max = v;
-        cells.push({ x, y, v });
-      }
-    }
-    return { cells, max };
-  }
-
-  function renderHeatmap(labels){
-    const ctx = document.getElementById("heatmapChart").getContext("2d");
-    if (heatmapChart) { heatmapChart.destroy(); heatmapChart = null; }
-
-    const { cells, max } = buildHeatData(labels);
-
-    heatmapChart = new Chart(ctx,{
-      type:"matrix",
-      data:{
-        datasets:[{
-          label:"Beitritte",
-          data: cells,
-          width: ({chart}) => (chart.chartArea?.width ?? 0) / 7 - 6,
-          height:({chart}) => (chart.chartArea?.height ?? 0) / 24 - 6,
-          borderColor: "rgba(0,0,0,.2)",
-          borderWidth: 1,
-          backgroundColor: (c) => {
-            const v = c.raw?.v ?? 0;
-            if (max<=0) return "rgba(246,196,83,0.05)";
-            const a = Math.min(1, v / max);
-            return `rgba(246,196,83,${0.2 + a*0.8})`; // dunkles Gold → hell
-          }
-        }]
-      },
-      options:{
-        responsive:true, maintainAspectRatio:false,
-        plugins:{
-          legend:{ display:false },
-          tooltip:{
-            callbacks:{
-              title:(items)=> {
-                const it = items?.[0]; if (!it) return "";
-                const wd = WD_LABELS[it.raw.x];
-                const hr = HOURS[it.raw.y];
-                return `${wd} ${hr}`;
-              },
-              label:(it)=> `Beitritte: ${it.raw.v}`
-            }
-          }
-        },
-        scales:{
-          x:{
-            type:"category",
-            labels: WD_LABELS,
-            grid:{ display:false },
-            ticks:{ color:"rgba(255,255,255,.85)" }
-          },
-          y:{
-            type:"category",
-            labels: HOURS,
-            grid:{ display:false },
-            ticks:{
-              color:"rgba(255,255,255,.75)",
-              maxTicksLimit: 12,                           // ca. alle 2 Stunden
-              callback: (_val, idx) => idx % 2 === 0 ? HOURS[idx] : ""
-            }
-          }
         }
       }
     });
@@ -729,5 +624,6 @@ try {
   dbg("❌ Render error:", e?.message || e);
 }
 </script>
+
 
 </DashboardLayout>

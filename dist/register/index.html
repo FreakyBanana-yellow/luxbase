@@ -1,181 +1,188 @@
-<!DOCTYPE html><html lang="de" class="scroll-smooth"> <head><meta charset="utf-8"><title>Registrieren – Luxbase</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0d0d0d"><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"><!-- Supabase Keys via Meta-Tag --><meta id="supabase-config" data-url="{`${import.meta.env.PUBLIC_SUPABASE_URL}`}" data-key="{`${import.meta.env.PUBLIC_SUPABASE_ANON_KEY}`}"><link rel="stylesheet" href="/_astro/cpplattform.BsBVl178.css">
-<link rel="stylesheet" href="/_astro/cpplattform.MTIYB4pn.css"><script type="module">document.write(new Date().getFullYear());
-</script></head> <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans"> <!-- HEADER --> <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50"> <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a> <nav class="flex items-center gap-4"> <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+<!DOCTYPE html><html lang="de" class="scroll-smooth"> <head><meta charset="utf-8"><title>Registrieren – Luxbase</title><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#0d0d0d"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><!-- Supabase Keys via Meta-Tag --><meta id="supabase-config" data-url="https://zpzigwfjfhogkzuvijzm.supabase.co" data-key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpwemlnd2ZqZmhvZ2t6dXZpanptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5MjcwNDcsImV4cCI6MjA2NjUwMzA0N30.jMDAFkPhKmLXtLYerLd9z93tugNvw14L4oZvSNkSD2o"><!-- Fonts (optional) --><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/_astro/aktivität.CCArwAoG.css">
+<link rel="stylesheet" href="/_astro/profile.DfuunIfJ.css"><script type="module">document.write(new Date().getFullYear());
+</script></head> <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans"> <!-- HEADER (ohne Burger) --> <header class="w-full flex items-center justify-between gap-2 p-4 bg-black border-b border-luxgray sticky top-0 z-50"> <a href="/" class="text-luxgold font-serif text-xl leading-none">LUXBASE</a> <nav class="flex items-center gap-3"> <button id="openLogin" class="h-11 px-5 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
 Login
-</button> <div id="accountMenu" class="relative hidden"> <button id="accountBtn" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
-👤 <span id="username">Account</span> </button> <div class="absolute right-0 mt-2 w-48 bg-black border border-luxgray rounded shadow-xl text-sm hidden" id="accountDropdown"> <a href="/dashboard" class="block px-4 py-2 hover:bg-luxgray/30">Dashboard</a> <button id="logoutBtn" class="w-full text-left px-4 py-2 hover:bg-red-900/40 text-red-400">Abmelden</button> </div> </div> </nav> </header> <!-- LOGIN MODAL --> <div id="loginModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden"> <div class="bg-zinc-900 border border-luxgold p-8 rounded-xl w-96 relative text-white shadow-xl"> <button id="closeLogin" class="absolute top-3 right-4 text-white text-xl hover:text-luxgold">&times;</button> <h2 class="text-xl font-serif font-bold text-luxgold text-center mb-6">Login</h2> <form id="popupLoginForm" class="space-y-4"> <input type="email" name="email" placeholder="E‑Mail" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded"> <input type="password" name="password" placeholder="Passwort" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded"> <button type="submit" class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition">
+</button> <div id="accountMenu" class="relative hidden"> <button id="accountBtn" class="h-11 px-4 flex items-center gap-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition"> <span id="username">Account</span> <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path> </svg> </button> <div id="accountDropdown" class="absolute right-0 mt-2 w-56 bg-black border border-luxgray rounded-xl shadow-lg hidden"> <a href="/dashboard" class="block px-4 py-3 hover:bg-luxgray/20">Dashboard</a> <a href="/dashboard/vipbot-einstellungen" class="block px-4 py-3 hover:bg-luxgray/20">Bot‑Einstellungen</a> <button id="logoutBtn" class="w-full text-left px-4 py-3 hover:bg-red-900/40 text-red-400">Abmelden</button> </div> </div> </nav> </header> <!-- LOGIN MODAL --> <div id="loginModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden"> <div class="bg-zinc-900 border border-luxgold p-6 rounded-2xl w-[92vw] max-w-sm relative text-white shadow-xl"> <button id="closeLogin" class="absolute top-3 right-4 text-white text-2xl leading-none hover:text-luxgold" aria-label="Login schließen">&times;</button> <h2 class="text-xl font-serif font-bold text-luxgold text-center mb-5">Login</h2> <form id="popupLoginForm" class="space-y-3"> <input type="email" name="email" placeholder="E‑Mail" required class="w-full h-12 px-4 bg-black border border-zinc-600 rounded-xl"> <input type="password" name="password" placeholder="Passwort" required class="w-full h-12 px-4 bg-black border border-zinc-600 rounded-xl"> <button type="submit" class="w-full h-12 bg-luxgold text-black font-bold rounded-xl hover:bg-yellow-400 transition">
 Einloggen
-</button> </form> <p id="popupLoginMsg" class="text-sm text-center text-red-400 mt-2 min-h-[1.25rem]"></p> <p class="text-center text-sm mt-6 text-gray-400">
-Noch kein Account? <a href="/register" class="text-luxgold hover:underline">Jetzt registrieren</a> </p> </div> </div> <main class="flex-1">  <form id="registerForm" action="#" novalidate class="bg-zinc-900 border border-luxgold rounded-xl p-8 w-full max-w-md mx-auto mt-12 shadow-xl"> <h1 class="text-2xl font-serif font-bold text-center text-luxgold mb-6">
+</button> </form> <p id="popupLoginMsg" class="text-sm text-center text-red-400 mt-2 min-h-[1.25rem]"></p> <p class="text-center text-sm mt-4 text-gray-400">
+Noch kein Account? <a href="/register" class="text-luxgold hover:underline">Jetzt registrieren</a> </p> </div> </div> <!-- MAIN CONTENT --> <main class="flex-1 pb-20">  <form id="registerForm" action="#" novalidate class="bg-zinc-900 border border-luxgold rounded-xl p-8 w-full max-w-md mx-auto mt-12 shadow-xl"> <h1 class="text-2xl font-serif font-bold text-center text-luxgold mb-6">
 Registrieren
-</h1> <input id="name" type="text" placeholder="Dein Name" required class="w-full px-4 py-2 mb-4 rounded bg-zinc-800 border border-zinc-600"> <input id="email" type="email" placeholder="E-Mail" required class="w-full px-4 py-2 mb-4 rounded bg-zinc-800 border border-zinc-600"> <select id="role" required class="w-full px-4 py-2 mb-4 rounded bg-zinc-800 border border-zinc-600"> <option value="creator">Creator / Model</option> <option value="agentur">Agentur</option> </select> <!-- Passwort + Sichtbarkeit --> <div class="relative mb-3"> <input id="password" type="password" placeholder="Passwort" required class="w-full px-4 py-2 pr-10 rounded bg-zinc-800 border border-zinc-600"> <button type="button" id="togglePw" class="absolute right-2 top-2 text-yellow-400 select-none">👁</button> </div> <div class="relative mb-4"> <input id="confirm" type="password" placeholder="Passwort wiederholen" required class="w-full px-4 py-2 pr-10 rounded bg-zinc-800 border border-zinc-600"> <button type="button" id="toggleConfirm" class="absolute right-2 top-2 text-yellow-400 select-none">👁</button> </div> <ul id="pwRules" class="text-sm mb-4 space-y-0.5 leading-tight"> <li id="rLen" class="text-red-400">• Mind. 8 Zeichen</li> <li id="rUp" class="text-red-400">• Mind. 1 Großbuchstabe</li> <li id="rLow" class="text-red-400">• Mind. 1 Kleinbuchstabe</li> <li id="rNum" class="text-red-400">• Mind. 1 Zahl</li> <li id="rMatch" class="text-red-400">• Passwörter gleich</li> </ul> <button type="submit" class="w-full bg-luxgold text-luxblack font-bold py-2 rounded hover:bg-yellow-400 transition">
+</h1> <input id="name" type="text" placeholder="Dein Name" required class="w-full px-4 py-2 mb-4 rounded bg-zinc-800 border border-zinc-600"> <input id="email" type="email" placeholder="E‑Mail" required class="w-full px-4 py-2 mb-4 rounded bg-zinc-800 border border-zinc-600"> <select id="role" required class="w-full px-4 py-2 mb-4 rounded bg-zinc-800 border border-zinc-600"> <option value="creator">Creator / Model</option> <option value="agentur">Agentur</option> </select> <!-- Passwort + Sichtbarkeit --> <div class="relative mb-3"> <input id="password" type="password" placeholder="Passwort" required class="w-full px-4 py-2 pr-10 rounded bg-zinc-800 border border-zinc-600"> <button type="button" id="togglePw" class="absolute right-2 top-2 text-yellow-400 select-none" aria-label="Passwort anzeigen">👁</button> </div> <div class="relative mb-4"> <input id="confirm" type="password" placeholder="Passwort wiederholen" required class="w-full px-4 py-2 pr-10 rounded bg-zinc-800 border border-zinc-600"> <button type="button" id="toggleConfirm" class="absolute right-2 top-2 text-yellow-400 select-none" aria-label="Passwort wiederholen anzeigen">👁</button> </div> <ul id="pwRules" class="text-sm mb-4 space-y-0.5 leading-tight"> <li id="rLen" class="text-red-400">• Mind. 8 Zeichen</li> <li id="rUp" class="text-red-400">• Mind. 1 Großbuchstabe</li> <li id="rLow" class="text-red-400">• Mind. 1 Kleinbuchstabe</li> <li id="rNum" class="text-red-400">• Mind. 1 Zahl</li> <li id="rMatch" class="text-red-400">• Passwörter gleich</li> </ul> <button id="submitBtn" type="submit" class="w-full bg-luxgold text-luxblack font-bold py-2 rounded hover:bg-yellow-400 transition">
 Registrieren
 </button> <p id="msg" class="mt-4 text-center text-sm min-h-[1.25rem]"></p> </form>  <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // →  Werte werden beim Build injiziert:
-    const supabase = createClient("${supabaseUrl}", "${supabaseKey}");
+    // Den bereits vom Layout bereitgestellten Config-Knoten nutzen
+    const meta = document.getElementById("supabase-config");
+    if (!meta?.dataset?.url || !meta?.dataset?.key) {
+      console.error("supabase-config missing");
+    }
+    const supabase = createClient(meta.dataset.url, meta.dataset.key);
 
-    const form     = document.getElementById("registerForm");
-    const pw       = document.getElementById("password");
-    const confirm  = document.getElementById("confirm");
-    const msg      = document.getElementById("msg");
+    const $ = (id) => document.getElementById(id);
+    const form = $("registerForm");
+    const pw = $("password");
+    const confirm = $("confirm");
+    const msg = $("msg");
+    const submitBtn = $("submitBtn");
 
-    // ---------------- Passwortregeln live prüfen ----------------
+    // Passwortregeln
     const rules = {
       rLen  : v => v.length >= 8,
       rUp   : v => /[A-Z]/.test(v),
       rLow  : v => /[a-z]/.test(v),
-      rNum  : v => /\\d/.test(v),
+      rNum  : v => /\d/.test(v),
       rMatch: () => pw.value === confirm.value && pw.value !== ""
     };
     function updateRules () {
       const v = pw.value;
       for (const [id, fn] of Object.entries(rules)) {
         const ok = id === "rMatch" ? fn() : fn(v);
-        document.getElementById(id).classList.toggle("text-green-400", ok);
-        document.getElementById(id).classList.toggle("text-red-400",  !ok);
+        $(id).classList.toggle("text-green-400", ok);
+        $(id).classList.toggle("text-red-400",  !ok);
       }
       return Object.values(rules).every(fn => (fn.name === "" ? fn() : fn(pw.value)));
     }
     pw.addEventListener("input", updateRules);
     confirm.addEventListener("input", updateRules);
 
-    // --------------- Sichtbarkeit umschalten -------------------
-    document.getElementById("togglePw").onclick      = () => pw.type      = pw.type      === "password" ? "text" : "password";
-    document.getElementById("toggleConfirm").onclick = () => confirm.type = confirm.type === "password" ? "text" : "password";
+    // Sichtbarkeit umschalten
+    $("togglePw").onclick      = () => pw.type      = pw.type      === "password" ? "text" : "password";
+    $("toggleConfirm").onclick = () => confirm.type = confirm.type === "password" ? "text" : "password";
 
-    // ---------------- Formular absenden ------------------------
+    // Submit
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       msg.textContent = "";
       msg.className   = "mt-4 text-center text-sm";
+      submitBtn.disabled = true;
 
-      if (!updateRules()) {
-        msg.textContent = "❌ Passwort erfüllt nicht alle Anforderungen.";
+      try {
+        if (!updateRules()) {
+          msg.textContent = "❌ Passwort erfüllt nicht alle Anforderungen.";
+          msg.classList.add("text-red-400");
+          return;
+        }
+
+        const name  = $("name").value.trim();
+        const email = $("email").value.trim();
+        const role  = $("role").value;
+
+        if (!name || !email) {
+          msg.textContent = "❌ Bitte Name und E‑Mail ausfüllen.";
+          msg.classList.add("text-red-400");
+          return;
+        }
+
+        // Nur Signup – der DB‑Trigger erzeugt creator_config.
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password: pw.value,
+          options: {
+            data: { name, role }, // Trigger liest diese Meta
+            // Optional: wohin die Bestätigungs-Mail später leitet
+            emailRedirectTo: window.location.origin + "/login"
+          }
+        });
+
+        if (error) {
+          msg.textContent = "❌ " + error.message;
+          msg.classList.add("text-red-400");
+          return;
+        }
+
+        // Wenn E-Mail-Bestätigung aktiv ist, gibt es KEINE Session
+        if (!data.session) {
+          msg.textContent = "✉️ Bitte prüfe dein Postfach und bestätige die E‑Mail.";
+          msg.classList.add("text-green-400");
+        } else {
+          msg.textContent = "✅ Registrierung erfolgreich.";
+          msg.classList.add("text-green-400");
+        }
+
+        setTimeout(() => (window.location.href = "/dashboard"), 1500);
+      } catch (err) {
+        console.error(err);
+        msg.textContent = "❌ Unerwarteter Fehler beim Registrieren.";
         msg.classList.add("text-red-400");
-        return;
+      } finally {
+        submitBtn.disabled = false;
       }
-
-      const name  = document.getElementById("name").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const role  = document.getElementById("role").value;
-
-      // 1) User anlegen
-      const { data, error } = await supabase.auth.signUp({ email, password: pw.value });
-      if (error) {
-        msg.textContent = "❌ " + error.message;
-        msg.classList.add("text-red-400");
-        return;
-      }
-
-      // 2) Profil speichern
-      const userId = data?.user?.id ?? data?.session?.user?.id;
-      const { error: insErr } = await supabase
-        .from("profiles")
-        .insert([{ id: userId, name, role, email }]);
-
-      if (insErr) {
-        msg.textContent = "⚠️ Profil konnte nicht gespeichert werden: " + insErr.message;
-        msg.classList.add("text-red-400");
-        return;
-      }
-
-      msg.textContent = "✅ Registrierung erfolgreich – bitte E-Mail bestätigen.";
-      msg.classList.add("text-green-400");
-      setTimeout(() => (window.location.href = "/dashboard"), 2000);
     });
-  </script>  </main> <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray">
+  </script>  </main> <!-- Mobile Bottom Bar --> <nav class="fixed bottom-0 inset-x-0 bg-black/90 backdrop-blur border-t border-luxgray z-50"> <div class="grid grid-cols-3 text-center text-sm"> <a href="/" class="py-3 flex flex-col items-center gap-1"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6 text-luxgold"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"></path></svg> <span>Home</span> </a> <button id="openLoginBottom" class="py-3 flex flex-col items-center gap-1"> <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10z"></path></svg> <span>Login</span> </button> <a href="/dashboard" class="py-3 flex flex-col items-center gap-1"> <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"></path></svg> <span>Dashboard</span> </a> </div> </nav> <!-- FOOTER (nur Desktop sichtbar, wenn gewünscht) --> <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray hidden md:block">
 ©  Luxbase – Automation with Style.
-</footer> <!-- LOGIN + FEATURE-LOGIK --> <script type="module">
-      import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
+</footer> <!-- SCRIPT: Supabase Auth + Login Flow + Redirect to /dashboard --> <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
       const meta = document.getElementById("supabase-config");
-      const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
+      const supabase = createClient(meta.dataset.url, meta.dataset.key);
 
-      const modal = document.getElementById("loginModal");
+      // UI refs
       const openBtn = document.getElementById("openLogin");
+      const openBtnBottom = document.getElementById("openLoginBottom");
       const closeBtn = document.getElementById("closeLogin");
+      const modal = document.getElementById("loginModal");
       const form = document.getElementById("popupLoginForm");
       const msg = document.getElementById("popupLoginMsg");
-
       const accountMenu = document.getElementById("accountMenu");
       const accountBtn = document.getElementById("accountBtn");
       const accountDropdown = document.getElementById("accountDropdown");
       const usernameEl = document.getElementById("username");
       const logoutBtn = document.getElementById("logoutBtn");
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const openLogin = () => modal.classList.remove("hidden");
+      const closeLogin = () => modal.classList.add("hidden");
 
-      if (user) {
-        openBtn?.classList.add("hidden");
-        accountMenu?.classList.remove("hidden");
-        usernameEl.textContent = user.user_metadata?.name || "Account";
+      openBtn?.addEventListener("click", openLogin);
+      openBtnBottom?.addEventListener("click", openLogin);
+      closeBtn?.addEventListener("click", closeLogin);
 
-        accountBtn?.addEventListener("click", () => {
-          accountDropdown.classList.toggle("hidden");
-        });
-
-        logoutBtn?.addEventListener("click", async () => {
-          await supabase.auth.signOut();
-          sessionStorage.clear();
-          location.href = "/";
-        });
-      } else {
-        openBtn?.classList.remove("hidden");
-        accountMenu?.classList.add("hidden");
-      }
-
-      openBtn?.addEventListener("click", () => modal.classList.remove("hidden"));
-      closeBtn?.addEventListener("click", () => modal.classList.add("hidden"));
-
+      // LOGIN + Config speichern + Redirect
       form?.addEventListener("submit", async (e) => {
         e.preventDefault();
         msg.textContent = "";
+        const fd = new FormData(form);
+        const email = fd.get("email");
+        const password = fd.get("password");
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) { msg.textContent = error.message || "Login fehlgeschlagen"; return; }
 
-        const email = form.email.value.trim();
-        const password = form.password.value.trim();
+        const user = data.user;
 
-        const { data: loginData, error } = await supabase.auth.signInWithPassword({ email, password });
+        // Creator-Config laden
+        const { data: cfg } = await supabase
+          .from("creator_config")
+          .select("creator_id, creator_name, email, rolle, has_vipbot, has_vault, bot_paket, show_selfie_gate, telegram_id, preis, vip_dauer, gruppe_link, welcome_text")
+          .eq("creator_id", user.id)
+          .maybeSingle();
 
-        if (error) {
-          msg.textContent = "❌ " + error.message;
-          msg.className = "text-red-400 text-sm text-center";
-        } else {
-          const user = loginData.user;
-          const { data: config, error: configError } = await supabase
-            .from("creator_config")
-            .select("*")
-            .eq("creator_id", user.id)
-            .single();
+        const config = cfg || {
+          creator_id: user.id,
+          creator_name: user.email,
+          email: user.email,
+          rolle: "creator",
+          has_vipbot: false,
+          has_vault: false,
+          bot_paket: "basic",
+          show_selfie_gate: false
+        };
 
-          if (configError || !config) {
-            msg.textContent = "⚠️ Login ok, aber kein Config-Eintrag gefunden.";
-            msg.className = "text-yellow-400 text-sm text-center";
-            return;
-          }
-
-          // VIP Bot Paket-Logik (nur basic & premium)
-          const paketFeatures = {
-            basic: {
-              show_selfie_gate: false,
-              can_customize_texts: false,
-            },
-            premium: {
-              show_selfie_gate: true,
-              can_customize_texts: true,
-            },
-          };
-
-          const features = paketFeatures[config.bot_paket] || paketFeatures.basic;
-          const mergedConfig = { ...config, ...features };
-
-          sessionStorage.setItem("luxbase_config", JSON.stringify(mergedConfig));
-
-          msg.textContent = "✅ Login erfolgreich – Weiterleitung …";
-          msg.className = "text-green-400 text-sm text-center";
-
-          setTimeout(() => location.href = "/dashboard", 1200);
-        }
+        sessionStorage.setItem("luxbase_config", JSON.stringify(config));
+        window.location.href = "/dashboard";
       });
+
+      // Wenn bereits eingeloggt → Account-Menü zeigen
+      (async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          openBtn?.classList.add("hidden");
+          accountMenu?.classList.remove("hidden");
+          usernameEl.textContent = user.email || "Account";
+          accountBtn?.addEventListener("click", () => accountDropdown.classList.toggle("hidden"));
+          logoutBtn?.addEventListener("click", async () => {
+            await supabase.auth.signOut();
+            sessionStorage.clear();
+            location.href = "/";
+          });
+        }
+      })();
     </script> </body> </html>

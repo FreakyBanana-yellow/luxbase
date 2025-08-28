@@ -2,10 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase'; // relativer Pfad von components -> lib
 
-export default function ProfileForm() {
+export default function ProfileForm({ overrideCreatorId = null, onAfterSave }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
+
+  const [targetId, setTargetId] = useState(null); // die creator_id, gegen die geladen/gespeichert wird
+  const [isSelf, setIsSelf] = useState(false);    // ob Nutzer sein eigenes Profil editiert
 
   const [form, setForm] = useState({
     creator_name: '', // Anzeigename
@@ -25,56 +28,70 @@ export default function ProfileForm() {
       setError('');
       setSaved(false);
       try {
-        const { data: { user }, error: userErr } = await supabase.auth.getUser();
+        const {
+          data: { user },
+          error: userErr,
+        } = await supabase.auth.getUser();
         if (userErr || !user) {
           setError('Bitte einloggen, um dein Profil zu bearbeiten.');
           setLoading(false);
           return;
         }
 
-        // E-Mail aus Auth vorfüllen
-        let email = user.email ?? '';
+        const cid = overrideCreatorId || user.id;
+        setTargetId(cid);
+        setIsSelf(!overrideCreatorId || overrideCreatorId === user.id);
 
-        // Anzeigename aus creator_config
+        // Anzeigename & E-Mail aus creator_config
         const { data: profile, error: pErr } = await supabase
           .from('creator_config')
           .select('creator_name, email')
-          .eq('creator_id', user.id)
+          .eq('creator_id', cid)
           .maybeSingle();
 
-        if (!pErr && profile) {
-          setForm((f) => ({
-            ...f,
-            creator_name: profile.creator_name ?? '',
-            email: profile.email ?? email,
-          }));
-        } else {
-          setForm((f) => ({ ...f, email }));
-        }
+        // E-Mail-Vorbelegung:
+        // - acting-as: nur DB-Wert
+        // - self: DB-Wert oder Fallback auf auth.user.email
+        const fallbackEmail = isSelf ? (user.email ?? '') : '';
+        const prefillEmail = (profile?.email ?? fallbackEmail);
+
+        setForm((f) => ({
+          ...f,
+          creator_name: profile?.creator_name ?? '',
+          email: prefillEmail,
+          password: '',
+        }));
       } catch (e) {
         setError(e?.message || 'Unbekannter Fehler beim Laden');
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [overrideCreatorId]);
 
-  // Speichern: creator_config upsert + (optional) auth-email/passwort aktualisieren
+  // Speichern
   async function save(e) {
     e.preventDefault();
     setError('');
     setSaved(false);
 
     try {
-      const { data: { user }, error: userErr } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userErr,
+      } = await supabase.auth.getUser();
       if (userErr || !user) {
         setError('Nicht eingeloggt.');
         return;
       }
 
-      // 1) creator_config upsert (nur die benötigten Felder)
+      const cid = targetId;
+      if (!cid) throw new Error('Kein Zielkonto gefunden');
+
+      // 1) creator_config upsert (nur benötigte Felder)
       const payload = {
-        creator_id: user.id,
+        creator_id: cid,
         creator_name: form.creator_name?.trim() || null,
         email: form.email?.trim() || null,
         updated_at: new Date().toISOString(),
@@ -85,22 +102,24 @@ export default function ProfileForm() {
         .upsert(payload, { onConflict: 'creator_id' });
       if (upsertErr) throw upsertErr;
 
-      // 2) Auth-Email aktualisieren (falls geändert)
-      if (form.email && form.email !== (user.email ?? '')) {
-        const { error: emailErr } = await supabase.auth.updateUser({ email: form.email });
-        if (emailErr) throw new Error(`E-Mail-Update: ${emailErr.message}`);
-        // Hinweis: Supabase kann eine Bestätigungs-Mail senden, bis dahin bleibt die alte Email ggf. aktiv.
+      // 2) Nur beim eigenen Profil: E-Mail / Passwort in Auth aktualisieren
+      if (isSelf) {
+        // E-Mail-Update (falls geändert)
+        if (form.email && form.email !== (user.email ?? '')) {
+          const { error: emailErr } = await supabase.auth.updateUser({ email: form.email });
+          if (emailErr) throw new Error(`E-Mail-Update: ${emailErr.message}`);
+          // Hinweis: Supabase kann eine Bestätigungs-Mail senden.
+        }
+        // Passwort-Update (optional, min. 6 Zeichen)
+        if (form.password && form.password.length >= 6) {
+          const { error: pwErr } = await supabase.auth.updateUser({ password: form.password });
+          if (pwErr) throw new Error(`Passwort-Update: ${pwErr.message}`);
+        }
       }
 
-      // 3) Passwort aktualisieren (falls gesetzt)
-      if (form.password && form.password.length >= 6) {
-        const { error: pwErr } = await supabase.auth.updateUser({ password: form.password });
-        if (pwErr) throw new Error(`Passwort-Update: ${pwErr.message}`);
-      }
-
-      // Passwortfeld leeren
       setForm((f) => ({ ...f, password: '' }));
       setSaved(true);
+      onAfterSave?.();
     } catch (e) {
       setError(e?.message || 'Speichern fehlgeschlagen');
     }
@@ -137,7 +156,7 @@ export default function ProfileForm() {
       <div className="grid md:grid-cols-2 gap-4">
         <LabeledInput
           name="password"
-          label="Neues Passwort (min. 6 Zeichen)"
+          label={isSelf ? 'Neues Passwort (min. 6 Zeichen)' : 'Neues Passwort (nur Eigenprofil)'}
           type="password"
           value={form.password}
           onChange={handle}
@@ -149,7 +168,8 @@ export default function ProfileForm() {
         <button
           type="submit"
           className="px-5 py-3 rounded-2xl bg-yellow-500/90 hover:bg-yellow-400 text-black font-medium shadow"
-          disabled={loading}
+          disabled={loading || (!!form.password && form.password.length > 0 && form.password.length < 6)}
+          title={!!form.password && form.password.length < 6 ? 'Passwort zu kurz' : undefined}
         >
           Speichern
         </button>

@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro'
+import ActingAsBanner from '../../../../components/ActingAsBanner.jsx'
+import ProfileForm from '../../../../components/ProfileForm.jsx'
+import { supabase } from '../../../../lib/supabase'
+
+
+const { agencyId, creatorId } = Astro.params
+
+
+// Lade leichte Daten für Banner (kein Geheimnis)
+const { data } = await supabase
+.from('creator_config')
+.select('creator_name, email')
+.eq('creator_id', creatorId)
+.maybeSingle()
+---
+<BaseLayout title="Agentur – Profil (acting as)">
+<section class="max-w-5xl mx-auto px-4 py-10">
+<ActingAsBanner client:load agencyName={agencyId} creatorName={data?.creator_name} creatorEmail={data?.email} />
+<div class="p-6 rounded-2xl bg-zinc-950/60 border border-yellow-600/20">
+<AgencyProfile client:load agencyId={agencyId} creatorId={creatorId} />
+</div>
+</section>
+</BaseLayout>
+
+
+<script>
+import React from 'react'
+import { supabase } from '../../../../lib/supabase'
+import { writeAudit } from '../../../../lib/agency'
+
+
+// Wrapper um dein bestehendes ProfileForm, der eine andere creator_id setzt
+function AgencyProfile({ agencyId, creatorId }){
+// Wir patchen ProfileForm minimal: akzeptiert optional props.overrideCreatorId
+return <ProfileForm overrideCreatorId={creatorId} onAfterSave={async()=>{
+await writeAudit({ agency_id: agencyId, action: 'update_profile', target_creator_id: creatorId })
+}} />
+}
+</script>

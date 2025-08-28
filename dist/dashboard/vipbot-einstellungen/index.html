@@ -1,0 +1,361 @@
+<!DOCTYPE html><html lang="de"> <head><title>VIP-Einstellungen</title><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta charset="utf-8"><meta name="theme-color" content="#0d0d0d"><meta id="supabase-config" data-url="https://zpzigwfjfhogkzuvijzm.supabase.co" data-key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpwemlnd2ZqZmhvZ2t6dXZpanptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5MjcwNDcsImV4cCI6MjA2NjUwMzA0N30.jMDAFkPhKmLXtLYerLd9z93tugNvw14L4oZvSNkSD2o"><link rel="stylesheet" href="/_astro/aktivität._wwie63p.css">
+<style>#botForm,#botForm *{pointer-events:auto}.tip-btn{inline-size:1.75rem;block-size:1.75rem;line-height:1.75rem;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--luxgray,#2a2a2a);background:transparent;color:#f6c453}.tip{position:fixed;z-index:60;max-width:260px;font-size:12px;line-height:1.2;color:#fff;background:#000000e6;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:.6rem .7rem;box-shadow:0 8px 24px #00000073;transform-origin:top center}.tip-enter{transform:scale(.96);opacity:0}.tip-enter-active{transform:scale(1);opacity:1;transition:transform .12s ease,opacity .12s ease}.tip-exit{transform:scale(1);opacity:1}.tip-exit-active{transform:scale(.96);opacity:0;transition:transform .12s ease,opacity .12s ease}.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%);background:#111;color:#fff;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:.55rem .8rem;font-size:12px;z-index:70}.progress-step{display:flex;align-items:center;gap:.75rem;border:1px solid var(--luxgray,#2a2a2a);border-radius:.75rem;padding:.6rem .75rem}.progress-step.done{border-color:#f6c45366;background:linear-gradient(0deg,rgba(246,196,83,.06),transparent)}.step-dot{inline-size:28px;block-size:28px;border-radius:999px;display:grid;place-items:center;border:1px solid #2a2a2a}.progress-step.done .step-dot{border-color:#f6c45380}.step-body{flex:1;min-width:0}.step-title{font-weight:600;color:#f6c453;font-size:.95rem}.step-hint{font-size:12px;color:#fff9}.step-edit{font-size:12px;border:1px solid var(--luxgray,#2a2a2a);padding:.25rem .5rem;border-radius:.5rem;color:#f6c453;background:transparent}button,a,input,textarea{touch-action:manipulation}
+</style></head> <body class="bg-luxblack text-white font-sans"> <!-- Header --> <header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50"> <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a> <div id="accountMenu" class="relative"> <button id="accountBtn" class="h-11 px-4 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition hidden">
+👤 <span id="username">Account</span> </button> <div class="absolute right-0 mt-2 w-56 bg-black border border-luxgray rounded-xl shadow-xl text-sm hidden" id="accountDropdown"> <a href="/app/profile" class="block px-4 py-3 hover:bg-luxgray/20">Profil</a> <a href="/dashboard" class="block px-4 py-3 hover:bg-luxgray/30">Dashboard</a> <a href="/dashboard/vipbot-einstellungen" class="block px-4 py-3 hover:bg-luxgray/30">Bot‑Einstellungen</a> <a href="/logs" class="block px-4 py-3 hover:bg-luxgray/30">Logs</a> <button id="logoutBtn" class="w-full text-left px-4 py-3 hover:bg-red-900/40 text-red-400">Abmelden</button> </div> </div> </header> <!-- Main (ohne Sidebar) --> <main class="min-h-screen p-4 md:p-6 pb-24" id="dashboardRoot">  <h1 class="text-2xl md:text-3xl font-bold text-luxgold mb-6 md:mb-8" id="welcomeHeadline">
+Willkommen zurück, Creator! 👋
+</h1>   <div id="lux-meta" data-bot="GroupLuxBot" data-bot-api="https://luxbasebot.onrender.com" class="hidden"></div> <section class="max-w-4xl mx-auto px-4 py-6 pb-28 relative space-y-6"> <!-- 🔁 Setup-Progress --> <div class="bg-black/60 border border-luxgray rounded-2xl p-4 sm:p-5"> <div class="flex items-center justify-between gap-4"> <h2 class="text-luxgold text-base sm:text-lg font-semibold">Einrichtung</h2> <p id="setupAllDone" class="text-xs sm:text-[13px] text-white/70 hidden">🎉 Alles fertig! Dein VIP-Bot ist live.</p> </div> <ol id="progress" class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3"> <li class="progress-step" data-key="stripe"> <div class="step-dot">1</div> <div class="step-body"> <div class="step-title">Stripe verbinden</div> <div id="progressStripeHint" class="step-hint">Zahlungen aktivieren</div> </div> </li> <li class="progress-step" data-key="bot"> <div class="step-dot">2</div> <div class="step-body"> <div class="step-title">Bot aktivieren</div> <div id="progressBotHint" class="step-hint">DM öffnen & starten</div> </div> </li> <li class="progress-step" data-key="group"> <div class="step-dot">3</div> <div class="step-body"> <div class="step-title">Gruppe verknüpfen</div> <div id="progressGroupHint" class="step-hint">Bot als Admin hinzufügen</div> </div> </li> </ol> <!-- Kurz-Summaries wenn erledigt --> <div id="summaries" class="mt-3 sm:mt-4 space-y-2.5 sm:space-y-3"> <!-- Stripe Summary --> <div id="stripeSummary" class="hidden border border-luxgray rounded-xl p-3 flex items-center justify-between"> <div class="text-sm text-white/80">✅ <b>Stripe verbunden</b></div> <button id="stripeSummaryEdit" class="step-edit min-h-[40px] px-3">⚙️ Bearbeiten</button> </div> <!-- Bot Summary (nur Copy + QR) --> <div id="botSummary" class="hidden border border-luxgray rounded-xl p-3"> <div class="flex items-center justify-between gap-3"> <div class="text-sm text-white/80">✅ <b>Bot aktiv</b></div> <button id="botSummaryEdit" class="step-edit min-h-[40px] px-3">⚙️ Bearbeiten</button> </div> <div class="mt-3 grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start"> <div class="space-y-2"> <div class="flex items-center gap-2"> <span class="text-sm text-white/70">Kunden-Link (zum Kopieren)</span> </div> <div class="flex gap-2"> <input id="customerLinkInputSummary" readonly class="flex-1 bg-black/30 border border-luxgray rounded-lg px-3 py-3 text-sm select-all" inputmode="url"> <button id="copyCustomerLinkSummary" type="button" class="border border-luxgray rounded-lg px-3 min-h-[44px] text-sm">
+Kopieren
+</button> </div> </div> <div class="flex flex-col items-center gap-2"> <canvas id="qrCustomerSummary" width="140" height="140" class="rounded-lg border border-luxgray w-28 sm:w-[140px] h-28 sm:h-[140px]"></canvas> <button id="downloadQRCustomerSummary" type="button" class="text-xs sm:text-[12px] px-2 py-1 border border-luxgray rounded-lg text-white/70 hover:text-white">
+QR herunterladen
+</button> </div> </div> </div> <!-- Gruppen Summary --> <div id="groupSummary" class="hidden border border-luxgray rounded-xl p-3 flex items-center justify-between"> <div class="text-sm text-white/80">✅ <b>Gruppe verknüpft</b></div> <button id="groupSummaryEdit" class="step-edit min-h-[40px] px-3">⚙️ Bearbeiten</button> </div> </div> </div> <!-- Basis --> <div class="bg-black/60 border border-luxgray rounded-2xl p-4 sm:p-5 space-y-4"> <h2 class="text-luxgold text-base sm:text-lg font-semibold">Basis</h2> <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"> <label class="block"> <span class="text-sm text-white/70">Preis (€)</span> <input id="preis" type="number" inputmode="decimal" step="1" min="0" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-3 text-base sm:text-sm" placeholder="49"> </label> <label class="block"> <span class="text-sm text-white/70">VIP-Dauer (Tage)</span> <input id="vip_days" type="number" inputmode="numeric" step="1" min="1" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-3 text-base sm:text-sm" placeholder="30"> </label> </div> </div> <!-- Stripe --> <div id="stripeSection" class="bg-black/60 border border-luxgray rounded-2xl p-4 sm:p-5 space-y-4"> <div class="flex items-center gap-2"> <h2 class="text-luxgold text-base sm:text-lg font-semibold">Stripe</h2> <button type="button" class="tip-btn" aria-label="Hilfe" data-tip="Verbinde zuerst Stripe, damit Zahlungen funktionieren. Es öffnet sich das Stripe-Onboarding.">?</button> </div> <a id="stripeLinkWrap" class="w-full" target="_blank" rel="noreferrer"> <button id="stripeBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3.5 min-h-[44px] text-base sm:text-sm">
+Stripe verbinden
+</button> </a> <p id="stripeStatus" class="text-xs sm:text-[13px] text-white/60"></p> </div> <!-- Telegram --> <div id="botSection" class="bg-black/60 border border-luxgray rounded-2xl p-4 sm:p-5 space-y-4"> <h2 class="text-luxgold text-base sm:text-lg font-semibold">Telegram</h2> <label class="block"> <div class="flex items-center gap-2"> <span class="text-sm text-white/70">Gruppen-Link (Fallback, statisch)</span> <button type="button" class="tip-btn" aria-label="Hilfe" data-tip="Optionaler, statischer Einladungslink deiner Gruppe – wird nur genutzt, wenn der Einmallink nicht erstellt werden kann.">?</button> </div> <input id="gruppe_link" autocapitalize="off" autocorrect="off" spellcheck="false" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-3 text-base sm:text-sm" placeholder="https://t.me/+abcdef..." inputmode="url"> </label> <div class="grid grid-cols-1 sm:grid-cols-2 gap-3"> <div class="relative"> <button id="linkTelegramBtn" type="button" class="w-full bg-luxgold/90 text-black font-semibold rounded-xl py-3.5 min-h-[44px] text-base sm:text-sm">
+Bot aktivieren
+</button> <button type="button" class="tip-btn absolute right-2 top-1/2 -translate-y-1/2" data-tip="Öffnet den Bot im DM. Danach bitte den Bot als Admin in deiner VIP-Gruppe hinzufügen.">?</button> </div> <div class="relative"> <button id="bindGroupBtn" type="button" class="w-full border border-luxgray rounded-xl py-3.5 min-h-[44px] text-base sm:text-sm">
+Gruppe verbinden
+</button> <button type="button" class="tip-btn absolute right-2 top-1/2 -translate-y-1/2" data-tip="Wähle deine VIP-Gruppe und starte den Bot dort. Er verknüpft die Gruppe und erzeugt später Einladungslinks.">?</button> </div> </div> <!-- Kunden-Link + QR (nur Copy + QR, kein Text-Link) --> <div class="grid grid-cols-1 sm:grid-cols-[1fr,140px] gap-4 items-start"> <div class="space-y-2"> <div class="flex items-center gap-2"> <span class="text-sm text-white/70">Kunden-Link (zum Kopieren)</span> <button type="button" class="tip-btn" aria-label="Hilfe" data-tip="Diesen Link/QR teilst du mit deinen Kunden. Er öffnet den Bot im DM mit deinem Creator-Payload.">?</button> </div> <div class="flex gap-2"> <input id="customerLinkInput" readonly class="flex-1 bg-black/30 border border-luxgray rounded-lg px-3 py-3 text-sm select-all" inputmode="url"> <button id="copyCustomerLink" type="button" class="border border-luxgray rounded-lg px-3 min-h-[44px] text-sm">
+Kopieren
+</button> </div> </div> <div class="flex flex-col items-center gap-2"> <canvas id="qrCustomer" width="140" height="140" class="rounded-lg border border-luxgray w-28 sm:w-[140px] h-28 sm:h-[140px]"></canvas> <button id="downloadQRCustomer" type="button" class="text-xs sm:text-[12px] px-2 py-1 border border-luxgray rounded-lg text-white/70 hover:text-white">
+QR herunterladen
+</button> </div> </div> <p class="text-xs sm:text-[13px] text-white/60 leading-5">
+Reihenfolge: Erst <b>Stripe verbinden</b>, dann <b>Bot aktivieren</b> (DM) und
+        den Bot als Admin in deiner VIP-Gruppe hinzufügen.
+</p> </div> <!-- 🎙️ Sprachnachricht --> <div id="voiceSection" class="bg-black/60 border border-luxgray rounded-2xl p-4 sm:p-5 space-y-3"> <div class="flex items-center justify-between gap-2"> <h2 class="text-luxgold text-base sm:text-lg font-semibold">Sprachnachricht</h2> <span id="voiceStatusBadge" class="text-xs sm:text-[13px] px-2 py-1 rounded-lg border border-luxgray text-white/80">–</span> </div> <p id="voiceStatusText" class="text-xs sm:text-[13px] text-white/60"></p> <div class="flex flex-wrap gap-2"> <button id="openSetupVoice" type="button" class="bg-luxgold/90 text-black font-semibold rounded-xl py-2.5 px-3 min-h-[40px] text-sm">
+Im Bot aufnehmen
+</button> <button type="button" class="tip-btn" aria-label="Hilfe" data-tip="Öffne den Bot im DM und sende dort /setup_voice. Danach sprichst du 5–20 Sekunden ein.">?</button> </div> </div> <!-- Texte (einklappbar) --> <div class="bg-black/60 border border-luxgray rounded-2xl"> <button id="toggleTexts" class="w-full flex items-center justify-between px-4 sm:px-5 py-4"> <h2 class="text-luxgold text-base sm:text-lg font-semibold">Texte</h2> <span id="textsChevron" class="text-white/60">▾</span> </button> <div id="textsBody" class="px-4 sm:px-5 pb-5 pt-0 space-y-4"> <label class="block"> <span class="text-sm text-white/70">Welcome-Text</span> <textarea id="welcome_text" rows="3" autocapitalize="off" autocorrect="off" spellcheck="false" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-3 text-base sm:text-sm" placeholder="👋 Willkommen im VIP! ..."></textarea> </label> <label class="block"> <span class="text-sm text-white/70">Regeln-Text</span> <textarea id="regeln_text" rows="3" autocapitalize="off" autocorrect="off" spellcheck="false" class="mt-1 w-full bg-black/40 border border-luxgray rounded-xl px-3 py-3 text-base sm:text-sm" placeholder="📜 Regeln ..."></textarea> </label> </div> </div> <!-- Actions (mobile-first sticky) --> <div class="sticky bottom-2 sm:bottom-4 z-40"> <div class="flex items-center gap-2 sm:gap-3 rounded-2xl border border-luxgray bg-black/70 backdrop-blur px-3 py-2 sm:px-4 sm:py-3 supports-[backdrop-filter]:bg-black/50" style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom))"> <button id="saveBtn" type="button" class="flex-1 bg-luxgold/90 text-black font-semibold rounded-xl py-3.5 min-h-[44px] text-base sm:text-sm">
+Speichern
+</button> <button id="reloadBtn" type="button" class="px-4 py-3.5 min-h-[44px] border border-luxgray rounded-xl text-base sm:text-sm">
+Neu laden
+</button> </div> </div> <p id="hint" class="text-xs sm:text-[13px] text-white/70"></p> </section>   <script defer src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    // Meta & ENV
+    const META = document.getElementById("lux-meta");
+    const BOT = META?.dataset?.bot || "GroupLuxBot";
+    const BOT_API = META?.dataset?.botApi || "";
+
+    const $ = (id) => document.getElementById(id);
+    const toast = (m="OK") => { const t=document.createElement("div"); t.className="toast"; t.textContent=m; document.body.appendChild(t); setTimeout(()=>t.remove(),1400); };
+
+    // Supabase
+    const supaMeta = document.getElementById("supabase-config");
+    if (!supaMeta?.dataset?.url || !supaMeta?.dataset?.key) {
+      $("hint").textContent = "❌ Supabase-Konfiguration fehlt.";
+      throw new Error("supabase-config-missing");
+    }
+    const supabase = createClient(supaMeta.dataset.url, supaMeta.dataset.key);
+
+    // Felder
+    const fields = ["preis","vip_days","gruppe_link","welcome_text","regeln_text"];
+
+    // State
+    const state = {
+      stripeConnected: false,
+      stripeId: null,
+      botActive: false,
+      groupLinked: false,
+      userId: null,
+      // Voice
+      voiceHas: false,
+      voiceUpdatedAt: null,
+      voiceCaption: null
+    };
+
+    // Auth
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { window.location.href = "/"; throw new Error("not-auth"); }
+    state.userId = user.id;
+
+    // Links
+    const customerLink = () => `https://t.me/${BOT}?start=${encodeURIComponent("creator_"+state.userId)}`; // zum Teilen
+    const groupLink   = () => `https://t.me/${BOT}?startgroup=${encodeURIComponent("creator_"+state.userId)}`; // Gruppe verbinden
+    const linkTelegram = () => `https://t.me/${BOT}?start=${encodeURIComponent("link_creator_"+state.userId)}`; // DM-Owner-Connect
+    const stripeRedirect = () => `${BOT_API}/api/stripe/connect-redirect?creator_id=${encodeURIComponent(state.userId)}`;
+
+    // Zusätzlich: für Voice einfach DM öffnen (gleich wie linkTelegram)
+    const openSetupVoice = () => window.open(linkTelegram(), "_blank");
+
+    // QR
+    async function drawQR(canvasId, value, tries=10) {
+      try {
+        const c = document.getElementById(canvasId); if (!c) return;
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        const size = 140;
+        c.width = size * dpr; c.height = size * dpr;
+        c.style.width = size + "px"; c.style.height = size + "px";
+        if (window.QRCode?.toCanvas) {
+          await window.QRCode.toCanvas(c, value, { margin: 1, scale: dpr });
+          return;
+        }
+        if (tries > 0) setTimeout(()=>drawQR(canvasId, value, tries-1), 120);
+      } catch (err) { console.warn("QR render error:", err); }
+    }
+
+    function updateCustomerLinkTargets() {
+      const s = customerLink();
+      // Bearbeitungssektion (nur Copy + QR)
+      $("customerLinkInput").value = s;
+      drawQR("qrCustomer", s);
+      // Summary (nur Copy + QR)
+      $("customerLinkInputSummary").value = s;
+      drawQR("qrCustomerSummary", s);
+    }
+
+    async function updatePreviews() {
+      updateCustomerLinkTargets();
+      // Stripe-Link
+      const wrap = $("stripeLinkWrap");
+      if (wrap) wrap.href = BOT_API ? stripeRedirect() : "#";
+    }
+
+    // UI Helpers
+    function setHidden(el, hidden) { if (!el) return; el.classList.toggle("hidden", !!hidden); }
+
+    function refreshProgressUI() {
+      // Steps
+      const stepStripe = document.querySelector('.progress-step[data-key="stripe"]');
+      const stepBot    = document.querySelector('.progress-step[data-key="bot"]');
+      const stepGroup  = document.querySelector('.progress-step[data-key="group"]');
+
+      stepStripe?.classList.toggle("done", state.stripeConnected);
+      stepBot?.classList.toggle("done", state.botActive);
+      stepGroup?.classList.toggle("done", state.groupLinked);
+
+      // Summaries: Stripe, Bot (nur wenn Bot+Gruppe fertig), Gruppe
+      setHidden($("stripeSummary"), !state.stripeConnected);
+
+      const botSectionShouldHide = state.botActive && state.groupLinked;
+      setHidden($("botSummary"), !botSectionShouldHide); // nur zeigen, wenn Bot + Gruppe erledigt
+      setHidden($("groupSummary"), !state.groupLinked);
+
+      // Sections einklappen
+      setHidden($("stripeSection"), state.stripeConnected);
+      setHidden($("botSection"), botSectionShouldHide);
+
+      // All done Banner
+      $("setupAllDone").classList.toggle("hidden", !(state.stripeConnected && state.botActive && state.groupLinked));
+    }
+
+    function updateVoiceUI() {
+      const badge = $("voiceStatusBadge");
+      const text  = $("voiceStatusText");
+      if (!badge || !text) return;
+
+      if (state.voiceHas) {
+        badge.textContent = "✅ Voicenachricht gespeichert";
+        text.textContent  = state.voiceUpdatedAt
+          ? `Gespeichert am ${new Date(state.voiceUpdatedAt).toLocaleString()}`
+          : "Gespeichert.";
+      } else {
+        badge.textContent = "❌ Keine Voicenachricht hinterlegt";
+        text.textContent  = "Tipp: Öffne den Bot im DM und sende dort /setup_voice – dann nimmst du 5–20 Sekunden auf.";
+      }
+    }
+
+    // Load
+    async function loadCfg() {
+      const { data, error } = await supabase
+        .from("creator_config")
+        .select(`
+          ${fields.join(",")},
+          stripe_account_id,
+          group_chat_id,
+          telegram_id,
+          has_vipbot,
+          voice_enabled,
+          voice_file_id,
+          voice_caption,
+          voice_updated_at
+        `)
+        .eq("creator_id", state.userId)
+        .maybeSingle();
+
+      if (error) {
+        console.warn("loadCfg error:", error);
+        $("hint").textContent = "❌ Konnte Daten nicht laden. Bitte später erneut versuchen.";
+      }
+
+      if (data) {
+        // Formular-Felder
+        for (const k of fields) if ($(k)) $(k).value = (data[k] ?? "");
+
+        // Status-Ableitung
+        state.stripeConnected = !!data.stripe_account_id;
+        state.stripeId = data.stripe_account_id || null;
+        state.groupLinked = !!data.group_chat_id;
+        state.botActive = !!(data.telegram_id || data.group_chat_id || data.has_vipbot);
+
+        // Voice
+        state.voiceHas = !!(data.voice_enabled && data.voice_file_id);
+        state.voiceUpdatedAt = data.voice_updated_at || null;
+        state.voiceCaption = data.voice_caption || null;
+
+        $("stripeStatus").textContent = state.stripeConnected
+          ? `✅ Stripe verbunden.`
+          : "⚠️ Stripe noch nicht verbunden.";
+      } else {
+        // Kein Datensatz -> neutrales UI
+        for (const k of fields) if ($(k)) $(k).value = "";
+        state.stripeConnected = false;
+        state.stripeId = null;
+        state.groupLinked = false;
+        state.botActive = false;
+      }
+
+      await updatePreviews();
+      refreshProgressUI();
+      updateVoiceUI();
+    }
+
+    // Speichern
+    $("saveBtn").addEventListener("click", async () => {
+      const payload = { creator_id: state.userId };
+      for (const k of fields) payload[k] = $(k)?.value ?? null;
+      payload.preis = Number(payload.preis || 0);
+      payload.vip_days = Number(payload.vip_days || 30);
+
+      const { error } = await supabase.from("creator_config").upsert(payload, { onConflict: "creator_id" });
+      $("hint").textContent = error ? "❌ Speichern fehlgeschlagen." : "✅ Gespeichert.";
+      if (!error) toast("Gespeichert");
+    });
+
+    // Reload
+    $("reloadBtn").addEventListener("click", loadCfg);
+
+    // Bearbeiten-Buttons aus den Summaries (Progress hat keine)
+    const showStripeEditor = () => { setHidden($("stripeSection"), false); setHidden($("stripeSummary"), true); };
+    const showBotEditor = () => { setHidden($("botSection"), false); setHidden($("botSummary"), true); setHidden($("groupSummary"), true); };
+
+    ["stripeSummaryEdit"].forEach(id => $(id).addEventListener("click", showStripeEditor));
+    ["botSummaryEdit","groupSummaryEdit"].forEach(id => $(id).addEventListener("click", showBotEditor));
+
+    // Texte einklappen
+    let textsOpen = true;
+    const toggleTexts = () => {
+      textsOpen = !textsOpen;
+      setHidden($("textsBody"), !textsOpen);
+      $("textsChevron").textContent = textsOpen ? "▾" : "▸";
+    };
+    $("toggleTexts").addEventListener("click", toggleTexts);
+
+    // Bot aktivieren (DM)
+    $("linkTelegramBtn").addEventListener("click", () => {
+      if (state.botActive) {
+        const ok = confirm("Der Bot ist bereits aktiv. Möchtest du ihn erneut öffnen/neu verknüpfen?");
+        if (!ok) return;
+      }
+      window.open(linkTelegram(), "_blank");
+      $("hint").textContent = "Telegram öffnen → Bot im DM starten, danach Bot in der Gruppe als Admin hinzufügen.";
+    });
+
+    // Gruppe verbinden
+    $("bindGroupBtn").addEventListener("click", () => {
+      if (state.groupLinked) {
+        const ok = confirm("Es ist bereits eine Gruppe verknüpft. Möchtest du eine andere Gruppe verbinden?");
+        if (!ok) return;
+      }
+      window.open(groupLink(), "_blank");
+      $("hint").textContent = "Telegram → Gruppe auswählen → Bot starten → Admin-Rechte geben.";
+    });
+
+    // Stripe
+    $("stripeBtn").addEventListener("click", (e) => {
+      if (!BOT_API) {
+        e.preventDefault();
+        alert("PUBLIC_BOT_API_BASE fehlt im Frontend.");
+        return;
+      }
+      if (state.stripeConnected) {
+        const ok = confirm("Stripe ist bereits verbunden. Möchtest du das Onboarding erneut öffnen, um die Verbindung zu ändern?");
+        if (!ok) { e.preventDefault(); return; }
+      }
+    });
+
+    // Voice: Im Bot aufnehmen (öffnet DM)
+    $("openSetupVoice").addEventListener("click", () => {
+      openSetupVoice();
+      $("hint").textContent = "Im Telegram-DM /setup_voice senden und die Begrüßung aufnehmen (5–20 Sek.).";
+    });
+
+    // Copy Kunden-Link (Editor & Summary)
+    async function copyToClipboard(val) {
+      try { await navigator.clipboard.writeText(val); toast("Kunden-Link kopiert"); }
+      catch { /* fallback */ }
+    }
+    $("copyCustomerLink").addEventListener("click", () => copyToClipboard($("customerLinkInput")?.value || ""));
+    $("copyCustomerLinkSummary").addEventListener("click", () => copyToClipboard($("customerLinkInputSummary")?.value || ""));
+
+    // QR Download (Editor & Summary)
+    function downloadQR(canvasId, filename) {
+      const c = $(canvasId); if (!c) return;
+      const a = document.createElement("a");
+      a.download = filename;
+      a.href = c.toDataURL("image/png");
+      a.click();
+    }
+    $("downloadQRCustomer").addEventListener("click", () => downloadQR("qrCustomer","luxbase-kundenlink-qr.png"));
+    $("downloadQRCustomerSummary").addEventListener("click", () => downloadQR("qrCustomerSummary","luxbase-kundenlink-qr.png"));
+
+    // Tooltips
+    let activeTipEl = null, hideTimer = null;
+    function showTip(anchorBtn, text) {
+      hideTip();
+      const tip = document.createElement("div");
+      tip.className = "tip tip-enter";
+      tip.textContent = text;
+      document.body.appendChild(tip);
+      requestAnimationFrame(() => tip.classList.add("tip-enter-active"));
+      const rect = anchorBtn.getBoundingClientRect();
+      const margin = 8;
+      const top = rect.bottom + margin + window.scrollY;
+      const left = rect.left + rect.width / 2 - tip.offsetWidth / 2 + window.scrollX;
+      tip.style.top = `${top}px`;
+      tip.style.left = `${Math.max(12, Math.min(left, window.scrollX + document.documentElement.clientWidth - tip.offsetWidth - 12))}px`;
+      activeTipEl = tip;
+      hideTimer = setTimeout(hideTip, 3500);
+    }
+    function hideTip() {
+      if (!activeTipEl) return;
+      activeTipEl.classList.remove("tip-enter", "tip-enter-active");
+      activeTipEl.classList.add("tip-exit");
+      requestAnimationFrame(() => {
+        activeTipEl.classList.add("tip-exit-active");
+        setTimeout(() => { activeTipEl?.remove(); activeTipEl = null; }, 120);
+      });
+      clearTimeout(hideTimer); hideTimer = null;
+    }
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-tip]");
+      if (btn) { e.stopPropagation(); showTip(btn, btn.getAttribute("data-tip") || ""); }
+      else hideTip();
+    });
+
+    // Initial laden
+    await loadCfg();
+  </script>  </main> <!-- Bottom Tabs --> <nav class="fixed bottom-0 inset-x-0 md:hidden bg-black/90 backdrop-blur border-t border-luxgray z-50"> <div class="grid grid-cols-4 text-center text-xs"> <a href="/dashboard" class="py-3 flex flex-col items-center gap-1"> <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"></path></svg> <span>Start</span> </a> <a href="/dashboard/vipbot-einstellungen" class="py-3 flex flex-col items-center gap-1"> <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M19.14,12.94a7.43,7.43,0,0,0,.05-1,7.43,7.43,0,0,0-.05-1l2.11-1.65a.5.5,0,0,0,.12-.64l-2-3.46a.5.5,0,0,0-.6-.22l-2.49,1a7.45,7.45,0,0,0-1.73-1l-.38-2.65A.5.5,0,0,0,12.5,1h-4a.5.5,0,0,0-.49.42L7.63,4.07a7.45,7.45,0,0,0-1.73,1l-2.49-1a.5.5,0,0,0-.6.22l-2,3.46a.5.5,0,0,0,.12.64L3.14,10a7.43,7.43,0,0,0-.05,1,7.43,7.43,0,0,0,.05,1L1,13.65a.5.5,0,0,0-.12.64l2,3.46a.5.5,0,0,0,.6.22l2.49-1a7.45,7.45,0,0,0,1.73,1l.38,2.65A.5.5,0,0,0,8.5,22h4a.5.5,0,0,0,.49-.42l.38-2.65a7.45,7.45,0,0,0,1.73-1l2.49,1a.5.5,0,0,0,.6-.22l2-3.46a.5.5,0,0,0-.12-.64Z"></path></svg> <span>Bot</span> </a> <a href="/logs" class="py-3 flex flex-col items-center gap-1"> <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3zm0 6h18v2H3zm0 6h18v2H3z"></path></svg> <span>Logs</span> </a> <a href="/profile" class="py-3 flex flex-col items-center gap-1"> <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"></path></svg> <span>Profil</span> </a> </div> </nav> <!-- Client Script --> <script type="module">
+      import * as supabase_js from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+      (async () => {
+        const meta = document.getElementById("supabase-config");
+        const supabase = supabase_js.createClient(meta.dataset.url, meta.dataset.key);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { window.location.href = "/"; return; }
+
+        const accountBtn = document.getElementById("accountBtn");
+        const accountDropdown = document.getElementById("accountDropdown");
+        const usernameEl = document.getElementById("username");
+        const logoutBtn = document.getElementById("logoutBtn");
+        accountBtn?.classList.remove("hidden");
+        usernameEl.textContent = user.email || "Account";
+        accountBtn?.addEventListener("click", () => accountDropdown.classList.toggle("hidden"));
+        logoutBtn?.addEventListener("click", async () => {
+          await supabase.auth.signOut();
+          sessionStorage.clear();
+          location.href = "/";
+        });
+
+        const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
+        const welcomeHeadline = document.getElementById("welcomeHeadline");
+        const fallbackName = lux.role === "agentur" ? "deine Agentur" : "dein Creator‑Profil";
+        welcomeHeadline.textContent = `Willkommen zurück, ${lux.creator_name || fallbackName}! 👋`;
+      })();
+    </script> </body> </html>

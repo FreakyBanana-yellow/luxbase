@@ -2,10 +2,10 @@
 import { c as createComponent, a as createAstro, d as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../../../chunks/astro/server_BM0YAzyH.mjs';
 import 'kleur/colors';
 import 'html-escaper';
-import { $ as $$BaseLayout } from '../../../chunks/BaseLayout_hv7oFffr.mjs';
+import { $ as $$BaseLayout } from '../../../chunks/BaseLayout_BoG29mqC.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import React from 'react';
-import { l as listAgencyModels, i as inviteLink } from '../../../chunks/agency_xOspdbOc.mjs';
+import { l as listAgencyModels, i as inviteLink } from '../../../chunks/agency_DVG68g-R.mjs';
 export { renderers } from '../../../renderers.mjs';
 
 function AgencyModelsTable({ agencyId }) {

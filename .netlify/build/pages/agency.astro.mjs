@@ -1,62 +1,72 @@
 /* empty css                                     */
-import { c as createComponent, d as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_BM0YAzyH.mjs';
+import { c as createComponent, d as renderComponent, r as renderTemplate, b as addAttribute, m as maybeRenderHead } from '../chunks/astro/server_BM0YAzyH.mjs';
 import 'kleur/colors';
 import 'html-escaper';
-import { $ as $$BaseLayout } from '../chunks/BaseLayout_hv7oFffr.mjs';
-import { jsxs, jsx } from 'react/jsx-runtime';
-import { useState } from 'react';
-import { c as createAgency } from '../chunks/agency_xOspdbOc.mjs';
-import { s as supabase } from '../chunks/supabase___ToHWM0.mjs';
+import { $ as $$BaseLayout } from '../chunks/BaseLayout_BoG29mqC.mjs';
+import { g as getMyAgencies } from '../chunks/agency_DVG68g-R.mjs';
 export { renderers } from '../renderers.mjs';
 
-function AgencyCreateForm({ onCreated }) {
-  const [name, setName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  async function submit(e) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const ag = await createAgency(name.trim());
-      setName("");
-      onCreated?.(ag);
-    } catch (e2) {
-      setError(e2?.message || "Fehler beim Anlegen");
-    } finally {
-      setLoading(false);
-    }
-  }
-  return /* @__PURE__ */ jsxs("form", { onSubmit: submit, className: "flex gap-3", children: [
-    /* @__PURE__ */ jsx(
-      "input",
-      {
-        className: "px-4 py-2 rounded-xl bg-zinc-900 border border-yellow-600/30 text-yellow-50",
-        placeholder: "Agenturname",
-        value: name,
-        onChange: (e) => setName(e.target.value)
-      }
-    ),
-    /* @__PURE__ */ jsx("button", { className: "px-4 py-2 rounded-xl bg-yellow-500 text-black", disabled: loading || !name.trim(), children: "Anlegen" }),
-    error && /* @__PURE__ */ jsx("span", { className: "text-red-400", children: error })
-  ] });
-}
-
+var __freeze = Object.freeze;
+var __defProp = Object.defineProperty;
+var __template = (cooked, raw) => __freeze(__defProp(cooked, "raw", { value: __freeze(raw || cooked.slice()) }));
+var _a;
 const $$Index = createComponent(async ($$result, $$props, $$slots) => {
-  const { data: { user } } = await supabase.auth.getUser();
-  return renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, { "title": "Agenturen" }, { "default": async ($$result2) => renderTemplate` ${maybeRenderHead()}<section class="max-w-5xl mx-auto px-4 py-10"> <h1 class="text-2xl md:text-3xl font-semibold text-yellow-400">Agenturen</h1> <p class="mt-2 text-zinc-300">Verwalte Teams & Models.</p> <div class="mt-6 p-4 rounded-2xl bg-zinc-950/60 border border-yellow-600/20"> <h2 class="text-lg text-yellow-300 mb-3">Neue Agentur</h2> ${renderComponent($$result2, "AgencyCreateForm", AgencyCreateForm, { "client:load": true, "onCreated": (ag) => {
-    location.href = `/agency/${ag.id}/models`;
-  }, "client:component-hydration": "load", "client:component-path": "C:/Users/Anwender/Downloads/luxbase-starter/src/components/AgencyCreateForm.jsx", "client:component-export": "default" })} </div> <div class="mt-8 p-4 rounded-2xl bg-zinc-950/60 border border-yellow-600/20"> <h2 class="text-lg text-yellow-300 mb-3">Meine Agenturen</h2> ${renderComponent($$result2, "MyAgencies", MyAgencies, { "client:load": true, "client:component-hydration": "load" })} </div> </section> ` })} `;
+  const agencies = await getMyAgencies();
+  return renderTemplate`${renderComponent($$result, "BaseLayout", $$BaseLayout, { "title": "Agenturen" }, { "default": async ($$result2) => renderTemplate(_a || (_a = __template([" ", '<section class="max-w-5xl mx-auto px-4 py-10 space-y-6"> <header class="flex items-center justify-between"> <h1 class="text-2xl font-semibold text-yellow-200">Deine Agenturen</h1> <button id="createAgencyBtn" class="px-4 py-2 rounded-xl bg-yellow-500/90 hover:bg-yellow-400 text-black font-medium shadow">\nAgentur anlegen\n</button> </header> ', ` <!-- Kleines Client-Script f\xFCr "Agentur anlegen" --> <script type="module">
+      import { createAgency } from '/src/lib/agency.ts';
+
+      const btn = document.getElementById('createAgencyBtn');
+      btn?.addEventListener('click', async () => {
+        const name = window.prompt('Name der Agentur:');
+        if (!name) return;
+        btn.disabled = true;
+        btn.textContent = 'Erstelle\u2026';
+        try {
+          const created = await createAgency(name);
+          // nach Erfolg zur Models-\xDCbersicht springen
+          window.location.href = \`/agency/\${encodeURIComponent(created.id)}/models\`;
+        } catch (e) {
+          alert(e?.message || 'Fehler beim Anlegen');
+          btn.disabled = false;
+          btn.textContent = 'Agentur anlegen';
+        }
+      });
+    <\/script> </section> `], [" ", '<section class="max-w-5xl mx-auto px-4 py-10 space-y-6"> <header class="flex items-center justify-between"> <h1 class="text-2xl font-semibold text-yellow-200">Deine Agenturen</h1> <button id="createAgencyBtn" class="px-4 py-2 rounded-xl bg-yellow-500/90 hover:bg-yellow-400 text-black font-medium shadow">\nAgentur anlegen\n</button> </header> ', ` <!-- Kleines Client-Script f\xFCr "Agentur anlegen" --> <script type="module">
+      import { createAgency } from '/src/lib/agency.ts';
+
+      const btn = document.getElementById('createAgencyBtn');
+      btn?.addEventListener('click', async () => {
+        const name = window.prompt('Name der Agentur:');
+        if (!name) return;
+        btn.disabled = true;
+        btn.textContent = 'Erstelle\u2026';
+        try {
+          const created = await createAgency(name);
+          // nach Erfolg zur Models-\xDCbersicht springen
+          window.location.href = \\\`/agency/\\\${encodeURIComponent(created.id)}/models\\\`;
+        } catch (e) {
+          alert(e?.message || 'Fehler beim Anlegen');
+          btn.disabled = false;
+          btn.textContent = 'Agentur anlegen';
+        }
+      });
+    <\/script> </section> `])), maybeRenderHead(), agencies.length === 0 ? renderTemplate`<div class="p-6 rounded-2xl bg-zinc-950/60 border border-yellow-600/20 text-zinc-200">
+Noch keine Agentur. Lege die erste an.
+</div>` : renderTemplate`<ul class="grid gap-3"> ${agencies.map((a) => renderTemplate`<li class="p-4 rounded-2xl bg-zinc-950/60 border border-yellow-600/20 flex items-center justify-between"> <div> <div class="text-yellow-100 font-medium">${a.name}</div> <div class="text-xs text-zinc-400">Rolle: ${a.role}</div> </div> <div class="flex gap-2"> <a${addAttribute(`/agency/${a.id}/models`, "href")} class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-zinc-100 text-sm">
+Models
+</a> <a${addAttribute(`/agency/join?agency=${encodeURIComponent(a.id)}`, "href")} class="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-zinc-100 text-sm">
+Invite-Link
+</a> </div> </li>`)} </ul>`) })}`;
 }, "C:/Users/Anwender/Downloads/luxbase-starter/src/pages/agency/index.astro", void 0);
 
 const $$file = "C:/Users/Anwender/Downloads/luxbase-starter/src/pages/agency/index.astro";
 const $$url = "/agency";
 
 const _page = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
-	__proto__: null,
-	default: $$Index,
-	file: $$file,
-	url: $$url
+  __proto__: null,
+  default: $$Index,
+  file: $$file,
+  url: $$url
 }, Symbol.toStringTag, { value: 'Module' }));
 
 const page = () => _page;

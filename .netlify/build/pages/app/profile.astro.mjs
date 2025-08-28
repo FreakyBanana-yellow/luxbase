@@ -2,8 +2,8 @@
 import { c as createComponent, d as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../../chunks/astro/server_BM0YAzyH.mjs';
 import 'kleur/colors';
 import 'html-escaper';
-import { $ as $$BaseLayout } from '../../chunks/BaseLayout_hv7oFffr.mjs';
-import { P as ProfileForm } from '../../chunks/ProfileForm_ZuW1vLUJ.mjs';
+import { $ as $$BaseLayout } from '../../chunks/BaseLayout_BoG29mqC.mjs';
+import { P as ProfileForm } from '../../chunks/ProfileForm_C7JtkiPR.mjs';
 export { renderers } from '../../renderers.mjs';
 
 const $$Profile = createComponent(($$result, $$props, $$slots) => {

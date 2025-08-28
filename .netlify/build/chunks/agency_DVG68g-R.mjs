@@ -1,13 +1,15 @@
 import { s as supabase } from './supabase___ToHWM0.mjs';
 
-async function createAgency(name) {
+async function getMyAgencies() {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Nicht eingeloggt");
-  const { data, error } = await supabase.from("agency").insert({ name, owner_user_id: String(user.id) }).select("id, name").single();
+  if (!user) return [];
+  const { data, error } = await supabase.from("agency_member").select("agency_id, role, agency:agency_id ( id, name )").eq("user_id", String(user.id));
   if (error) throw error;
-  const { error: mErr } = await supabase.from("agency_member").insert({ agency_id: data.id, user_id: String(user.id), role: "admin" });
-  if (mErr) throw mErr;
-  return data;
+  return (data || []).map((m) => ({
+    id: m.agency?.id,
+    name: m.agency?.name,
+    role: m.role
+  })).filter(Boolean);
 }
 async function listAgencyModels(agencyId) {
   const { data: links, error: lErr } = await supabase.from("agency_creator").select("creator_id").eq("agency_id", agencyId);
@@ -35,4 +37,4 @@ async function writeAudit(entry) {
   });
 }
 
-export { createAgency as c, inviteLink as i, listAgencyModels as l, writeAudit as w };
+export { getMyAgencies as g, inviteLink as i, listAgencyModels as l, writeAudit as w };

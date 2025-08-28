@@ -2,10 +2,10 @@
 import { c as createComponent, a as createAstro, d as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../../../../chunks/astro/server_BM0YAzyH.mjs';
 import 'kleur/colors';
 import 'html-escaper';
-import { $ as $$BaseLayout } from '../../../../chunks/BaseLayout_hv7oFffr.mjs';
+import { $ as $$BaseLayout } from '../../../../chunks/BaseLayout_BoG29mqC.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import 'react';
-import { P as ProfileForm } from '../../../../chunks/ProfileForm_ZuW1vLUJ.mjs';
+import { P as ProfileForm } from '../../../../chunks/ProfileForm_C7JtkiPR.mjs';
 import { s as supabase } from '../../../../chunks/supabase___ToHWM0.mjs';
 export { renderers } from '../../../../renderers.mjs';
 

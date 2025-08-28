@@ -2,7 +2,7 @@
 import { c as createComponent, a as createAstro, d as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../../chunks/astro/server_BM0YAzyH.mjs';
 import 'kleur/colors';
 import 'html-escaper';
-import { $ as $$BaseLayout } from '../../chunks/BaseLayout_hv7oFffr.mjs';
+import { $ as $$BaseLayout } from '../../chunks/BaseLayout_BoG29mqC.mjs';
 import { s as supabase } from '../../chunks/supabase___ToHWM0.mjs';
 export { renderers } from '../../renderers.mjs';
 

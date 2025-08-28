@@ -2,7 +2,7 @@
 import { c as createComponent, d as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_BM0YAzyH.mjs';
 import 'kleur/colors';
 import 'html-escaper';
-import { $ as $$BaseLayout } from '../chunks/BaseLayout_hv7oFffr.mjs';
+import { $ as $$BaseLayout } from '../chunks/BaseLayout_BoG29mqC.mjs';
 export { renderers } from '../renderers.mjs';
 
 const $$Preise = createComponent(($$result, $$props, $$slots) => {

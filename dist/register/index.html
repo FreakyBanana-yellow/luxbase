@@ -1,5 +1,5 @@
-<!DOCTYPE html><html lang="de" class="scroll-smooth"> <head><meta charset="utf-8"><title>Registrieren – Luxbase</title><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#0d0d0d"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><!-- Supabase Keys via Meta-Tag --><meta id="supabase-config" data-url="https://zpzigwfjfhogkzuvijzm.supabase.co" data-key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpwemlnd2ZqZmhvZ2t6dXZpanptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5MjcwNDcsImV4cCI6MjA2NjUwMzA0N30.jMDAFkPhKmLXtLYerLd9z93tugNvw14L4oZvSNkSD2o"><!-- Fonts (optional) --><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/_astro/aktivität.1KreLDQF.css">
-<link rel="stylesheet" href="/_astro/models.ANt0cZlX.css"><script type="module">document.write(new Date().getFullYear());
+<!DOCTYPE html><html lang="de" class="scroll-smooth"> <head><meta charset="utf-8"><title>Registrieren – Luxbase</title><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#0d0d0d"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><!-- Supabase Keys via Meta-Tag --><meta id="supabase-config" data-url="https://zpzigwfjfhogkzuvijzm.supabase.co" data-key="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpwemlnd2ZqZmhvZ2t6dXZpanptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA5MjcwNDcsImV4cCI6MjA2NjUwMzA0N30.jMDAFkPhKmLXtLYerLd9z93tugNvw14L4oZvSNkSD2o"><!-- Fonts (optional) --><link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="/_astro/aktivität._wwie63p.css">
+<link rel="stylesheet" href="/_astro/models.BDPSo2u3.css"><script type="module">document.write(new Date().getFullYear());
 </script></head> <body class="min-h-screen flex flex-col bg-luxblack text-white font-sans"> <!-- HEADER (ohne Burger) --> <header class="w-full flex items-center justify-between gap-2 p-4 bg-black border-b border-luxgray sticky top-0 z-50"> <a href="/" class="text-luxgold font-serif text-xl leading-none">LUXBASE</a> <nav class="flex items-center gap-3"> <a href="/agency" class="h-11 px-4 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
 Agenturen
 </a> <button id="openLogin" class="h-11 px-5 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
@@ -11,16 +11,12 @@ Einloggen
 </button> </form> <p id="popupLoginMsg" class="text-sm text-center text-red-400 mt-2 min-h-[1.25rem]"></p> <p class="text-center text-sm mt-4 text-gray-400">
 Noch kein Account? <a href="/register" class="text-luxgold hover:underline">Jetzt registrieren</a> </p> </div> </div> <!-- MAIN CONTENT --> <main class="flex-1 pb-20">  <form id="registerForm" action="#" novalidate class="bg-zinc-900 border border-luxgold rounded-xl p-8 w-full max-w-md mx-auto mt-12 shadow-xl"> <h1 class="text-2xl font-serif font-bold text-center text-luxgold mb-6">
 Registrieren
-</h1> <input id="name" type="text" placeholder="Dein Name" required class="w-full px-4 py-2 mb-4 rounded bg-zinc-800 border border-zinc-600"> <input id="email" type="email" placeholder="E‑Mail" required class="w-full px-4 py-2 mb-4 rounded bg-zinc-800 border border-zinc-600"> <select id="role" required class="w-full px-4 py-2 mb-4 rounded bg-zinc-800 border border-zinc-600"> <option value="creator">Creator / Model</option> <option value="agentur">Agentur</option> </select> <!-- Passwort + Sichtbarkeit --> <div class="relative mb-3"> <input id="password" type="password" placeholder="Passwort" required class="w-full px-4 py-2 pr-10 rounded bg-zinc-800 border border-zinc-600"> <button type="button" id="togglePw" class="absolute right-2 top-2 text-yellow-400 select-none" aria-label="Passwort anzeigen">👁</button> </div> <div class="relative mb-4"> <input id="confirm" type="password" placeholder="Passwort wiederholen" required class="w-full px-4 py-2 pr-10 rounded bg-zinc-800 border border-zinc-600"> <button type="button" id="toggleConfirm" class="absolute right-2 top-2 text-yellow-400 select-none" aria-label="Passwort wiederholen anzeigen">👁</button> </div> <ul id="pwRules" class="text-sm mb-4 space-y-0.5 leading-tight"> <li id="rLen" class="text-red-400">• Mind. 8 Zeichen</li> <li id="rUp" class="text-red-400">• Mind. 1 Großbuchstabe</li> <li id="rLow" class="text-red-400">• Mind. 1 Kleinbuchstabe</li> <li id="rNum" class="text-red-400">• Mind. 1 Zahl</li> <li id="rMatch" class="text-red-400">• Passwörter gleich</li> </ul> <button id="submitBtn" type="submit" class="w-full bg-luxgold text-luxblack font-bold py-2 rounded hover:bg-yellow-400 transition">
+</h1> <input id="displayName" type="text" placeholder="Anzeigename / Firmenname" required class="w-full px-4 py-2 mb-4 rounded bg-zinc-800 border border-zinc-600"> <input id="email" type="email" placeholder="E-Mail" required class="w-full px-4 py-2 mb-4 rounded bg-zinc-800 border border-zinc-600"> <label class="block mb-1 text-sm text-zinc-300">Ich bin</label> <select id="accountType" required class="w-full px-4 py-2 mb-4 rounded bg-zinc-800 border border-zinc-600"> <option value="model">Creator / Model</option> <option value="agency">Agentur</option> </select> <!-- Passwort + Sichtbarkeit --> <div class="relative mb-3"> <input id="password" type="password" placeholder="Passwort" required class="w-full px-4 py-2 pr-10 rounded bg-zinc-800 border border-zinc-600"> <button type="button" id="togglePw" class="absolute right-2 top-2 text-yellow-400 select-none" aria-label="Passwort anzeigen">👁</button> </div> <div class="relative mb-4"> <input id="confirm" type="password" placeholder="Passwort wiederholen" required class="w-full px-4 py-2 pr-10 rounded bg-zinc-800 border border-zinc-600"> <button type="button" id="toggleConfirm" class="absolute right-2 top-2 text-yellow-400 select-none" aria-label="Passwort wiederholen anzeigen">👁</button> </div> <ul id="pwRules" class="text-sm mb-4 space-y-0.5 leading-tight"> <li id="rLen" class="text-red-400">• Mind. 8 Zeichen</li> <li id="rUp" class="text-red-400">• Mind. 1 Großbuchstabe</li> <li id="rLow" class="text-red-400">• Mind. 1 Kleinbuchstabe</li> <li id="rNum" class="text-red-400">• Mind. 1 Zahl</li> <li id="rMatch" class="text-red-400">• Passwörter gleich</li> </ul> <button id="submitBtn" type="submit" class="w-full bg-luxgold text-luxblack font-bold py-2 rounded hover:bg-yellow-400 transition">
 Registrieren
 </button> <p id="msg" class="mt-4 text-center text-sm min-h-[1.25rem]"></p> </form>  <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-    // Den bereits vom Layout bereitgestellten Config-Knoten nutzen
     const meta = document.getElementById("supabase-config");
-    if (!meta?.dataset?.url || !meta?.dataset?.key) {
-      console.error("supabase-config missing");
-    }
     const supabase = createClient(meta.dataset.url, meta.dataset.key);
 
     const $ = (id) => document.getElementById(id);
@@ -50,9 +46,19 @@ Registrieren
     pw.addEventListener("input", updateRules);
     confirm.addEventListener("input", updateRules);
 
-    // Sichtbarkeit umschalten
+    // Sichtbarkeit
     $("togglePw").onclick      = () => pw.type      = pw.type      === "password" ? "text" : "password";
     $("toggleConfirm").onclick = () => confirm.type = confirm.type === "password" ? "text" : "password";
+
+    // Nach Login/Signup weiterleiten
+    async function routeAfterLogin(accountType) {
+      // Wenn du eine eigene Helper-Funktion hast, kannst du die hier nutzen.
+      if (accountType === "agency") {
+        window.location.href = "/agency";
+      } else {
+        window.location.href = "/dashboard-model";
+      }
+    }
 
     // Submit
     form.addEventListener("submit", async (e) => {
@@ -68,23 +74,26 @@ Registrieren
           return;
         }
 
-        const name  = $("name").value.trim();
-        const email = $("email").value.trim();
-        const role  = $("role").value;
+        const displayName = $("displayName").value.trim();
+        const email       = $("email").value.trim();
+        const accountType = $("accountType").value; // 'agency' | 'model'
 
-        if (!name || !email) {
-          msg.textContent = "❌ Bitte Name und E‑Mail ausfüllen.";
+        if (!displayName || !email) {
+          msg.textContent = "❌ Bitte Anzeigename und E-Mail ausfüllen.";
           msg.classList.add("text-red-400");
           return;
         }
 
-        // Nur Signup – der DB‑Trigger erzeugt creator_config.
+        // Signup – der DB-Trigger provisioniert basierend auf account_type & display_name
         const { data, error } = await supabase.auth.signUp({
           email,
           password: pw.value,
           options: {
-            data: { name, role }, // Trigger liest diese Meta
-            // Optional: wohin die Bestätigungs-Mail später leitet
+            data: {
+              account_type: accountType,   // <<<<<< wichtig für den Trigger
+              display_name: displayName    // <<<<<< wichtig für den Trigger
+            },
+            // Stelle sicher, dass diese URL in Supabase -> Auth -> Redirect URLs whitelisted ist
             emailRedirectTo: window.location.origin + "/login"
           }
         });
@@ -95,16 +104,16 @@ Registrieren
           return;
         }
 
-        // Wenn E-Mail-Bestätigung aktiv ist, gibt es KEINE Session
         if (!data.session) {
-          msg.textContent = "✉️ Bitte prüfe dein Postfach und bestätige die E‑Mail.";
+          // E-Mail-Bestätigung aktiv -> keine Session
+          msg.textContent = "✉️ Bitte bestätige deine E-Mail. Danach kannst du dich einloggen.";
           msg.classList.add("text-green-400");
         } else {
+          // Direkt eingeloggt → weiterleiten (der Trigger hat schon provisioniert)
           msg.textContent = "✅ Registrierung erfolgreich.";
           msg.classList.add("text-green-400");
+          setTimeout(() => routeAfterLogin(accountType), 600);
         }
-
-        setTimeout(() => (window.location.href = "/dashboard"), 1500);
       } catch (err) {
         console.error(err);
         msg.textContent = "❌ Unerwarteter Fehler beim Registrieren.";

@@ -2,7 +2,7 @@
 import { c as createComponent, a as createAstro, d as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../../../../chunks/astro/server_BM0YAzyH.mjs';
 import 'kleur/colors';
 import 'html-escaper';
-import { $ as $$BaseLayout } from '../../../../chunks/BaseLayout_CRTnDWM7.mjs';
+import { $ as $$BaseLayout } from '../../../../chunks/BaseLayout_BF73UR92.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import 'react';
 import { P as ProfileForm } from '../../../../chunks/ProfileForm_BOzWvPx-.mjs';

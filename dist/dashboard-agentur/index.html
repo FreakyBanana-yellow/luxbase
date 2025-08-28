@@ -1,1 +1,44 @@
-<!doctype html><title>Redirecting to: /</title><meta http-equiv="refresh" content="2;url=/"><meta name="robots" content="noindex"><link rel="canonical" href="/"><body>	<a href="/">Redirecting from <code>/dashboard-agentur/</code> to <code>/</code></a></body>
+<!DOCTYPE html><html lang="de"> <head><title>Luxbase – Agentur-Dashboard</title><script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+      // Browser-Client
+      const supabase = createClient(
+        import.meta.env.PUBLIC_SUPABASE_URL,
+        import.meta.env.PUBLIC_SUPABASE_ANON_KEY
+      );
+
+      async function guardAgencyOnly() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { location.href = "/login"; return; }
+
+        // Mitgliedschaft?
+        const { data: m } = await supabase
+          .from("agency_member")
+          .select("agency_id")
+          .eq("user_id", user.id)
+          .limit(1);
+
+        if (m && m.length > 0) return; // OK, Agency-Dashboard anzeigen
+
+        // Fallback: Profil-Typ (oder Meta)
+        const { data: profile } = await supabase
+          .from("user_profile")
+          .select("account_type")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        const type = String(profile?.account_type || user.user_metadata?.account_type || "").toLowerCase();
+        if (type !== "agency") {
+          location.href = "/dashboard-model"; // falscher Typ -> rüber ins Model-Dashboard
+        }
+      }
+
+      guardAgencyOnly();
+
+      // Logout
+      window.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("logoutBtn")?.addEventListener("click", async () => {
+          await supabase.auth.signOut();
+          location.href = "/";
+        });
+      });
+    </script><link rel="stylesheet" href="/_astro/aktivität._wwie63p.css"></head> <body class="bg-luxblack text-white font-sans min-h-screen"> <header class="bg-black border-b border-luxgray p-4 flex justify-between items-center flex-wrap"> <h1 class="text-xl font-serif text-luxgold">LUXBASE – Agenturübersicht</h1> <nav class="flex flex-wrap gap-4 text-sm font-semibold"> <a href="/dashboard" class="hover:text-luxgold">Creator-Übersicht</a> <a href="/dashboard-agentur" class="text-luxgold underline">Agentur-Dashboard</a> <a href="/preise" class="hover:text-luxgold">Pakete & Preise</a> </nav> <div class="flex items-center gap-3 mt-4 md:mt-0"> <button id="logoutBtn" class="border border-luxgold text-luxgold px-3 py-1 rounded hover:bg-luxgold hover:text-black transition">Abmelden</button> </div> </header> <main class="p-6"> <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3"> <!-- hier deine Agentur-Kacheln/Komponenten --> </div> </main> </body></html>

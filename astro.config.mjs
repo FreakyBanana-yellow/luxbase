@@ -5,16 +5,7 @@ import tailwind from '@astrojs/tailwind'
 import react from '@astrojs/react'
 
 export default defineConfig({
-  // Hybrid = statische Seiten + Server nur dort, wo nötig (z. B. /api/*)
-  output: 'hybrid',
-  adapter: netlify(), // erzeugt Netlify Functions/Edge für SSR & API
+  output: 'hybrid',      // statische Seiten + Server nur da, wo nötig (/api/*)
+  adapter: netlify(),    // Netlify Functions/SSR
   integrations: [react(), tailwind()],
-
-  // In der Regel NICHT nötig, React/React-DOM NICHT externalisieren.
-  // Entferne dein bisheriges vite.ssr.external, das hat dein SSR gekillt.
-  vite: {
-    ssr: {
-      // leer lassen oder weglassen
-    }
-  }
-}
+})

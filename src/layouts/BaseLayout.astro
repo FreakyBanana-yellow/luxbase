@@ -1,7 +1,6 @@
 ---
 import "../styles/global.css";
 const { title = "Luxbase" } = Astro.props;
-const year = new Date().getFullYear();
 ---
 
 <html lang="de" class="scroll-smooth">
@@ -13,10 +12,10 @@ const year = new Date().getFullYear();
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-    <!-- Supabase Keys via Meta-Tag (auf Build-Zeit aufgelöst) -->
+    <!-- Supabase Keys via Meta-Tag (Client liest daraus) -->
     <meta id="supabase-config"
-          data-url={`${import.meta.env.PUBLIC_SUPABASE_URL}`}
-          data-key={`${import.meta.env.PUBLIC_SUPABASE_ANON_KEY}`} />
+      data-url={`${import.meta.env.PUBLIC_SUPABASE_URL}`}
+      data-key={`${import.meta.env.PUBLIC_SUPABASE_ANON_KEY}`} />
 
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
   </head>
@@ -27,10 +26,12 @@ const year = new Date().getFullYear();
       <a href="/" class="text-luxgold font-serif text-xl leading-none">LUXBASE</a>
 
       <nav class="flex items-center gap-3">
+        <!-- Login Button -->
         <button id="openLogin" class="h-11 px-5 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
           Login
         </button>
 
+        <!-- Account-Menü (hidden bis eingeloggt) -->
         <div id="accountMenu" class="relative hidden">
           <button id="accountBtn" class="h-11 px-4 flex items-center gap-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
             <span id="username">Account</span>
@@ -40,9 +41,8 @@ const year = new Date().getFullYear();
           </button>
           <div id="accountDropdown" class="absolute right-0 mt-2 w-56 bg-black border border-luxgray rounded-xl shadow-lg hidden">
             <a href="/app/profile" class="block px-4 py-3 hover:bg-luxgray/20">Profil</a>
-            <a href="/agency" class="block px-4 py-3 hover:bg-luxgray/20">Agenturen</a>
-            <a href="/dashboard" class="block px-4 py-3 hover:bg-luxgray/20">Dashboard</a>
-            <a href="/dashboard/vipbot-einstellungen" class="block px-4 py-3 hover:bg-luxgray/20">Bot-Einstellungen</a>
+            <a href="/dashboard-model" id="linkCreator" class="block px-4 py-3 hover:bg-luxgray/20 hidden">Creator-Dashboard</a>
+            <a href="/agency" id="linkAgency" class="block px-4 py-3 hover:bg-luxgray/20 hidden">Agency-Dashboard</a>
             <button id="logoutBtn" class="w-full text-left px-4 py-3 hover:bg-red-900/40 text-red-400">Abmelden</button>
           </div>
         </div>
@@ -54,7 +54,6 @@ const year = new Date().getFullYear();
       <div class="bg-zinc-900 border border-luxgold p-6 rounded-2xl w-[92vw] max-w-sm relative text-white shadow-xl">
         <button id="closeLogin" class="absolute top-3 right-4 text-white text-2xl leading-none hover:text-luxgold" aria-label="Login schließen">&times;</button>
         <h2 class="text-xl font-serif font-bold text-luxgold text-center mb-5">Login</h2>
-
         <form id="popupLoginForm" class="space-y-3">
           <input type="email" name="email" placeholder="E-Mail" required class="w-full h-12 px-4 bg-black border border-zinc-600 rounded-xl" />
           <input type="password" name="password" placeholder="Passwort" required class="w-full h-12 px-4 bg-black border border-zinc-600 rounded-xl" />
@@ -62,7 +61,6 @@ const year = new Date().getFullYear();
             Einloggen
           </button>
         </form>
-
         <p id="popupLoginMsg" class="text-sm text-center text-red-400 mt-2 min-h-[1.25rem]"></p>
         <p class="text-center text-sm mt-4 text-gray-400">
           Noch kein Account? <a href="/register" class="text-luxgold hover:underline">Jetzt registrieren</a>
@@ -70,7 +68,7 @@ const year = new Date().getFullYear();
       </div>
     </div>
 
-    <!-- MAIN -->
+    <!-- MAIN CONTENT -->
     <main class="flex-1 pb-20">
       <slot />
     </main>
@@ -86,84 +84,124 @@ const year = new Date().getFullYear();
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10z"/></svg>
           <span>Login</span>
         </button>
-        <a href="/dashboard" class="py-3 flex flex-col items-center gap-1">
+        <a href="/dashboard-model" class="py-3 flex flex-col items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
           <span>Dashboard</span>
         </a>
       </div>
     </nav>
 
-    <!-- FOOTER -->
     <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray hidden md:block">
-      © {year} Luxbase – Automation with Style.
+      © <script>document.write(new Date().getFullYear())</script> Luxbase – Automation with Style.
     </footer>
 
-    <!-- SCRIPT: Supabase Auth + Login Flow -->
+    <!-- SCRIPT: Supabase Auth + Rollenbasiertes Routing -->
     <script type="module">
       import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+      // Supabase Client aus Meta
       const meta = document.getElementById("supabase-config");
-      if (!meta) console.error("Missing <meta id='supabase-config'> with Supabase keys");
-      const supabase = createClient(meta?.dataset.url, meta?.dataset.key);
+      const supabaseUrl = meta?.dataset.url;
+      const supabaseKey = meta?.dataset.key;
+      const supabase = createClient(supabaseUrl, supabaseKey);
 
-      // Elements
-      const openers = [document.getElementById("openLogin"), document.getElementById("openLoginBottom")].filter(Boolean);
-      const closeBtn = document.getElementById("closeLogin");
+      // UI-Refs
       const modal = document.getElementById("loginModal");
+      const openBtn = document.getElementById("openLogin");
+      const openBtnBottom = document.getElementById("openLoginBottom");
+      const closeBtn = document.getElementById("closeLogin");
       const form = document.getElementById("popupLoginForm");
       const msg = document.getElementById("popupLoginMsg");
+
       const accountMenu = document.getElementById("accountMenu");
       const accountBtn = document.getElementById("accountBtn");
       const accountDropdown = document.getElementById("accountDropdown");
       const usernameEl = document.getElementById("username");
       const logoutBtn = document.getElementById("logoutBtn");
 
+      const linkAgency = document.getElementById("linkAgency");
+      const linkCreator = document.getElementById("linkCreator");
+
       const openLogin = () => modal?.classList.remove("hidden");
       const closeLogin = () => modal?.classList.add("hidden");
 
-      openers.forEach(btn => btn.addEventListener("click", openLogin));
+      openBtn?.addEventListener("click", openLogin);
+      openBtnBottom?.addEventListener("click", openLogin);
       closeBtn?.addEventListener("click", closeLogin);
 
       async function detectIsAgency(userId, userMeta) {
-        const { data: m } = await supabase.from("agency_member").select("agency_id").eq("user_id", userId).limit(1);
-        if (m && m.length > 0) return true;
-
-        const { data: p } = await supabase.from("user_profile").select("account_type").eq("user_id", userId).maybeSingle();
-        const metaType = String(userMeta?.account_type || "").toLowerCase();
-        const profType = String(p?.account_type || "").toLowerCase();
-        return metaType === "agency" || profType === "agency";
+        try {
+          const [{ data: m, error: mErr }, { data: p, error: pErr }] = await Promise.all([
+            supabase.from("agency_member").select("agency_id").eq("user_id", userId).limit(1),
+            supabase.from("user_profile").select("account_type").eq("user_id", userId).maybeSingle(),
+          ]);
+          if (mErr || pErr) console.warn("role lookup:", mErr || pErr);
+          if (m && m.length > 0) return true;
+          const metaType = String(userMeta?.account_type || "").toLowerCase();
+          const profType = String(p?.account_type || "").toLowerCase();
+          return metaType === "agency" || profType === "agency";
+        } catch (e) {
+            console.warn("detectIsAgency error", e);
+            return false;
+        }
       }
 
+      function showAccountUI({ email, isAgency }) {
+        // Toggle
+        document.getElementById("openLogin")?.classList.add("hidden");
+        accountMenu?.classList.remove("hidden");
+        usernameEl.textContent = email || "Account";
+
+        // Menü
+        accountBtn?.addEventListener("click", () => accountDropdown.classList.toggle("hidden"));
+        logoutBtn?.addEventListener("click", async () => {
+          await supabase.auth.signOut();
+          sessionStorage.clear();
+          location.href = "/";
+        });
+
+        // Links nach Rolle
+        if (isAgency) {
+          linkAgency?.classList.remove("hidden");
+          linkCreator?.classList.add("hidden");
+        } else {
+          linkCreator?.classList.remove("hidden");
+          linkAgency?.classList.add("hidden");
+        }
+      }
+
+      // Login submit
       form?.addEventListener("submit", async (e) => {
         e.preventDefault();
         msg.textContent = "";
         const fd = new FormData(form);
         const email = fd.get("email");
         const password = fd.get("password");
-
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) { msg.textContent = error.message || "Login fehlgeschlagen"; return; }
 
         const user = data.user;
         const isAgency = await detectIsAgency(user.id, user.user_metadata);
-        const nextPath = isAgency ? "/agency" : "/dashboard-model";
-        window.location.href = `/app/profile?next=${encodeURIComponent(nextPath)}`;
+
+        // persist kleines Flag für UI
+        sessionStorage.setItem("lb_account_type", isAgency ? "agency" : "creator");
+
+        // Direkt auf das passende Dashboard
+        window.location.replace(isAgency ? "/agency" : "/dashboard-model");
       });
 
-      // Zeige Account-Menü wenn eingeloggt
+      // Bereits eingeloggt? -> Menü anzeigen + Links rollenbasiert
       (async () => {
         const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          openers.forEach(btn => btn.classList.add("hidden"));
-          accountMenu?.classList.remove("hidden");
-          usernameEl.textContent = user.email || "Account";
-          accountBtn?.addEventListener("click", () => accountDropdown.classList.toggle("hidden"));
-          logoutBtn?.addEventListener("click", async () => {
-            await supabase.auth.signOut();
-            sessionStorage.clear();
-            location.href = "/";
-          });
+        if (!user) return;
+
+        let accountType = sessionStorage.getItem("lb_account_type");
+        let isAgency = accountType === "agency";
+        if (!accountType) {
+          isAgency = await detectIsAgency(user.id, user.user_metadata);
+          sessionStorage.setItem("lb_account_type", isAgency ? "agency" : "creator");
         }
+        showAccountUI({ email: user.email, isAgency });
       })();
     </script>
   </body>

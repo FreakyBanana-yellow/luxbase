@@ -1,7 +1,7 @@
 ---
 import AdminSidebar from "../components/AdminSidebar.astro"; // <— WICHTIG: Import vorhanden!
 const { title = "Luxbase Admin" } = Astro.props;
----
+export const prerender = false;
 
 <html lang="de">
   <head>

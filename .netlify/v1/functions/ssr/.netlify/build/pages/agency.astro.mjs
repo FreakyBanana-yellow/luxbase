@@ -2,7 +2,7 @@
 import { c as createComponent, d as renderComponent, r as renderTemplate, m as maybeRenderHead, b as addAttribute } from '../chunks/astro/server_BM0YAzyH.mjs';
 import 'kleur/colors';
 import 'html-escaper';
-import { $ as $$BaseLayout } from '../chunks/BaseLayout_JFh8x-Qq.mjs';
+import { $ as $$BaseLayout } from '../chunks/BaseLayout_CRTnDWM7.mjs';
 import { jsx } from 'react/jsx-runtime';
 import { useState } from 'react';
 import { c as createAgency, g as getMyAgencies } from '../chunks/agency_CSgzl6Zn.mjs';

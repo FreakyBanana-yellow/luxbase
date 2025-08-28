@@ -24,6 +24,13 @@ const { title = "Luxbase" } = Astro.props;
     <header class="w-full flex items-center justify-between gap-2 p-4 bg-black border-b border-luxgray sticky top-0 z-50">
       <a href="/" class="text-luxgold font-serif text-xl leading-none">LUXBASE</a>
       <nav class="flex items-center gap-3">
+  <a href="/agency" class="h-11 px-4 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+    Agenturen
+  </a>
+  <button id="openLogin" class="h-11 px-5 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+    Login
+  </button>
+      <nav class="flex items-center gap-3">
         <button id="openLogin" class="h-11 px-5 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
           Login
         </button>
@@ -35,11 +42,13 @@ const { title = "Luxbase" } = Astro.props;
             </svg>
           </button>
           <div id="accountDropdown" class="absolute right-0 mt-2 w-56 bg-black border border-luxgray rounded-xl shadow-lg hidden">
-            <a href="/app/profile" class="block px-4 py-3 hover:bg-luxgray/20">Profil</a>
-            <a href="/dashboard" class="block px-4 py-3 hover:bg-luxgray/20">Dashboard</a>
-            <a href="/dashboard/vipbot-einstellungen" class="block px-4 py-3 hover:bg-luxgray/20">Bot‑Einstellungen</a>
-            <button id="logoutBtn" class="w-full text-left px-4 py-3 hover:bg-red-900/40 text-red-400">Abmelden</button>
-          </div>
+  <a href="/app/profile" class="block px-4 py-3 hover:bg-luxgray/20">Profil</a>
+  <a href="/agency" class="block px-4 py-3 hover:bg-luxgray/20">Agenturen</a>
+  <a href="/dashboard" class="block px-4 py-3 hover:bg-luxgray/20">Dashboard</a>
+  <a href="/dashboard/vipbot-einstellungen" class="block px-4 py-3 hover:bg-luxgray/20">Bot-Einstellungen</a>
+  <button id="logoutBtn" class="w-full text-left px-4 py-3 hover:bg-red-900/40 text-red-400">Abmelden</button>
+</div>
+
         </div>
       </nav>
     </header>

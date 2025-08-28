@@ -55,4 +55,24 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       </div>
     </div>
   </section>
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
+
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Mini-Entscheidung direkt hier (damit die Startseite ohne Import funktioniert)
+      const [{ data: m }, { data: p }] = await Promise.all([
+        supabase.from("agency_member").select("agency_id").eq("user_id", user.id).limit(1),
+        supabase.from("user_profile").select("account_type").eq("user_id", user.id).maybeSingle(),
+      ]);
+      if (m && m.length > 0 || String(p?.account_type || user.user_metadata?.account_type || "").toLowerCase() === "agency") {
+        location.href = "/dashboard-agentur";
+      } else {
+        location.href = "/dashboard-model";
+      }
+    })();
+  </script>
 </BaseLayout>

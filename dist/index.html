@@ -23,7 +23,26 @@ Mehr erfahren
 Veröffentliche Inhalte einmalig – und poste gleichzeitig auf OnlyFans, Fansly, BestFans & Co.
 </p> <a href="/cpplattform" class="inline-block px-8 py-3 bg-luxgold text-black font-semibold rounded-lg hover:bg-yellow-400 transition">
 Mehr erfahren
-</a> </div> </div> </section>  </main> <!-- Mobile Bottom Bar --> <nav class="fixed bottom-0 inset-x-0 bg-black/90 backdrop-blur border-t border-luxgray z-50"> <div class="grid grid-cols-3 text-center text-sm"> <a href="/" class="py-3 flex flex-col items-center gap-1"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6 text-luxgold"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"></path></svg> <span>Home</span> </a> <button id="openLoginBottom" class="py-3 flex flex-col items-center gap-1"> <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10z"></path></svg> <span>Login</span> </button> <a href="/dashboard" class="py-3 flex flex-col items-center gap-1"> <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"></path></svg> <span>Dashboard</span> </a> </div> </nav> <!-- FOOTER (nur Desktop sichtbar, wenn gewünscht) --> <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray hidden md:block">
+</a> </div> </div> </section> <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
+
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Mini-Entscheidung direkt hier (damit die Startseite ohne Import funktioniert)
+      const [{ data: m }, { data: p }] = await Promise.all([
+        supabase.from("agency_member").select("agency_id").eq("user_id", user.id).limit(1),
+        supabase.from("user_profile").select("account_type").eq("user_id", user.id).maybeSingle(),
+      ]);
+      if (m && m.length > 0 || String(p?.account_type || user.user_metadata?.account_type || "").toLowerCase() === "agency") {
+        location.href = "/dashboard-agentur";
+      } else {
+        location.href = "/dashboard-model";
+      }
+    })();
+  </script>  </main> <!-- Mobile Bottom Bar --> <nav class="fixed bottom-0 inset-x-0 bg-black/90 backdrop-blur border-t border-luxgray z-50"> <div class="grid grid-cols-3 text-center text-sm"> <a href="/" class="py-3 flex flex-col items-center gap-1"> <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-6 w-6 text-luxgold"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"></path></svg> <span>Home</span> </a> <button id="openLoginBottom" class="py-3 flex flex-col items-center gap-1"> <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10z"></path></svg> <span>Login</span> </button> <a href="/dashboard" class="py-3 flex flex-col items-center gap-1"> <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"></path></svg> <span>Dashboard</span> </a> </div> </nav> <!-- FOOTER (nur Desktop sichtbar, wenn gewünscht) --> <footer class="text-center text-sm text-luxgold/70 py-8 border-t border-luxgray hidden md:block">
 ©  Luxbase – Automation with Style.
 </footer> <!-- SCRIPT: Supabase Auth + Login Flow + Redirect to /dashboard --> <script type="module">
       import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";

@@ -91,91 +91,91 @@ export const prerender = false;
 
     <!-- SCRIPT: Supabase Auth + „ein Button“ Logik -->
     <script type="module">
-      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
 
-      const meta = document.getElementById("supabase-config");
-      const supabase = createClient(meta.dataset.url, meta.dataset.key);
+  // UI refs
+  const openBtn = document.getElementById("openLogin");
+  const openBtnBottom = document.getElementById("openLoginBottom");
+  const closeBtn = document.getElementById("closeLogin");
+  const modal = document.getElementById("loginModal");
+  const form = document.getElementById("popupLoginForm");
+  const msg = document.getElementById("popupLoginMsg");
+  const accountMenu = document.getElementById("accountMenu");
+  const accountBtn = document.getElementById("accountBtn");
+  const accountDropdown = document.getElementById("accountDropdown");
+  const usernameEl = document.getElementById("username");
+  const logoutBtn = document.getElementById("logoutBtn");
 
-      const modal = document.getElementById("loginModal");
-      const closeBtn = document.getElementById("closeLogin");
-      const msg = document.getElementById("popupLoginMsg");
-      const form = document.getElementById("popupLoginForm");
-      const btnHeader = document.getElementById("navLogin");
-      const btnBottom = document.getElementById("openLoginBottom");
+  const openLogin = () => modal?.classList.remove("hidden");
+  const closeLogin = () => modal?.classList.add("hidden");
 
-      const openLogin = () => modal.classList.remove("hidden");
-      const closeLogin = () => modal.classList.add("hidden");
-      closeBtn?.addEventListener("click", closeLogin);
+  openBtn?.addEventListener("click", openLogin);
+  openBtnBottom?.addEventListener("click", openLogin);
+  closeBtn?.addEventListener("click", closeLogin);
 
-      // Entscheidet: Modal öffnen (nicht eingeloggt) ODER ins richtige Dashboard routen (eingeloggt)
-      async function smartLoginOrRoute() {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { openLogin(); return; }
+  async function detectIsAgency(userId, userMeta) {
+    // 1) membership?
+    const { data: m } = await supabase
+      .from("agency_member")
+      .select("agency_id")
+      .eq("user_id", userId)
+      .limit(1);
 
-        // Mitgliedschaft / Account-Typ prüfen
-        const [{ data: m }, { data: p }] = await Promise.all([
-          supabase.from("agency_member").select("agency_id").eq("user_id", user.id).limit(1),
-          supabase.from("user_profile").select("account_type").eq("user_id", user.id).maybeSingle(),
-        ]);
+    if (m && m.length > 0) return true;
 
-        const isAgency =
-          (m && m.length > 0) ||
-          (String(p?.account_type || user.user_metadata?.account_type || "").toLowerCase() === "agency");
+    // 2) user_profile.account_type?
+    const { data: p } = await supabase
+      .from("user_profile")
+      .select("account_type")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-        location.href = isAgency ? "/dashboard-agentur" : "/dashboard-model";
-      }
+    const metaType = String(userMeta?.account_type || "").toLowerCase();
+    const profType = String(p?.account_type || "").toLowerCase();
 
-      btnHeader?.addEventListener("click", smartLoginOrRoute);
-      btnBottom?.addEventListener("click", smartLoginOrRoute);
+    return metaType === "agency" || profType === "agency";
+  }
 
-      // Button-Text anpassen, wenn bereits eingeloggt
-      (async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const btns = [btnHeader, btnBottom].filter(Boolean);
-          btns.forEach(b => (b.textContent = "Zum Dashboard"));
-        }
-      })();
+  // LOGIN + Redirect zur Profilseite mit "next"
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.textContent = "";
+    const fd = new FormData(form);
+    const email = fd.get("email");
+    const password = fd.get("password");
 
-      // Login im Modal: nach Erfolg optional creator_config cachen, dann weiterleiten
-      form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        msg.textContent = "";
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { msg.textContent = error.message || "Login fehlgeschlagen"; return; }
 
-        const fd = new FormData(form);
-        const email = fd.get("email");
-        const password = fd.get("password");
+    const user = data.user;
+    const isAgency = await detectIsAgency(user.id, user.user_metadata);
+    // Zielpfad je Rolle
+    const nextPath = isAgency ? "/agency" : "/dashboard-model";
 
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) { msg.textContent = error.message || "Login fehlgeschlagen"; return; }
+    // optional: kleine Config im SessionStorage (kannst du lassen oder entfernen)
+    sessionStorage.setItem("luxbase_role", isAgency ? "agency" : "model");
 
-        try {
-          const user = data.user;
-          // optional: creator_config für Dashboard cachen
-          const { data: cfg } = await supabase
-            .from("creator_config")
-            .select("creator_id, creator_name, email, rolle, has_vipbot, has_vault, bot_paket, show_selfie_gate, telegram_id, preis, vip_dauer, gruppe_link, welcome_text")
-            .eq("creator_id", user.id)
-            .maybeSingle();
+    // -> erst auf Profilseite, dann weiter
+    window.location.href = `/app/profile?next=${encodeURIComponent(nextPath)}`;
+  });
 
-          const config = cfg || {
-            creator_id: user.id,
-            creator_name: user.email,
-            email: user.email,
-            rolle: "creator",
-            has_vipbot: false,
-            has_vault: false,
-            bot_paket: "basic",
-            show_selfie_gate: false
-          };
-          sessionStorage.setItem("luxbase_config", JSON.stringify(config));
-        } catch (_) {
-          // config ist optional; Fehler dabei ignorieren
-        }
-
-        // danach immer ins richtige Dashboard routen
-        await smartLoginOrRoute();
+  // Wenn bereits eingeloggt → Account-Menü zeigen
+  (async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      document.getElementById("openLogin")?.classList.add("hidden");
+      document.getElementById("openLoginBottom")?.classList.add("hidden");
+      accountMenu?.classList.remove("hidden");
+      usernameEl.textContent = user.email || "Account";
+      accountBtn?.addEventListener("click", () => accountDropdown.classList.toggle("hidden"));
+      logoutBtn?.addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        sessionStorage.clear();
+        location.href = "/";
       });
-    </script>
+    }
+  })();
+</script>
   </body>
 </html>

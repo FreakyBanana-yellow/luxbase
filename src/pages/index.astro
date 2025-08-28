@@ -69,7 +69,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         supabase.from("user_profile").select("account_type").eq("user_id", user.id).maybeSingle(),
       ]);
       if (m && m.length > 0 || String(p?.account_type || user.user_metadata?.account_type || "").toLowerCase() === "agency") {
-        location.href = "/dashboard-agentur";
+        location.href = "/agency";
       } else {
         location.href = "/dashboard-model";
       }

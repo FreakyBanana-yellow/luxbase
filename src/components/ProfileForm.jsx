@@ -1,15 +1,12 @@
 // src/components/ProfileForm.jsx
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { writeAudit } from '../lib/agency'; // NEU
 
-export default function ProfileForm({ overrideCreatorId = null, agencyId = null }) {
+export default function ProfileForm() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
-
-  const [targetId, setTargetId] = useState(null);
-  const [isSelf, setIsSelf] = useState(false);
+  const [nextUrl, setNextUrl] = useState(null);
 
   const [form, setForm] = useState({
     creator_name: '',
@@ -17,12 +14,14 @@ export default function ProfileForm({ overrideCreatorId = null, agencyId = null 
     password: '',
   });
 
-  const handle = (e) => {
-    const { name, value } = e.target;
-    setForm((f) => ({ ...f, [name]: value }));
-  };
-
   useEffect(() => {
+    // next aus Query lesen
+    try {
+      const url = new URL(window.location.href);
+      const n = url.searchParams.get('next');
+      if (n) setNextUrl(n);
+    } catch {}
+
     (async () => {
       setLoading(true);
       setError('');
@@ -35,31 +34,35 @@ export default function ProfileForm({ overrideCreatorId = null, agencyId = null 
           return;
         }
 
-        const cid = overrideCreatorId || user.id;
-        setTargetId(cid);
-        setIsSelf(!overrideCreatorId || overrideCreatorId === user.id);
+        let email = user.email ?? '';
 
-        const { data: profile } = await supabase
+        const { data: profile, error: pErr } = await supabase
           .from('creator_config')
           .select('creator_name, email')
-          .eq('creator_id', cid)
+          .eq('creator_id', user.id)
           .maybeSingle();
 
-        const fallbackEmail = (!overrideCreatorId ? (user.email ?? '') : '');
-        setForm((f) => ({
-          ...f,
-          creator_name: profile?.creator_name ?? '',
-          email: (profile?.email ?? fallbackEmail),
-          password: '',
-        }));
+        if (!pErr && profile) {
+          setForm((f) => ({
+            ...f,
+            creator_name: profile.creator_name ?? '',
+            email: profile.email ?? email,
+          }));
+        } else {
+          setForm((f) => ({ ...f, email }));
+        }
       } catch (e) {
         setError(e?.message || 'Unbekannter Fehler beim Laden');
       } finally {
         setLoading(false);
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [overrideCreatorId]);
+  }, []);
+
+  const handle = (e) => {
+    const { name, value } = e.target;
+    setForm((f) => ({ ...f, [name]: value }));
+  };
 
   async function save(e) {
     e.preventDefault();
@@ -73,47 +76,34 @@ export default function ProfileForm({ overrideCreatorId = null, agencyId = null 
         return;
       }
 
-      const cid = targetId;
-      if (!cid) throw new Error('Kein Zielkonto gefunden');
-
-      // 1) creator_config upsert
       const payload = {
-        creator_id: cid,
+        creator_id: user.id,
         creator_name: form.creator_name?.trim() || null,
         email: form.email?.trim() || null,
         updated_at: new Date().toISOString(),
       };
+
       const { error: upsertErr } = await supabase
         .from('creator_config')
         .upsert(payload, { onConflict: 'creator_id' });
       if (upsertErr) throw upsertErr;
 
-      // 2) Nur eigenes Profil: Auth-Email/Passwort
-      if (isSelf) {
-        if (form.email && form.email !== (user.email ?? '')) {
-          const { error: emailErr } = await supabase.auth.updateUser({ email: form.email });
-          if (emailErr) throw new Error(`E-Mail-Update: ${emailErr.message}`);
-        }
-        if (form.password && form.password.length >= 6) {
-          const { error: pwErr } = await supabase.auth.updateUser({ password: form.password });
-          if (pwErr) throw new Error(`Passwort-Update: ${pwErr.message}`);
-        }
+      if (form.email && form.email !== (user.email ?? '')) {
+        const { error: emailErr } = await supabase.auth.updateUser({ email: form.email });
+        if (emailErr) throw new Error(`E-Mail-Update: ${emailErr.message}`);
+      }
+
+      if (form.password && form.password.length >= 6) {
+        const { error: pwErr } = await supabase.auth.updateUser({ password: form.password });
+        if (pwErr) throw new Error(`Passwort-Update: ${pwErr.message}`);
       }
 
       setForm((f) => ({ ...f, password: '' }));
       setSaved(true);
 
-      // 3) Optionales Audit, wenn acting-as innerhalb einer Agentur
-      if (agencyId && overrideCreatorId) {
-        try {
-          await writeAudit({
-            agency_id: agencyId,
-            action: 'update_profile',
-            target_creator_id: cid,
-          });
-        } catch {
-          // Audit ist best effort – UI nicht blockieren
-        }
+      // nach kurzem Moment weiterleiten, wenn next vorhanden
+      if (nextUrl) {
+        setTimeout(() => { window.location.href = nextUrl; }, 400);
       }
     } catch (e) {
       setError(e?.message || 'Speichern fehlgeschlagen');
@@ -151,7 +141,7 @@ export default function ProfileForm({ overrideCreatorId = null, agencyId = null 
       <div className="grid md:grid-cols-2 gap-4">
         <LabeledInput
           name="password"
-          label={isSelf ? 'Neues Passwort (min. 6 Zeichen)' : 'Neues Passwort (nur Eigenprofil)'}
+          label="Neues Passwort (min. 6 Zeichen)"
           type="password"
           value={form.password}
           onChange={handle}
@@ -159,15 +149,24 @@ export default function ProfileForm({ overrideCreatorId = null, agencyId = null 
         <div />
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3">
         <button
           type="submit"
           className="px-5 py-3 rounded-2xl bg-yellow-500/90 hover:bg-yellow-400 text-black font-medium shadow"
-          disabled={loading || (!!form.password && form.password.length > 0 && form.password.length < 6)}
-          title={!!form.password && form.password.length < 6 ? 'Passwort zu kurz' : undefined}
+          disabled={loading}
         >
           Speichern
         </button>
+
+        {nextUrl && (
+          <a
+            href={nextUrl}
+            className="px-5 py-3 rounded-2xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-100"
+          >
+            Weiter ohne Änderungen
+          </a>
+        )}
+
         <button
           type="button"
           onClick={() => location.reload()}

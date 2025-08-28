@@ -1,29 +1,14 @@
 ---
 export const prerender = false;
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error("❌ Supabase-Umgebungsvariablen fehlen! Bitte .env oder Netlify prüfen.");
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Session abfragen (serverseitig)
-const { data: { session } } = await supabase.auth.getSession();
-
-if (!session) {
-  return Astro.redirect("/");
-}
+const title = "Luxbase – Dashboard";
 ---
 
 <html lang="de">
   <head>
-    <title>Luxbase – Dashboard</title>
+    <meta charset="utf-8" />
+    <title>{title}</title>
   </head>
-  <body class="bg-luxblack text-white font-sans min-h-screen">
+  <body class="bg-luxblack text-white font-sans min-h-screen" data-guard="hidden">
     <header class="bg-black border-b border-luxgray p-4 flex justify-between items-center flex-wrap">
       <h1 class="text-xl font-serif text-luxgold">LUXBASE – Übersicht</h1>
       <nav class="flex flex-wrap gap-4 text-sm font-semibold">
@@ -36,7 +21,7 @@ if (!session) {
         <div class="relative">
           <button id="profileBtn" class="bg-luxgold text-black px-3 py-1 rounded">Mein Profil ▼</button>
           <div id="profileMenu" class="absolute right-0 mt-2 bg-zinc-900 border border-luxgold rounded shadow-lg hidden text-sm w-48 z-50">
-            <a href="/dashboard/account" class="block px-4 py-2 hover:bg-zinc-800">Account-Einstellungen</a>
+            <a href="/app/profile" class="block px-4 py-2 hover:bg-zinc-800">Profil</a>
             <a href="/dashboard/change-password" class="block px-4 py-2 hover:bg-zinc-800">Passwort ändern</a>
             <a href="/dashboard/2fa" class="block px-4 py-2 hover:bg-zinc-800">2FA einrichten</a>
           </div>
@@ -47,7 +32,6 @@ if (!session) {
 
     <main class="p-6">
       <div class="grid gap-6 md:grid-cols-3">
-        <!-- Telegram Bot Card -->
         <div class="bg-zinc-900 border border-zinc-700 rounded-lg p-6 shadow-lg">
           <h3 class="text-lg font-bold text-luxgold mb-2">Telegram-Bot</h3>
           <p>Status: <span class="text-green-400">Aktiv</span></p>
@@ -56,7 +40,6 @@ if (!session) {
           <button onclick="location.href='/dashboard/telegrambot'" class="mt-4 bg-luxgold text-black px-4 py-2 rounded hover:bg-yellow-400 transition">Zum Bot Dashboard</button>
         </div>
 
-        <!-- Massposting -->
         <div class="bg-zinc-900 border border-zinc-700 rounded-lg p-6 shadow-lg">
           <h3 class="text-lg font-bold text-luxgold mb-2">Massposting (Beta)</h3>
           <p>Kampagnen: <strong>5</strong></p>
@@ -65,7 +48,6 @@ if (!session) {
           <button onclick="location.href='/preise'" class="mt-4 bg-luxgold text-black px-4 py-2 rounded hover:bg-yellow-400 transition">Preise & Modelle</button>
         </div>
 
-        <!-- Vault -->
         <div class="bg-zinc-900 border border-zinc-700 rounded-lg p-6 shadow-lg">
           <h3 class="text-lg font-bold text-luxgold mb-2">Vault</h3>
           <p>Inhalte: <strong>456</strong></p>
@@ -77,15 +59,30 @@ if (!session) {
     </main>
 
     <script type="module">
-      // Dropdown Menu
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+      const meta = document.getElementById("supabase-config");
+      const supabase = createClient(meta.dataset.url, meta.dataset.key);
+
+      // Client-Guard: nur eingeloggte Nutzer reinlassen
+      (async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          location.replace("/"); // zurück zur Startseite/Login
+          return;
+        }
+        // Seite anzeigen, wenn Session vorhanden
+        document.body.removeAttribute("data-guard");
+      })();
+
+      // Dropdown
       const profileBtn = document.getElementById("profileBtn");
       const profileMenu = document.getElementById("profileMenu");
-      profileBtn.addEventListener("click", (e) => {
+      profileBtn?.addEventListener("click", (e) => {
         e.stopPropagation();
-        profileMenu.classList.toggle("hidden");
+        profileMenu?.classList.toggle("hidden");
       });
       document.addEventListener("click", (e) => {
-        if (!profileMenu.contains(e.target) && e.target !== profileBtn) {
+        if (profileMenu && !profileMenu.contains(e.target) && e.target !== profileBtn) {
           profileMenu.classList.add("hidden");
         }
       });
@@ -93,18 +90,14 @@ if (!session) {
       // Logout
       document.getElementById("logoutBtn")?.addEventListener("click", async () => {
         await supabase.auth.signOut();
+        sessionStorage.clear();
         location.href = "/";
       });
     </script>
 
-    <script>
-  const config = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
-
-  if (config?.bot_name) {
-    document.getElementById("welcome-name").textContent = config.bot_name;
-    document.getElementById("group-link").href = config.gruppe_link;
-    document.getElementById("paypal-email").textContent = config.paypal;
-  }
-</script>
+    <style>
+      /* Versteckt den Inhalt bis der Guard fertig ist */
+      [data-guard="hidden"] main { display: none; }
+    </style>
   </body>
 </html>

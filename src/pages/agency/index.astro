@@ -2,6 +2,7 @@
 // src/pages/agency/index.astro
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getMyAgencies, inviteLink } from '../../lib/agency';
+export const prerender = false;
 
 // Server-seitig laden (nur Daten, KEIN JSX hier!)
 const agencies = await getMyAgencies();

@@ -1,8 +1,4 @@
 // src/pages/api/profile/update.ts
-}
-}
-```ts
-// src/pages/api/profile/update.ts
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';

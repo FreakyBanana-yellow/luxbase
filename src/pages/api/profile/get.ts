@@ -35,7 +35,7 @@ headers: { 'Content-Type': 'application/json' },
 return new Response(e.message || 'Serverfehler', { status: 500 })
 }
 }
-```ts
+
 // src/pages/api/profile/get.ts
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';

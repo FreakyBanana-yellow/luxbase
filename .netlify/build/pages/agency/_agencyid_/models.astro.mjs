@@ -5,7 +5,7 @@ import 'html-escaper';
 import { $ as $$BaseLayout } from '../../../chunks/BaseLayout_hv7oFffr.mjs';
 import { jsxs, jsx } from 'react/jsx-runtime';
 import React from 'react';
-import { l as listAgencyModels, i as inviteLink } from '../../../chunks/agency_n_Tq0FHO.mjs';
+import { l as listAgencyModels, i as inviteLink } from '../../../chunks/agency_xOspdbOc.mjs';
 export { renderers } from '../../../renderers.mjs';
 
 function AgencyModelsTable({ agencyId }) {

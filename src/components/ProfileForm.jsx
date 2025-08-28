@@ -1,19 +1,20 @@
 // src/components/ProfileForm.jsx
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase'; // relativer Pfad von components -> lib
+import { supabase } from '../lib/supabase';
+import { writeAudit } from '../lib/agency'; // NEU
 
-export default function ProfileForm({ overrideCreatorId = null, onAfterSave }) {
+export default function ProfileForm({ overrideCreatorId = null, agencyId = null }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saved, setSaved] = useState(false);
 
-  const [targetId, setTargetId] = useState(null); // die creator_id, gegen die geladen/gespeichert wird
-  const [isSelf, setIsSelf] = useState(false);    // ob Nutzer sein eigenes Profil editiert
+  const [targetId, setTargetId] = useState(null);
+  const [isSelf, setIsSelf] = useState(false);
 
   const [form, setForm] = useState({
-    creator_name: '', // Anzeigename
+    creator_name: '',
     email: '',
-    password: '',     // Neues Passwort (optional)
+    password: '',
   });
 
   const handle = (e) => {
@@ -21,17 +22,13 @@ export default function ProfileForm({ overrideCreatorId = null, onAfterSave }) {
     setForm((f) => ({ ...f, [name]: value }));
   };
 
-  // Prefill: User + creator_config holen
   useEffect(() => {
     (async () => {
       setLoading(true);
       setError('');
       setSaved(false);
       try {
-        const {
-          data: { user },
-          error: userErr,
-        } = await supabase.auth.getUser();
+        const { data: { user }, error: userErr } = await supabase.auth.getUser();
         if (userErr || !user) {
           setError('Bitte einloggen, um dein Profil zu bearbeiten.');
           setLoading(false);
@@ -42,23 +39,17 @@ export default function ProfileForm({ overrideCreatorId = null, onAfterSave }) {
         setTargetId(cid);
         setIsSelf(!overrideCreatorId || overrideCreatorId === user.id);
 
-        // Anzeigename & E-Mail aus creator_config
-        const { data: profile, error: pErr } = await supabase
+        const { data: profile } = await supabase
           .from('creator_config')
           .select('creator_name, email')
           .eq('creator_id', cid)
           .maybeSingle();
 
-        // E-Mail-Vorbelegung:
-        // - acting-as: nur DB-Wert
-        // - self: DB-Wert oder Fallback auf auth.user.email
-        const fallbackEmail = isSelf ? (user.email ?? '') : '';
-        const prefillEmail = (profile?.email ?? fallbackEmail);
-
+        const fallbackEmail = (!overrideCreatorId ? (user.email ?? '') : '');
         setForm((f) => ({
           ...f,
           creator_name: profile?.creator_name ?? '',
-          email: prefillEmail,
+          email: (profile?.email ?? fallbackEmail),
           password: '',
         }));
       } catch (e) {
@@ -70,17 +61,13 @@ export default function ProfileForm({ overrideCreatorId = null, onAfterSave }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [overrideCreatorId]);
 
-  // Speichern
   async function save(e) {
     e.preventDefault();
     setError('');
     setSaved(false);
 
     try {
-      const {
-        data: { user },
-        error: userErr,
-      } = await supabase.auth.getUser();
+      const { data: { user }, error: userErr } = await supabase.auth.getUser();
       if (userErr || !user) {
         setError('Nicht eingeloggt.');
         return;
@@ -89,28 +76,24 @@ export default function ProfileForm({ overrideCreatorId = null, onAfterSave }) {
       const cid = targetId;
       if (!cid) throw new Error('Kein Zielkonto gefunden');
 
-      // 1) creator_config upsert (nur benötigte Felder)
+      // 1) creator_config upsert
       const payload = {
         creator_id: cid,
         creator_name: form.creator_name?.trim() || null,
         email: form.email?.trim() || null,
         updated_at: new Date().toISOString(),
       };
-
       const { error: upsertErr } = await supabase
         .from('creator_config')
         .upsert(payload, { onConflict: 'creator_id' });
       if (upsertErr) throw upsertErr;
 
-      // 2) Nur beim eigenen Profil: E-Mail / Passwort in Auth aktualisieren
+      // 2) Nur eigenes Profil: Auth-Email/Passwort
       if (isSelf) {
-        // E-Mail-Update (falls geändert)
         if (form.email && form.email !== (user.email ?? '')) {
           const { error: emailErr } = await supabase.auth.updateUser({ email: form.email });
           if (emailErr) throw new Error(`E-Mail-Update: ${emailErr.message}`);
-          // Hinweis: Supabase kann eine Bestätigungs-Mail senden.
         }
-        // Passwort-Update (optional, min. 6 Zeichen)
         if (form.password && form.password.length >= 6) {
           const { error: pwErr } = await supabase.auth.updateUser({ password: form.password });
           if (pwErr) throw new Error(`Passwort-Update: ${pwErr.message}`);
@@ -119,7 +102,19 @@ export default function ProfileForm({ overrideCreatorId = null, onAfterSave }) {
 
       setForm((f) => ({ ...f, password: '' }));
       setSaved(true);
-      onAfterSave?.();
+
+      // 3) Optionales Audit, wenn acting-as innerhalb einer Agentur
+      if (agencyId && overrideCreatorId) {
+        try {
+          await writeAudit({
+            agency_id: agencyId,
+            action: 'update_profile',
+            target_creator_id: cid,
+          });
+        } catch {
+          // Audit ist best effort – UI nicht blockieren
+        }
+      }
     } catch (e) {
       setError(e?.message || 'Speichern fehlgeschlagen');
     }

@@ -21,5 +21,18 @@ async function listAgencyModels(agencyId) {
 async function inviteLink(agencyId) {
   return `/agency/join?agency=${encodeURIComponent(agencyId)}`;
 }
+async function writeAudit(entry) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase.from("agency_audit_log").insert({
+    agency_id: entry.agency_id,
+    actor_user_id: String(user.id),
+    target_creator_id: entry.target_creator_id ?? null,
+    action: entry.action,
+    path: entry.path ?? null,
+    old_value: entry.old_value ?? null,
+    new_value: entry.new_value ?? null
+  });
+}
 
-export { createAgency as c, inviteLink as i, listAgencyModels as l };
+export { createAgency as c, inviteLink as i, listAgencyModels as l, writeAudit as w };

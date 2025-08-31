@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { createAgency } from '../lib/agency'
+import { createAgency } from '../../lib/agency'
 
 
 export default function AgencyCreateForm({ onCreated }) {

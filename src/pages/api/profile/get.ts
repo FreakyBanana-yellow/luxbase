@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro'
-import { makeServerClient } from '../../../lib/supabase' // ggf. Pfad anpassen
+import { makeServerClient } from '@/lib/$2' // ggf. Pfad anpassen
 
 export const GET: APIRoute = async ({ request }) => {
   try {

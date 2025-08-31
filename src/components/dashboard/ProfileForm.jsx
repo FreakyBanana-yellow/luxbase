@@ -1,6 +1,6 @@
 // src/components/ProfileForm.jsx
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../../lib/supabase';
 
 export default function ProfileForm() {
   const [loading, setLoading] = useState(true);

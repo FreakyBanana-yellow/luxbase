@@ -1,3 +1,14 @@
+// src/lib/api/profile.ts
+import { supabase } from '@/lib/supabase';
+
+export async function getProfile(userId: string) {
+  return await supabase.from('profiles').select('*').eq('id', userId).single();
+}
+
+export async function updateProfile(userId: string, data: Record<string, unknown>) {
+  return await supabase.from('profiles').update(data).eq('id', userId);
+}
+
 import type { APIRoute } from 'astro'
 import { makeServerClient } from '../../../lib/supabase' // ggf. Pfad anpassen
 import { z } from 'zod'

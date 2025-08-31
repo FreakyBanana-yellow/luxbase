@@ -1,5 +1,5 @@
 import React from 'react'
-import { listAgencyModels } from '../lib/agency'
+import { listAgencyModels } from '../../lib/agency'
 
 
 export default function AgencyModelsTable({ agencyId }){

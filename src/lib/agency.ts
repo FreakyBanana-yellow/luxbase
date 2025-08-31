@@ -1,5 +1,6 @@
 // src/lib/agency.ts
-import { supabase } from '../lib/supabase'
+import { supabase } from '@/lib/$2'
+
 
 // Hole alle Agenturen, in denen der Nutzer Mitglied ist
 export async function getMyAgencies(): Promise<Array<{id: string; name: string; role: string}>> {

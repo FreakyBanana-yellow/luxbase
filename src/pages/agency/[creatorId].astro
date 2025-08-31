@@ -2,10 +2,10 @@
 // src/pages/agency/[agencyId]/models/[creatorId].astro
 export const prerender = false;
 
-import BaseLayout from '../../../../layouts/BaseLayout.astro';
-import ActingAsBanner from '../../../../components/ActingAsBanner.jsx';
-import ProfileForm from '../../../../components/ProfileForm.jsx';
-import { supabase } from '../../../../lib/supabase';
+import BaseLayout from '@/layouts/$2';
+import ActingAsBanner from '@/components/$2';
+import ProfileForm from '@/components/$2';
+import { supabase } from '@/lib/$2';
 
 const { agencyId, creatorId } = Astro.params;
 

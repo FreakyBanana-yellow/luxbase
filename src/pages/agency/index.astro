@@ -2,9 +2,9 @@
 // src/pages/agency/index.astro
 export const prerender = false;
 
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import CreateAgencyButton from '../../components/CreateAgencyButton.jsx';
-import { getMyAgencies } from '../../lib/agency';
+import BaseLayout from '@/layouts/$2';
+import CreateAgencyButton from '@/components/$2';
+import { getMyAgencies }from '@/lib/$2';
 
 const agencies = await getMyAgencies();
 ---

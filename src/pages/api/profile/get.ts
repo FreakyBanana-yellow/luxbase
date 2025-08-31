@@ -1,28 +1,38 @@
+// src/pages/api/profile/get.ts
 import type { APIRoute } from 'astro'
-import { makeServerClient } from '@/lib/$2' // ggf. Pfad anpassen
+import { supabaseFromCookies } from '@/lib/supabaseServer'
 
-export const GET: APIRoute = async ({ request }) => {
-  try {
-    const auth = request.headers.get('authorization') ?? ''
-    const token = auth.replace(/^Bearer\s+/i, '').trim()
-    if (!token) return new Response('Unauthorized', { status: 401 })
+export const GET: APIRoute = async ({ url, cookies }) => {
+  const supabase = supabaseFromCookies({
+    get: (k) => cookies.get(k)?.value,
+    set: (k, v, o) => cookies.set(k, v, o),
+    remove: (k, o) => cookies.delete(k, o),
+  })
 
-    const supabase = makeServerClient(token)
-    const { data: { user }, error: userErr } = await supabase.auth.getUser()
-    if (userErr || !user) return new Response('Unauthorized', { status: 401 })
+  // optional ?id=... sonst aktueller User
+  const id = url.searchParams.get('id')
 
+  if (id) {
     const { data, error } = await supabase
-      .from('creator_config')
+      .from('profiles')
       .select('*')
-      .eq('creator_id', user.id) // creator_id = UUID
+      .eq('id', id)
       .maybeSingle()
 
-    if (error) throw error
-
-    return new Response(JSON.stringify({ profile: data }), {
-      headers: { 'Content-Type': 'application/json' },
-    })
-  } catch (e: any) {
-    return new Response(e?.message ?? 'Serverfehler', { status: 500 })
+    if (error) return new Response(error.message, { status: 400 })
+    return new Response(JSON.stringify(data), { status: 200 })
   }
+
+  // aktueller User
+  const { data: ures, error: uerr } = await supabase.auth.getUser()
+  if (uerr || !ures?.user) return new Response('Unauthorized', { status: 401 })
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', ures.user.id)
+    .maybeSingle()
+
+  if (error) return new Response(error.message, { status: 400 })
+  return new Response(JSON.stringify(data), { status: 200 })
 }

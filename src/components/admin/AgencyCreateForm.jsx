@@ -1,10 +1,8 @@
 import React, { useState } from 'react'
-<<<<<<< HEAD
 import { createAgency } from '../../lib/agency'
-=======
 import { createAgency } from '@/lib/$2'
 
->>>>>>> d4285687cafc30328465225db224b28b3b4c4b72
+
 
 
 export default function AgencyCreateForm({ onCreated }) {

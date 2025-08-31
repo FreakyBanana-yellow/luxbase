@@ -10,7 +10,7 @@ export async function updateProfile(userId: string, data: Record<string, unknown
 }
 
 import type { APIRoute } from 'astro'
-<<<<<<< HEAD
+
 import { supabaseFromCookies } from '@/lib/supabaseServer'
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -34,7 +34,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
   if (error) return new Response(error.message, { status: 400 })
   return new Response(JSON.stringify(data), { status: 200 })
-=======
+
 import { makeServerClient } from '@/lib/$2'
  // ggf. Pfad anpassen
 import { z } from 'zod'
@@ -93,5 +93,5 @@ export const POST: APIRoute = async ({ request }) => {
   } catch (e: any) {
     return new Response(e?.message ?? 'Serverfehler', { status: 400 })
   }
->>>>>>> d4285687cafc30328465225db224b28b3b4c4b72
+
 }

@@ -1,10 +1,9 @@
 import React from 'react'
-<<<<<<< HEAD
 import { inviteLink } from '../../lib/agency'
-=======
+
 import { inviteLink } from '@/lib/$2'
 
->>>>>>> d4285687cafc30328465225db224b28b3b4c4b72
+
 
 
 export default function AgencyInviteLink({ agencyId }){

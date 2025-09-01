@@ -1,21 +1,13 @@
 // src/lib/supabaseServer.ts
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 
-/**
- * Typ für Astro-Cookies (vereinfacht), so wie sie in Server-Kontexten verfügbar sind.
- * Astro.cookies.get(name) liefert ein Objekt mit { name, value, ... }.
- */
 type AstroCookies = {
   get: (key: string) => { name: string; value: string } | undefined
   set: (key: string, value: string, options?: CookieOptions) => void
   delete?: (key: string, options?: CookieOptions) => void
-  remove?: (key: string, options?: CookieOptions) => void // ältere Projekte
+  remove?: (key: string, options?: CookieOptions) => void
 }
 
-/**
- * Server-Supabase-Client aus Astro-Cookies erzeugen.
- * WICHTIG: Beim Lesen der Cookies .value verwenden!
- */
 export function supabaseFromCookies(cookies: AstroCookies) {
   const cookieAdapter = {
     get: (key: string) => cookies.get(key)?.value,
@@ -32,18 +24,13 @@ export function supabaseFromCookies(cookies: AstroCookies) {
   )
 }
 
-/**
- * Beispiel-Helper: Agencies des eingeloggten Users laden.
- * Nutzt den oben erzeugten Server-Client mit Cookies.
- */
 export async function getMyAgenciesServer(cookies: AstroCookies) {
   const supabase = supabaseFromCookies(cookies)
-
   const { data: auth, error: authError } = await supabase.auth.getUser()
   if (authError || !auth?.user) return []
 
   const { data, error } = await supabase
-    .from('agencies') // ggf. Tabellennamen anpassen
+    .from('agencies')
     .select('*')
     .eq('owner_id', auth.user.id)
 
@@ -51,10 +38,6 @@ export async function getMyAgenciesServer(cookies: AstroCookies) {
   return data ?? []
 }
 
-/**
- * Optionaler kleiner Helper: aktuellen User + Session prüfen.
- * Kann nützlich sein, wenn du das öfter brauchst.
- */
 export async function getServerUser(cookies: AstroCookies) {
   const supabase = supabaseFromCookies(cookies)
   const { data, error } = await supabase.auth.getUser()

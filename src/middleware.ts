@@ -1,30 +1,26 @@
 // src/middleware.ts
 import type { APIContext } from 'astro'
 import { supabaseFromCookies } from '@/lib/supabaseServer'
+import { normalizeRole, isAdmin, isAgentur } from '@/lib/auth/roles'
 
 export async function onRequest(ctx: APIContext, next: Function) {
   const url = new URL(ctx.request.url)
-  // Trailing Slash entfernen (außer Root)
   const pRaw = url.pathname
   const p = pRaw !== '/' ? pRaw.replace(/\/+$/, '') : '/'
 
-  // öffentlich immer erlauben
   const publicPaths = ['/', '/preise', '/register', '/login', '/kontakt', '/404']
   if (publicPaths.some(base => p === base || p.startsWith(`${base}/`))) {
     return next()
   }
 
-  // ➡️ WICHTIG: Model-Dashboard nie serverseitig umleiten
   if (p === '/dashboard/model') {
     return next()
   }
 
-  // Supabase-User holen
-  const supabase = supabaseFromCookies(ctx.cookies)
+  const supabase = supabaseFromCookies(ctx.cookies as any)
   const { data: auth } = await supabase.auth.getUser()
   const user = auth?.user
 
-  // geschützte Bereiche
   const needsAuth =
     p.startsWith('/dashboard') ||
     p.startsWith('/agency')    ||
@@ -34,6 +30,23 @@ export async function onRequest(ctx: APIContext, next: Function) {
 
   if (needsAuth && !user) {
     return Response.redirect(new URL('/login', url), 307)
+  }
+
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('rolle')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const role = normalizeRole(profile?.rolle ?? null)
+
+    if (p.startsWith('/admin') && !isAdmin(role)) {
+      return Response.redirect(new URL('/dashboard/model', url), 302)
+    }
+    if (p.startsWith('/agency') && !(isAgentur(role) || isAdmin(role))) {
+      return Response.redirect(new URL('/dashboard/model', url), 302)
+    }
   }
 
   return next()

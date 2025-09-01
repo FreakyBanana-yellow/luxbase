@@ -1,3 +1,4 @@
+// src/lib/auth/roles.ts
 export type Role = 'creator' | 'agentur' | 'admin' | null | undefined
 
 export const isAdmin   = (r: Role) => r === 'admin'

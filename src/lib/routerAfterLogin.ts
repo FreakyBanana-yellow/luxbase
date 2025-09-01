@@ -1,5 +1,11 @@
-// Entscheidet, wohin nach dem Login geroutet wird.
-export const routeAfterLogin = (role?: string): string =>
-  role === 'admin' ? '/admin' : '/dashboard';
+// src/lib/routerAfterLogin.ts
+import { normalizeRole } from '@/lib/auth/roles'
 
-export default routeAfterLogin;
+export const routeAfterLogin = (roleRaw?: string | null): string => {
+  const role = normalizeRole(roleRaw)
+  if (role === 'admin')   return '/admin'
+  if (role === 'agentur') return '/agency'
+  return '/dashboard/model'
+}
+
+export default routeAfterLogin

@@ -1,58 +1,59 @@
-import type { APIContext, MiddlewareNext } from 'astro'
+import type { APIContext } from 'astro'
 import { supabaseFromCookies } from '@/lib/supabaseServer'
-import { isAdmin } from '@/lib/auth/roles'
+import { normalizeRole, isAdmin, isAgentur } from '@/lib/auth/roles'
 
-async function getSessionRole(context: APIContext): Promise<string | undefined> {
-  const cookies = {
-    get: (key: string) => context.cookies.get(key)?.value,
-    set: (key: string, value: string, options?: Record<string, any>) => context.cookies.set(key, value, options),
-    remove: (key: string, options?: Record<string, any>) => context.cookies.delete(key, options),
-  }
-  const supabase = supabaseFromCookies(cookies)
+export async function onRequest(ctx: APIContext, next: Function) {
+  const url = new URL(ctx.request.url)
+  const p = url.pathname
 
-  const { data: ures } = await supabase.auth.getUser()
-  const user = ures?.user
-  if (!user) return undefined
-
-  // Primärquelle: creator_config.rolle via creator_id = user.id
-  const { data: cfg } = await supabase
-    .from('creator_config')
-    .select('rolle')
-    .eq('creator_id', user.id)
-    .maybeSingle()
-
-  if (cfg?.rolle) return String(cfg.rolle)
-
-  // Fallback: user_metadata.role
-  const metaRole = (user.user_metadata as any)?.role
-  return metaRole ? String(metaRole) : undefined
-}
-
-export async function onRequest(context: APIContext, next: MiddlewareNext) {
-  const pathname = new URL(context.url).pathname
-
-  const PUBLIC = new Set<string>(['/', '/preise', '/register', '/kontakt', '/weare'])
-  const isPublic =
-    PUBLIC.has(pathname) ||
-    pathname.startsWith('/assets/') ||
-    pathname.startsWith('/public/') ||
-    pathname.startsWith('/api/stripe') ||
-    pathname.startsWith('/.netlify/')
-
-  if (isPublic) return next()
-
-  const role = await getSessionRole(context)
-
-  // /dashboard nur für eingeloggte Nutzer
-  if (pathname.startsWith('/dashboard')) {
-    if (!role) return context.redirect('/register')
+  // öffentlich immer erlauben
+  const publicPaths = ['/', '/preise', '/register', '/login', '/kontakt', '/404']
+  if (publicPaths.some(base => p === base || p.startsWith(`${base}/`))) {
     return next()
   }
 
-  // /admin nur für Admins
-  if (pathname.startsWith('/admin')) {
-    if (!role || !isAdmin(role)) return context.redirect('/dashboard')
+  // Supabase-User & Rolle holen
+  const supabase = supabaseFromCookies(ctx.cookies)
+  const { data: auth } = await supabase.auth.getUser()
+  const user = auth?.user
+
+  // /dashboard/model soll NICHT mehr umleiten (zeigt selbst Login-Hinweis)
+  if (p === '/dashboard/model') {
     return next()
+  }
+
+  // geschützte Bereiche
+  const needsAuth =
+    p.startsWith('/dashboard') ||
+    p.startsWith('/agency')    ||
+    p.startsWith('/admin')     ||
+    p.startsWith('/vipbot')    ||
+    p.startsWith('/vault')
+
+  if (needsAuth && !user) {
+    // lieber auf /login statt /register
+    return Response.redirect(new URL('/login', url), 307)
+  }
+
+  // Rollenabgleich (nur wenn eingeloggt)
+  if (user) {
+    // Rolle aus Profil lesen
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('rolle')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const role = normalizeRole(profile?.rolle ?? null)
+
+    // Admin-Bereich
+    if (p.startsWith('/admin') && !isAdmin(role)) {
+      return Response.redirect(new URL('/dashboard/model', url), 302)
+    }
+    // Agency-Bereich (Agentur ODER Admin)
+    if (p.startsWith('/agency') && !(isAgentur(role) || isAdmin(role))) {
+      return Response.redirect(new URL('/dashboard/model', url), 302)
+    }
   }
 
   return next()

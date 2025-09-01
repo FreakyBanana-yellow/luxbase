@@ -1,11 +1,9 @@
 ---
 // src/pages/agency/index.astro
 export const prerender = false;
-
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import { getMyAgencies }from '@/lib/supabase';
-
-const agencies = await getMyAgencies();
+import BaseLayout from '@/layouts/BaseLayout.astro'
+import { getMyAgenciesServer } from '@/lib/supabaseServer'   // <— NEU, statt supabase.ts
+const agencies = await getMyAgenciesServer(Astro.cookies)    // <— Cookies weitergeben
 ---
 
 <BaseLayout title="Agenturen">

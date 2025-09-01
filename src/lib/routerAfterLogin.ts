@@ -1,10 +1,5 @@
+// Entscheidet, wohin nach dem Login geroutet wird.
+export const routeAfterLogin = (role?: string): string =>
+  role === 'admin' ? '/admin' : '/dashboard';
 
-// src/lib/routerAfterLogin.ts
-import { isAdmin } from '@/lib/auth/roles'
-
-export function routeAfterLogin(role?: string) {
-  // Admins landen im Adminbereich, alle anderen im Dashboard
-
-import { isAdmin } from '@/lib/auth/roles';
-}
-
+export default routeAfterLogin;

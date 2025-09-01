@@ -1,5 +1,5 @@
 // src/lib/agency.ts
-import { supabase } from '@/lib/$2'
+import { supabase } from '@/lib/supabase.ts'
 
 
 // Hole alle Agenturen, in denen der Nutzer Mitglied ist

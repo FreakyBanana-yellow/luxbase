@@ -1,20 +1,93 @@
 ---
-// src/pages/app/profile.astro
+import DashboardLayout from '@/layouts/DashboardLayout.astro'
+import { getProfileFromCookies } from '@/lib/profileServer'
+import { entitlementsFromProfile, type Feature } from '@/lib/entitlements'
 
-import BaseLayout from '../../layouts/BaseLayout.astro';
+const { user, profile } = await getProfileFromCookies(Astro.cookies)
+const entitlements = entitlementsFromProfile(profile)
+const name = profile?.creator_name || 'Creator'
 
-import DashboardLayout from '@/layouts/DashboardLayout.astro';
+// Karten-Definition je Feature
+type Card = { title: string; desc: string; href: string; feature: Feature; cta?: string }
 
-import ProfileForm from '@/components/dashboard/ProfileForm.jsx';
+const cards: Card[] = [
+  {
+    title: 'VIP Bot – Dashboard',
+    desc: 'Performance & Einnahmen deines Bots auf einen Blick.',
+    href: '/vipbot',
+    feature: 'vipbot_dashboard',
+    cta: 'Öffnen'
+  },
+  {
+    title: 'VIP Bot – Einstellungen',
+    desc: 'Antwortlogik, Persona & Limits konfigurieren.',
+    href: '/dashboard/vipbot-einstellungen', // deine Route
+    feature: 'vipbot_settings',
+    cta: 'Bearbeiten'
+  },
+  {
+    title: 'Vault',
+    desc: 'Dein sicherer Content-Speicher.',
+    href: '/vault',
+    feature: 'vault',
+    cta: 'Öffnen'
+  },
+  {
+    title: 'Selfie Gate',
+    desc: 'Zugang nur nach Selfie-Check erlauben.',
+    href: '/dashboard/selfie-gate', // falls noch nicht vorhanden, später anlegen
+    feature: 'selfie_gate',
+    cta: 'Konfigurieren'
+  }
+]
 ---
 
-<BaseLayout title="Profil – Luxbase">
-  <section class="max-w-5xl mx-auto px-4 py-10">
-    <h1 class="text-2xl md:text-3xl font-semibold text-yellow-400">Dein Profil</h1>
-    <p class="mt-2 text-zinc-300">Verwalte hier Anzeigename, E-Mail & Passwort.</p>
+<DashboardLayout title="Model-Dashboard">
+  <section class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <header class="mb-8">
+      <h1 class="text-2xl font-semibold tracking-tight">Hi {name} 👋</h1>
+      <p class="text-neutral-400 mt-1">
+        Paket: <span class="uppercase font-medium">{profile?.bot_paket || '—'}</span>
+      </p>
+    </header>
 
-    <div class="mt-8 p-6 rounded-2xl bg-zinc-950/60 border border-yellow-600/20 shadow-xl">
-      <ProfileForm client:load />
-    </div>
+    { user ? (
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {
+          cards.map((card) => {
+            const allowed = entitlements[card.feature]
+            return (
+              <article class={`rounded-2xl border border-neutral-800 bg-neutral-900 p-5 transition ${allowed ? 'hover:border-neutral-700 hover:bg-neutral-850' : 'opacity-60'}`}>
+                <h3 class="text-lg font-semibold">{card.title}</h3>
+                <p class="text-sm text-neutral-400 mt-1">{card.desc}</p>
+
+                <div class="mt-4 flex items-center gap-3">
+                  { allowed ? (
+                    <a href={card.href} class="inline-flex items-center gap-2 rounded-xl bg-yellow-400 text-neutral-900 px-4 py-2 font-medium hover:opacity-90">
+                      {card.cta || 'Öffnen'}
+                    </a>
+                  ) : (
+                    <>
+                      <span class="text-xs text-neutral-400">Nicht in deinem Paket enthalten</span>
+                      <a href="/preise" class="inline-flex items-center gap-2 rounded-xl border border-yellow-400 text-yellow-400 px-3 py-1.5 text-sm hover:bg-yellow-400/10">
+                        Upgrade ansehen
+                      </a>
+                    </>
+                  )}
+                </div>
+              </article>
+            )
+          })
+        }
+      </div>
+    ) : (
+      <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 text-center">
+        <h3 class="text-lg font-semibold">Bitte einloggen</h3>
+        <p class="text-neutral-400 mt-1">Um dein Dashboard zu sehen, melde dich an.</p>
+        <a href="/login" class="inline-flex items-center gap-2 rounded-xl bg-yellow-400 text-neutral-900 px-4 py-2 font-medium hover:opacity-90 mt-4">
+          Anmelden
+        </a>
+      </div>
+    )}
   </section>
-</BaseLayout>
+</DashboardLayout>

@@ -20,3 +20,9 @@
   to = "/.netlify/functions/stripe-webhook"
   status = 200
   force = true
+
+[[redirects]]
+from = "/dashboard-model"
+to = "/dashboard/model"
+status = 301
+force = true

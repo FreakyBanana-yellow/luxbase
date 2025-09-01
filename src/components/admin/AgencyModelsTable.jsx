@@ -1,7 +1,7 @@
 import React from 'react'
 import { listAgencyModels } from '../../lib/agency'
 
-import { listAgencyModels } from '@/lib/$2'
+import { listAgencyModels } from '@/lib/routerAfterLogin'
 
 
 

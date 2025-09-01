@@ -1,7 +1,7 @@
 import React from 'react'
 import { inviteLink } from '../../lib/agency'
 
-import { inviteLink } from '@/lib/$2'
+import { inviteLink } from '@/lib/routerAfterLogin''
 
 
 

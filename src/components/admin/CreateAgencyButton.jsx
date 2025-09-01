@@ -1,6 +1,6 @@
 // src/components/CreateAgencyButton.jsx
 import React, { useState } from 'react';
-import { createAgency } from '@/lib/$2';
+import { createAgency } from '@/lib/routerAfterLogin';
 
 export default function CreateAgencyButton() {
   const [busy, setBusy] = useState(false);

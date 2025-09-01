@@ -4,7 +4,7 @@ export const prerender = false;
 
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import CreateAgencyButton from '@/components/admin/CreateAgencyButton.jsx';
-import { getMyAgencies }from '@/lib/$2';
+import { getMyAgencies }from '@/lib/supabase';
 
 const agencies = await getMyAgencies();
 ---

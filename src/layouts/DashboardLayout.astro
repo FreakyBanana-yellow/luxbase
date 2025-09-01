@@ -1,10 +1,31 @@
 ---
-// KEIN Sidebar-Import mehr
-const role = "creator";
-const name = "Creator";
 export const prerender = false;
----
 
+import { getServerUser } from '@/lib/supabaseServer';
+import { getRoleFromServer } from '@/lib/auth/getRoleServer';
+import { normalizeRole } from '@/lib/auth/roles';
+
+const user = await getServerUser(Astro.cookies);
+if (!user) {
+  return Astro.redirect('/register');
+}
+
+const role = await getRoleFromServer(Astro.cookies);
+const norm = normalizeRole(role);
+
+if (norm === 'admin') {
+  return Astro.redirect('/admin');
+}
+if (norm === 'agentur') {
+  return Astro.redirect('/agency');
+}
+// Only creators may proceed
+if (norm !== 'creator') {
+  return Astro.redirect('/register');
+}
+
+const name = (user.user_metadata?.name || user.user_metadata?.full_name || user.email || 'Creator') as string;
+---
 <html lang="de">
   <head>
     <title>{Astro.props.title || "Luxbase Dashboard"}</title>

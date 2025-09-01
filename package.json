@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prebuild": "npm ci --include=dev || npm install --include=dev",
+    "prebuild": "node scripts/apply-prerender-flag.js && npm ci --include=dev || npm install --include=dev",
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",

@@ -5,7 +5,7 @@ export const routeAfterLogin = (roleRaw?: string | null): string => {
   const role = normalizeRole(roleRaw)
   if (role === 'admin')   return '/admin'
   if (role === 'agentur') return '/agency'
-  return '/dashboard/model'
+  return '/dashboard'
 }
 
 export default routeAfterLogin

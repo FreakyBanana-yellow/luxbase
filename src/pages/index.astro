@@ -1,8 +1,16 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
-;
----
+import { getServerUser } from '@/lib/supabaseServer';
+import routeAfterLogin from '@/lib/routerAfterLogin';
+import { getRoleFromServer } from '@/lib/auth/getRoleServer';
 
+const user = await getServerUser(Astro.cookies);
+if (user) {
+  const role = await getRoleFromServer(Astro.cookies);
+  const to = routeAfterLogin(role || null);
+  return Astro.redirect(to);
+}
+---
 <BaseLayout title="Willkommen bei Luxbase">
   <section class="text-center py-32 max-w-xl mx-auto">
     <h1 class="text-5xl font-bold text-luxgold mb-8">Willkommen bei Luxbase</h1>

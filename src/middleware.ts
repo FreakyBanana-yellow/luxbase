@@ -1,53 +1,48 @@
-// src/middleware.ts
-import type { APIContext } from 'astro'
-import { supabaseFromCookies } from '@/lib/supabaseServer'
-import { normalizeRole, isAdmin, isAgentur } from '@/lib/auth/roles'
+// scripts/apply-prerender-flag.js
+const fs = require('fs');
+const path = require('path');
 
-export async function onRequest(ctx: APIContext, next: Function) {
-  const url = new URL(ctx.request.url)
-  const pRaw = url.pathname
-  const p = pRaw !== '/' ? pRaw.replace(/\/+$/, '') : '/'
+const roots = [
+  'src/pages/dashboard',
+  'src/pages/agency',
+  'src/pages/admin',
+  // ggf. ergänzen: 'src/pages/vault', 'src/pages/vipbot', ...
+];
 
-  const publicPaths = ['/', '/preise', '/register', '/login', '/kontakt', '/404']
-  if (publicPaths.some(base => p === base || p.startsWith(`${base}/`))) {
-    return next()
+function listAstroFiles(dir) {
+  const out = [];
+  if (!fs.existsSync(dir)) return out;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...listAstroFiles(full));
+    else if (entry.isFile() && entry.name.endsWith('.astro')) out.push(full);
   }
-
-  if (p === '/dashboard/model') {
-    return next()
-  }
-
-  const supabase = supabaseFromCookies(ctx.cookies as any)
-  const { data: auth } = await supabase.auth.getUser()
-  const user = auth?.user
-
-  const needsAuth =
-    p.startsWith('/dashboard') ||
-    p.startsWith('/agency')    ||
-    p.startsWith('/admin')     ||
-    p.startsWith('/vipbot')    ||
-    p.startsWith('/vault')
-
-  if (needsAuth && !user) {
-    return Response.redirect(new URL('/login', url), 307)
-  }
-
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('rolle')
-      .eq('id', user.id)
-      .maybeSingle()
-
-    const role = normalizeRole(profile?.rolle ?? null)
-
-    if (p.startsWith('/admin') && !isAdmin(role)) {
-      return Response.redirect(new URL('/dashboard/model', url), 302)
-    }
-    if (p.startsWith('/agency') && !(isAgentur(role) || isAdmin(role))) {
-      return Response.redirect(new URL('/dashboard/model', url), 302)
-    }
-  }
-
-  return next()
+  return out;
 }
+
+function ensureFlag(file) {
+  let txt = fs.readFileSync(file, 'utf8');
+  if (/export\s+const\s+prerender\s*=\s*false\s*;/.test(txt)) {
+    console.log('OK:', file);
+    return;
+  }
+  if (txt.startsWith('---')) {
+    const end = txt.indexOf('---', 3);
+    if (end !== -1) {
+      const before = txt.slice(0, end + 3);
+      const after = txt.slice(end + 3);
+      const injected = before + '\nexport const prerender = false;\n' + after;
+      fs.writeFileSync(file, injected, 'utf8');
+      console.log('Injected (frontmatter):', file);
+      return;
+    }
+  }
+  const injected = 'export const prerender = false;\n' + txt;
+  fs.writeFileSync(file, injected, 'utf8');
+  console.log('Injected (top):', file);
+}
+
+for (const root of roots) {
+  for (const f of listAstroFiles(root)) ensureFlag(f);
+}
+console.log('Done.');

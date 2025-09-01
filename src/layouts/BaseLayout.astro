@@ -41,7 +41,7 @@ const { title = "Luxbase" } = Astro.props;
           </button>
           <div id="accountDropdown" class="absolute right-0 mt-2 w-56 bg-black border border-luxgray rounded-xl shadow-lg hidden">
             <a href="/app/profile" class="block px-4 py-3 hover:bg-luxgray/20">Profil</a>
-            <a href="/dashboard-model" id="linkCreator" class="block px-4 py-3 hover:bg-luxgray/20 hidden">Creator-Dashboard</a>
+            <a href="/dashboard/model" id="linkCreator" class="block px-4 py-3 hover:bg-luxgray/20 hidden">Creator-Dashboard</a>
             <a href="/agency" id="linkAgency" class="block px-4 py-3 hover:bg-luxgray/20 hidden">Agency-Dashboard</a>
             <button id="logoutBtn" class="w-full text-left px-4 py-3 hover:bg-red-900/40 text-red-400">Abmelden</button>
           </div>
@@ -84,7 +84,7 @@ const { title = "Luxbase" } = Astro.props;
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M10 17l5-5-5-5v10z"/></svg>
           <span>Login</span>
         </button>
-        <a href="/dashboard-model" class="py-3 flex flex-col items-center gap-1">
+        <a href="/dashboard/model" class="py-3 flex flex-col items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-luxgold" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
           <span>Dashboard</span>
         </a>
@@ -187,7 +187,7 @@ const { title = "Luxbase" } = Astro.props;
         sessionStorage.setItem("lb_account_type", isAgency ? "agency" : "creator");
 
         // Direkt auf das passende Dashboard
-        window.location.replace(isAgency ? "/agency" : "/dashboard-model");
+        window.location.replace(isAgency ? "/agency" : "/dashboard/model");
       });
 
       // Bereits eingeloggt? -> Menü anzeigen + Links rollenbasiert

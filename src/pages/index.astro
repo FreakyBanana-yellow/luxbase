@@ -73,7 +73,7 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
     if (m && m.length > 0 || String(p?.account_type || user.user_metadata?.account_type || "").toLowerCase() === "agency") {
       location.href = "/agency";
     } else {
-      location.href = "/dashboard-model";
+      location.href = "/dashboard/model";
     }
   })();
 </script>

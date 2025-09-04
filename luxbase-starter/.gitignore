@@ -1,0 +1,12 @@
+# Builds/Outputs
+dist/
+.netlify/
+.astro/
+
+# Packages/Editor
+node_modules/
+*.log
+
+# Env
+.env
+.env.*

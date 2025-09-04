@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* wichtig: @apply in einem Layer nutzen */
+@layer base {
+  :root {
+    @apply bg-luxblack text-white;
+  }
+}
+
+/* Beispiel für Kartenhintergrund als Utility-Kompo */
+@layer components {
+  .card {
+    @apply bg-black/60 border border-luxgray rounded-2xl;
+  }
+}

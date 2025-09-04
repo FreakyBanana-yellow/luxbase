@@ -1,0 +1,32 @@
+---
+// src/pages/agency/[agencyId]/models/[creatorId].astro
+export const prerender = false;
+
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ActingAsBanner from '@/components/admin/ActingAsBanner.jsx';
+import ProfileForm from '@/components/dashboard/ProfileForm.jsx';
+import { supabase } from '@/lib/supabase.ts';
+
+const { agencyId, creatorId } = Astro.params;
+
+let creatorName = null;
+let creatorEmail = null;
+try {
+  const { data } = await supabase
+    .from('creator_config')
+    .select('creator_name, email')
+    .eq('creator_id', creatorId)
+    .maybeSingle();
+  creatorName = data?.creator_name ?? null;
+  creatorEmail = data?.email ?? null;
+} catch {}
+---
+
+<BaseLayout title="Agentur – Profil (acting as)">
+  <section class="max-w-5xl mx-auto px-4 py-10">
+    <ActingAsBanner client:load agencyName={agencyId} creatorName={creatorName} creatorEmail={creatorEmail} />
+    <div class="mt-6 p-6 rounded-2xl bg-zinc-950/60 border border-yellow-600/20">
+      <ProfileForm client:load overrideCreatorId={creatorId} agencyId={agencyId} />
+    </div>
+  </section>
+</BaseLayout>

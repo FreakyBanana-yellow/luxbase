@@ -1,0 +1,22 @@
+---
+const { showLogin, toggleLogin } = Astro.props;
+---
+
+<script>
+  const close = () => toggleLogin(false);
+</script>
+
+{showLogin && (
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+    <div class="bg-luxgray p-8 rounded-2xl shadow-xl w-full max-w-md relative text-white">
+      <button class="absolute top-4 right-4 text-white text-xl" onClick={close}>×</button>
+      <h2 class="text-2xl font-serif text-luxgold mb-4">Login</h2>
+
+      <form class="space-y-4">
+        <input type="email" placeholder="E-Mail" class="w-full p-3 rounded bg-luxblack border border-gray-600 text-white" />
+        <input type="password" placeholder="Passwort" class="w-full p-3 rounded bg-luxblack border border-gray-600 text-white" />
+        <button type="submit" class="w-full bg-luxgold text-luxblack font-semibold py-3 rounded hover:bg-yellow-400 transition">Einloggen</button>
+      </form>
+    </div>
+  </div>
+)}

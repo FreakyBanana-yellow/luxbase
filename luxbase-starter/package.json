@@ -7,9 +7,9 @@
     "prebuild": "node scripts/apply-prerender-flag.js && npm ci --include=dev || npm install --include=dev",
     "dev": "astro dev",
     "build": "astro build",
+     "start": "astro dev",
     "preview": "astro preview",
-    "format": "prettier -w .",
-    "start": "astro preview"
+    "format": "prettier -w ."
   },
   "dependencies": {
     "@astrojs/react": "^3.6.0",
@@ -32,6 +32,6 @@
     "prettier-plugin-astro": "^0.14.1"
   },
   "engines": {
-    "node": ">=18 <=22"
+    "node": "18.x || 20.x"
   }
 }

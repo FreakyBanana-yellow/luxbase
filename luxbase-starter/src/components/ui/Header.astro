@@ -1,0 +1,140 @@
+---
+const lux = typeof window !== "undefined" && window.sessionStorage
+  ? JSON.parse(sessionStorage.getItem("luxbase_config") || "{}")
+  : {};
+---
+
+<header class="w-full flex justify-between items-center p-4 bg-black border-b border-luxgray sticky top-0 z-50">
+  <a href="/" class="text-luxgold font-serif text-xl">LUXBASE</a>
+  <nav class="flex items-center gap-4">
+    <button id="openLogin" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition hidden">
+      Login
+    </button>
+    <div id="accountMenu" class="relative hidden">
+      <button id="accountBtn" class="px-5 py-2 border border-luxgold text-luxgold rounded hover:bg-luxgold hover:text-black transition">
+        👤 <span id="username">Account</span>
+      </button>
+      <div class="absolute right-0 mt-2 w-48 bg-black border border-luxgray rounded shadow-xl text-sm hidden" id="accountDropdown">
+        <a href="/dashboard" class="block px-4 py-2 hover:bg-luxgray/30">Dashboard</a>
+        <button id="logoutBtn" class="w-full text-left px-4 py-2 hover:bg-red-900/40 text-red-400">Abmelden</button>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- Login Modal -->
+<div id="loginModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+  <div class="bg-zinc-900 border border-luxgold p-8 rounded-xl w-96 relative text-white shadow-xl">
+    <button id="closeLogin" class="absolute top-3 right-4 text-white text-xl hover:text-luxgold">&times;</button>
+    <h2 class="text-xl font-serif font-bold text-luxgold text-center mb-6">Login</h2>
+    <form id="popupLoginForm" class="space-y-4">
+      <input type="email" name="email" placeholder="E‑Mail" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded" />
+      <input type="password" name="password" placeholder="Passwort" required class="w-full px-4 py-2 bg-black border border-zinc-600 rounded" />
+      <button type="submit" class="w-full bg-luxgold text-black font-bold py-2 rounded hover:bg-yellow-400 transition">
+        Einloggen
+      </button>
+    </form>
+    <p id="popupLoginMsg" class="text-sm text-center text-red-400 mt-2 min-h-[1.25rem]"></p>
+    <p class="text-center text-sm mt-6 text-gray-400">
+      Noch kein Account? <a href="/register" class="text-luxgold hover:underline">Jetzt registrieren</a>
+    </p>
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  const supabase = createClient(import.meta.env.PUBLIC_SUPABASE_URL, import.meta.env.PUBLIC_SUPABASE_ANON_KEY);
+
+  const openBtn = document.getElementById("openLogin");
+  const closeBtn = document.getElementById("closeLogin");
+  const modal = document.getElementById("loginModal");
+  const form = document.getElementById("popupLoginForm");
+  const msg = document.getElementById("popupLoginMsg");
+
+  const accountMenu = document.getElementById("accountMenu");
+  const accountBtn = document.getElementById("accountBtn");
+  const accountDropdown = document.getElementById("accountDropdown");
+  const usernameEl = document.getElementById("username");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  // 🔐 Nutzerstatus prüfen
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (user) {
+    openBtn?.classList.add("hidden");
+    accountMenu?.classList.remove("hidden");
+
+    // 🧠 Lux aus Storage oder neu laden
+    let lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
+
+    if (!lux?.creator_id) {
+      const { data: config } = await supabase
+        .from("creator_config")
+        .select("*")
+        .match({ creator_id: user.id })
+        .single();
+
+      const paketFeatures = {
+        basic: { show_selfie_gate: false, can_customize_texts: false },
+        premium: { show_selfie_gate: true, can_customize_texts: true },
+      };
+
+      lux = { ...config, ...paketFeatures[config?.bot_paket || "basic"] };
+      sessionStorage.setItem("luxbase_config", JSON.stringify(lux));
+    }
+
+    usernameEl.textContent = lux?.creator_name || "Account";
+
+    accountBtn?.addEventListener("click", () => {
+      accountDropdown.classList.toggle("hidden");
+    });
+
+    logoutBtn?.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      sessionStorage.clear();
+      location.href = "/";
+    });
+  } else {
+    openBtn?.classList.remove("hidden");
+    accountMenu?.classList.add("hidden");
+  }
+
+  openBtn?.addEventListener("click", () => modal.classList.remove("hidden"));
+  closeBtn?.addEventListener("click", () => modal.classList.add("hidden"));
+
+  // 🧠 Login mit Supabase + config laden
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.textContent = "";
+
+    const email = form.email.value.trim();
+    const password = form.password.value.trim();
+
+    const { data: loginData, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      msg.textContent = "❌ " + error.message;
+    } else {
+      const user = loginData.user;
+
+      const { data: config } = await supabase
+        .from("creator_config")
+        .select("*")
+        .match({ creator_id: user.id })
+        .single();
+
+      const paketFeatures = {
+        basic: { show_selfie_gate: false, can_customize_texts: false },
+        premium: { show_selfie_gate: true, can_customize_texts: true },
+      };
+
+      const merged = { ...config, ...paketFeatures[config?.bot_paket || "basic"] };
+      sessionStorage.setItem("luxbase_config", JSON.stringify(merged));
+
+      msg.textContent = "✅ Login erfolgreich – Weiterleitung …";
+      msg.className = "text-green-400 text-sm text-center";
+
+      setTimeout(() => location.href = "/dashboard", 1200);
+    }
+  });
+</script>

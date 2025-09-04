@@ -1,0 +1,31 @@
+---
+import AdminSidebar from '@/components/admin/AdminSidebar.astro'
+import Header from '@/components/ui/Header.astro'
+import Footer from '@/components/ui/Footer.astro'
+
+// Optional: props
+const { title = 'Admin' } = Astro.props
+---
+
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>{title}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body class="min-h-screen bg-neutral-950 text-neutral-100">
+    <Header />
+
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 grid grid-cols-12 gap-6">
+      <aside class="col-span-12 lg:col-span-3">
+        <AdminSidebar />
+      </aside>
+
+      <main class="col-span-12 lg:col-span-9">
+        <slot />
+      </main>
+    </div>
+
+    <Footer />
+  </body>
+</html>

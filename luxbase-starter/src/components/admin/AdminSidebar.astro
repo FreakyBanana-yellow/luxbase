@@ -1,0 +1,20 @@
+---
+const items = [
+  { href: "/admin", label: "Übersicht" },
+  { href: "/admin/pakete", label: "Pakete & Funktionen" },
+  { href: "/admin/mail", label: "Direktnachrichten" },
+  { href: "/admin/aktivität", label: "Letzte Aktivität" },
+  { href: "/admin/notizen", label: "Notizen" },
+  { href: "/admin/botlinks", label: "Bot-Zugänge" },
+  { href: "/admin/einstellungen", label: "Einstellungen" },
+  { href: "/admin/stats", label: "Stats & Insights" },
+];
+---
+
+<aside class="w-64 bg-black/60 border-r border-luxgray h-[calc(100vh-64px)] p-4 hidden md:block">
+  <nav class="space-y-1">
+    {items.map((it) => (
+      <a href={it.href} class="block px-3 py-2 rounded hover:bg-luxgray/30 text-sm">{it.label}</a>
+    ))}
+  </nav>
+</aside>

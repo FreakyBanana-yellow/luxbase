@@ -1,0 +1,81 @@
+---
+
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import RevenueChart from '@/components/dashboard/RevenueChart.jsx';
+import PaketVerwaltung from '@/components/dashboard/PaketVerwaltung.jsx';
+import ProfileForm from '@/components/dashboard/ProfileForm.jsx';
+
+// TODO: Replace with real data from Supabase
+const username = 'Creator'
+const revenue = 1234.56
+
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+
+---
+
+<DashboardLayout title="Dein Dashboard">
+  <section class="mb-8 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold">Willkommen zurück, {username} 👋</h1>
+      <p class="text-neutral-400">Hier ist dein Überblick.</p>
+    </div>
+    <a href="/dashboard/vipbot-einstellungen" class="inline-flex items-center rounded-2xl px-4 py-2 bg-yellow-400 text-neutral-900 font-semibold hover:opacity-90 transition">
+      Bot-Einstellungen öffnen
+    </a>
+  </section>
+
+  <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="col-span-1 bg-neutral-900 rounded-2xl p-6 shadow">
+      <h2 class="text-lg font-semibold mb-2">Aktueller Umsatz</h2>
+      <p class="text-3xl font-bold text-yellow-400">{revenue} €</p>
+      <p class="text-sm text-neutral-400 mt-2">Summe der letzten 30 Tage</p>
+    </div>
+
+    <div class="col-span-2 bg-neutral-900 rounded-2xl p-6 shadow">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold">Umsatzentwicklung</h2>
+        <a href="/dashboard/stats" class="text-sm text-neutral-400 hover:text-neutral-200">Details →</a>
+      </div>
+      <RevenueChart />
+    </div>
+  </section>
+
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-neutral-900 rounded-2xl p-6 shadow">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold">Deine Pakete</h2>
+        <a href="/preise" class="text-sm text-neutral-400 hover:text-neutral-200">Pakete vergleichen →</a>
+      </div>
+      <PaketVerwaltung />
+    </div>
+
+    <div class="bg-neutral-900 rounded-2xl p-6 shadow">
+      <h2 class="text-lg font-semibold mb-4">Profil-Einstellungen</h2>
+      <ProfileForm />
+    </div>
+  </section>
+
+  <section class="bg-neutral-900 rounded-2xl p-6 shadow">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-semibold">Schnellzugriff</h2>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <a href="/dashboard/vipbot-einstellungen" class="block rounded-xl p-4 bg-neutral-800 hover:bg-neutral-700 transition">
+        <div class="text-sm text-neutral-400">VIP Bot</div>
+        <div class="text-base font-semibold">Einstellungen</div>
+      </a>
+      <a href="/dashboard/profile" class="block rounded-xl p-4 bg-neutral-800 hover:bg-neutral-700 transition">
+        <div class="text-sm text-neutral-400">Account</div>
+        <div class="text-base font-semibold">Profil & Zahlung</div>
+      </a>
+      <a href="/dashboard/vault" class="block rounded-xl p-4 bg-neutral-800 hover:bg-neutral-700 transition">
+        <div class="text-sm text-neutral-400">VaultRoom</div>
+        <div class="text-base font-semibold">Medien verwalten</div>
+      </a>
+      <a href="/dashboard/stageone" class="block rounded-xl p-4 bg-neutral-800 hover:bg-neutral-700 transition">
+        <div class="text-sm text-neutral-400">StageOne</div>
+        <div class="text-base font-semibold">Postings planen</div>
+      </a>
+    </div>
+  </section>
+</DashboardLayout>

@@ -1,0 +1,36 @@
+---
+const { role = "creator" } = Astro.props;
+
+const links = [
+  { label: "🏠 Übersicht", href: "/dashboard" },
+  { label: "📁 VaultRoom", href: "/vault" },
+  { label: "📤 StageOne", href: "/cpplattform" },
+  { label: "💳 Preise", href: "/preise" },
+];
+
+if (role === "agentur") {
+  links.push({ label: "🏢 Agentur-Tools", href: "/dashboard-agentur" });
+}
+---
+<aside class="w-64 bg-black border-r border-luxgray min-h-screen p-6 hidden md:block">
+  <div class="text-luxgold font-serif text-2xl mb-10">
+    <a href="/dashboard">LUXBASE</a>
+  </div>
+  <nav class="space-y-4 text-sm font-semibold" id="sidebarLinks">
+    {links.map(link => (
+      <a href={link.href} class="block hover:text-luxgold">{link.label}</a>
+    ))}
+  </nav>
+</aside>
+
+<script type="module">
+  const lux = JSON.parse(sessionStorage.getItem("luxbase_config") || "{}");
+  if (lux?.has_vipbot) {
+    const nav = document.getElementById("sidebarLinks");
+    const link = document.createElement("a");
+    link.href = "/dashboard/vipbot-einstellungen";
+    link.className = "block hover:text-luxgold";
+    link.textContent = "🤖 VIP‑Bot";
+    nav.insertBefore(link, nav.children[3]); // zwischen StageOne und Preise
+  }
+</script>
